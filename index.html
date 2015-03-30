@@ -1,0 +1,148 @@
+<html>
+<head>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+<style>
+body {
+  margin: 0px;
+}
+.ui-state-active {
+  font-weight: bold;
+}
+</style>
+<script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+<script src="https://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+<script src="data.js"></script>
+<script src="js/fpsmeter.min.js"></script>
+<script>
+
+var canvas, bounds, view, meter;
+
+function init() {
+  meter = new FPSMeter({graph:1});
+  canvas = $('#canvas')[0];
+  $('.buttonset').buttonset();
+  $("input[name=count]:radio").click(maximizeWidth);
+  bounds = {xmin: Number.MAX_VALUE, xmax: -Number.MAX_VALUE, ymin: Number.MAX_VALUE, ymax: -Number.MAX_VALUE};
+  for (var i = 0; i < data.length; i += 2) {
+    bounds.xmin = Math.min(bounds.xmin, data[i + 0]);
+    bounds.xmax = Math.max(bounds.xmax, data[i + 0]);
+    bounds.ymin = Math.min(bounds.ymin, data[i + 1]);
+    bounds.ymax = Math.max(bounds.ymax, data[i + 1]);
+  }
+  view = {xmin: bounds.xmin, xmax: bounds.xmax, ymin: bounds.ymin, ymax: bounds.ymax};
+  limitView();
+
+  $(window).resize(resize);
+  resize();
+  redraw();
+
+}
+
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+
+function maximizeWidth() {
+  var xcenter = (bounds.xmin + bounds.xmax) / 2;
+  view.xmin = xcenter - 1e9 / 2;
+  view.xmax = xcenter + 1e9 / 2;
+  limitView();
+}
+
+function limitView() {
+  // Limit view width
+  var width = 3600 * ($('input:radio[name=count]:checked').attr('id') == 'count1k' ? 1000 : 5000);
+  if (view.xmax - view.xmin > width) {
+    var xcenter = (bounds.xmin + bounds.xmax) / 2;
+    view.xmin = xcenter - width / 2;
+    view.xmax = xcenter + width / 2;
+  }
+
+  // Limit x offset to stay within data
+  if (view.xmin < bounds.xmin) {
+    view.xmax += bounds.xmin - view.xmin;
+    view.xmin = bounds.xmin;
+  }
+  if (view.xmax > bounds.xmax) {
+    view.xmin -= view.xmax - bounds.xmax;
+    view.xmax = bounds.xmax;
+  }
+}
+
+function redraw() {
+  meter.tick();
+  //if ($('input:radio[name=method]:checked').attr('id') == '2d') {
+  //  redrawCanvas();
+  //} else {
+  //  redrawWebGL();
+  //}
+  redrawCanvas();
+  window.requestAnimationFrame(redraw);
+}
+
+function redrawCanvas() {
+  console.log('redrawCanvas');
+  var ctx = canvas.getContext('2d');
+  ctx.clearRect (0 ,0 ,canvas.width, canvas.height);
+  
+  var xOffset = -view.xmin;
+  var xScale = canvas.width / (view.xmax - view.xmin);
+  var yOffset = -view.ymax;
+  var yScale = canvas.height / (view.ymin - view.ymax);
+
+  // Find the first element >= xmin
+  var min = 1, max = data.length / 2 - 1;
+  while (min < max) {
+    var test = Math.floor((min + max) / 2);
+    if (data[test * 2] >= view.xmin) {
+      max = test;
+    } else {
+      min = test + 1;
+    }
+  }
+  var begin = min - 1;
+
+  // Find the last element <= xmax
+  var min = 0, max = data.length / 2 - 2;
+  while (min < max) {
+    var test = Math.ceil((min + max) / 2);
+    if (data[test * 2] <= view.xmax) {
+      min = test;
+    } else {
+      max = test - 1;
+    }
+  }
+  var end = max + 1;
+
+  console.log('Drawing ' + (end - begin + 1) + ' samples from ' + begin + ' to ' + end);
+
+  for (var i = begin; i <= end - 1; i++) {
+    ctx.beginPath();
+    ctx.moveTo(xScale * (data[i * 2 + 0] + xOffset), yScale * (data[i * 2 + 1] + yOffset));
+    ctx.lineTo(xScale * (data[i * 2 + 2] + xOffset), yScale * (data[i * 2 + 3] + yOffset));
+    ctx.stroke();
+  }
+}
+function redrawWebGL() {
+  console.log('redrawWebGL');
+}
+$(init);
+console.log(data.length);
+</script>
+</head>
+<body>
+<canvas id="canvas" style="width:100%; height:100%"></canvas>
+<div style="position:absolute; right: 3px; top: 9px; font-size:9px">
+<span class="buttonset">
+<input type="radio" name="count" id="count1k" checked="checked"><label for="count1k">1K</label>
+<input type="radio" name="count" id="count5k"><label for="count5k">5K</label>
+</span>
+<!--<span class="buttonset">
+<input type="radio" name="method" id="2d" checked="checked"><label for="2d">canvas</label>
+<input type="radio" name="method" id="3d"><label for="3d">webgl</label>
+</span>-->
+</body>
+</html>
+
+
