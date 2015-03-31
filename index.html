@@ -1,5 +1,6 @@
 <html>
 <head>
+<meta name="viewport" content="width=device-width">
 <link rel="stylesheet" href="https://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
 <style>
 body {
@@ -34,6 +35,7 @@ function init() {
   limitView();
 
   $(window).resize(resize);
+  $('#canvas').bind('orientationchange', resize);
 
   $('#canvas').mousedown(mousedown);
   $('#canvas').mousemove(mousemove);
@@ -161,9 +163,24 @@ function mousewheel(e) {
   return false;
 }
 
+function isIOS() {
+  return navigator.userAgent.match(/(iPod|iPhone|iPad)/) && navigator.userAgent.match(/AppleWebKit/);
+}
+
 function resize() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+  if (isIOS()) {
+    console.log('isIOS: ' + window.screen.width + ' x ' + window.screen.height);
+    if (window.orientation == 0 || window.orientation == 180) {
+      $('body').width(window.screen.width);
+      $('body').height(window.screen.height);
+    } else {
+      $('body').width(window.screen.height);
+      $('body').height(window.screen.width);
+    }      
+  }
+  canvas.width = window.innerWidth * window.devicePixelRatio;
+  canvas.height = window.innerHeight * window.devicePixelRatio;
+  console.log('Resized to ' + canvas.width + ' x ' + canvas.height);
 }
 
 function maximizeWidth() {
@@ -217,7 +234,7 @@ function pixelToX(px) {
 function redrawCanvas() {
   //console.log('redrawCanvas');
   var ctx = canvas.getContext('2d');
-  ctx.clearRect (0 ,0 ,canvas.width, canvas.height);
+  ctx.clearRect (0, 0, canvas.width, canvas.height);
   
   var xOffset = -view.xmin;
   var xScale = canvas.width / (view.xmax - view.xmin);
