@@ -1,6 +1,6 @@
 <html>
 <head>
-<meta name="viewport" content="width=device-width">
+<meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1">
 <link rel="stylesheet" href="https://code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
 <style>
 body {
@@ -23,7 +23,7 @@ function init() {
   meter = new FPSMeter({graph:1});
   canvas = $('#canvas')[0];
   $('.buttonset').buttonset();
-  $("input[name=count]:radio").click(maximizeWidth);
+  $("input[name=count]:radio").click(setWidth);
   bounds = {xmin: Number.MAX_VALUE, xmax: -Number.MAX_VALUE, ymin: Number.MAX_VALUE, ymax: -Number.MAX_VALUE};
   for (var i = 0; i < data.length; i += 2) {
     bounds.xmin = Math.min(bounds.xmin, data[i + 0]);
@@ -32,9 +32,10 @@ function init() {
     bounds.ymax = Math.max(bounds.ymax, data[i + 1]);
   }
   view = {xmin: bounds.xmin, xmax: bounds.xmax, ymin: bounds.ymin, ymax: bounds.ymax};
-  limitView();
+  setWidth();
 
   $(window).resize(resize);
+  $(window).scroll(resize);
   $('#canvas').bind('orientationchange', resize);
 
   $('#canvas').mousedown(mousedown);
@@ -114,7 +115,7 @@ function mousedown(e) {
 }
 
 function translatePixels(dx) {
-  var xScale = canvas.width / (view.xmax - view.xmin);
+  var xScale = canvas.width / window.devicePixelRatio / (view.xmax - view.xmin);
   view.xmin -= dx / xScale;
   view.xmax -= dx / xScale;
   limitView();
@@ -163,52 +164,40 @@ function mousewheel(e) {
   return false;
 }
 
-function isIOS() {
-  return navigator.userAgent.match(/(iPod|iPhone|iPad)/) && navigator.userAgent.match(/AppleWebKit/);
-}
-
 function resize() {
-  if (isIOS()) {
-    console.log('isIOS: ' + window.screen.width + ' x ' + window.screen.height);
-    if (window.orientation == 0 || window.orientation == 180) {
-      $('body').width(window.screen.width);
-      $('body').height(window.screen.height);
-    } else {
-      $('body').width(window.screen.height);
-      $('body').height(window.screen.width);
-    }      
-  }
+  console.log('Resizing body to ' + window.innerWidth + ' x ' + window.innerHeight);
+  $('body').width(window.innerWidth);
+  $('body').height(window.innerHeight);
+  document.body.scrollLeft=0;
+  document.body.scrollTop=0;
   canvas.width = window.innerWidth * window.devicePixelRatio;
   canvas.height = window.innerHeight * window.devicePixelRatio;
-  console.log('Resized to ' + canvas.width + ' x ' + canvas.height);
+  console.log('Resized canvas to ' + canvas.width + ' x ' + canvas.height);
 }
 
-function maximizeWidth() {
-  var xcenter = (bounds.xmin + bounds.xmax) / 2;
-  view.xmin = xcenter - 1e9 / 2;
-  view.xmax = xcenter + 1e9 / 2;
+// Set width to requested value    
+function setWidth() {
+  var width = 3600 * ($('input:radio[name=count]:checked').attr('id') == 'count1k' ? 1000 : 5000);
+  var xcenter = (view.xmin + view.xmax) / 2;
+  view.xmin = xcenter - width / 2;
+  view.xmax = xcenter + width / 2;
   limitView();
 }
 
 function maxWidth() {
-  return 3600 * ($('input:radio[name=count]:checked').attr('id') == 'count1k' ? 1000 : 5000);
 }
 
 function limitView() {
-  // Limit view width
-  var width = maxWidth();
-  if (view.xmax - view.xmin > width) {
-    var xcenter = (view.xmin + view.xmax) / 2;
-    view.xmin = xcenter - width / 2;
-    view.xmax = xcenter + width / 2;
-  }
-
-  // Limit x offset to stay within data
-  if (view.xmin < bounds.xmin) {
+  if (view.xmax - view.xmin > bounds.xmax - bounds.xmin) {
+    // Tried to zoom out beyond bounds
+    view.xmax = bounds.xmax;
+    view.xmin = bounds.xmin;
+  } else if (view.xmin < bounds.xmin) {
+    // Tried to pan too far left                            
     view.xmax += bounds.xmin - view.xmin;
     view.xmin = bounds.xmin;
-  }
-  if (view.xmax > bounds.xmax) {
+  } else if (view.xmax > bounds.xmax) {
+    // Tried to pan too far right
     view.xmin -= view.xmax - bounds.xmax;
     view.xmax = bounds.xmax;
   }

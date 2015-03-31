@@ -1,9 +1,10 @@
 <html>
 <head>
-<meta name="viewport" content="user-scalable=no, maximum-scale=1, minimum-scale=1">
+<meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1">
 <style>
 body {
   margin: 0px;
+  background-color: green;
 }
 </style>
 <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
@@ -21,7 +22,9 @@ function resize() {
   $('body').height(window.innerHeight);
   document.body.scrollLeft=0;
   document.body.scrollTop=0;
-  $('#square').text(window.innerWidth + ' x ' + window.innerHeight);
+  $('#square').html(window.innerWidth + ' x ' + window.innerHeight + ' pixels<br>' +
+                    'devicePixelRatio = ' + window.devicePixelRatio);
+  
 }
 
 $(init);
