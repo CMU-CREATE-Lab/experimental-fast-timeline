@@ -165,14 +165,26 @@ function mousewheel(e) {
 }
 
 function resize() {
-  console.log('Resizing body to ' + window.innerWidth + ' x ' + window.innerHeight);
-  $('body').width(window.innerWidth);
-  $('body').height(window.innerHeight);
-  document.body.scrollLeft=0;
-  document.body.scrollTop=0;
-  canvas.width = window.innerWidth * window.devicePixelRatio;
-  canvas.height = window.innerHeight * window.devicePixelRatio;
-  console.log('Resized canvas to ' + canvas.width + ' x ' + canvas.height);
+  if ($('body').width() != window.innerWidth ||
+      $('body').height() != window.innerHeight) {
+    $('body').width(window.innerWidth);
+    $('body').height(window.innerHeight);
+    console.log('Resized body to ' + window.innerWidth + ' x ' + window.innerHeight);
+  }
+  // Adding the != 0 test here prevented continuous resize loop on iOS
+  if (document.body.scrollLeft != 0 || document.body.scrollTop != 0) {  
+    document.body.scrollLeft=0;
+    document.body.scrollTop=0;
+    console.log('Scrolled to 0,0');
+  }
+  var canvasWidth = Math.round(window.innerWidth * window.devicePixelRatio);
+  var canvasHeight = Math.round(window.innerHeight * window.devicePixelRatio);
+  if (canvas.width != canvasWidth ||
+      canvas.height != canvasHeight) {  
+    canvas.width = canvasWidth;  
+    canvas.height = window.innerHeight * window.devicePixelRatio;
+    console.log('Resized canvas to ' + canvas.width + ' x ' + canvas.height);
+  }
 }
 
 // Set width to requested value    
