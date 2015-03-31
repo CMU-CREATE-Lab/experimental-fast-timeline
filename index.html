@@ -11,6 +11,7 @@ body {
 </style>
 <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
 <script src="https://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+<script src="js/jquery.mousewheel.min.js"></script>
 <script src="data.js"></script>
 <script src="js/fpsmeter.min.js"></script>
 <script>
@@ -33,9 +34,131 @@ function init() {
   limitView();
 
   $(window).resize(resize);
+
+  $('#canvas').mousedown(mousedown);
+  $('#canvas').mousemove(mousemove);
+  $('#canvas').mouseup(mouseup);
+  $('#canvas').mousewheel(mousewheel);
+  $('#canvas').bind('touchstart', touchstart);
+  $('#canvas').bind('touchmove', touchmove);
+  $('#canvas').bind('touchend', touchend);
+  $('#canvas').bind('touchcancel', touchend);
+
   resize();
   redraw();
+}
 
+var lastTouch = null;
+
+function touchstart(e) {
+  lastTouch = e.originalEvent.touches;
+  return false;
+}
+
+function copyTouches(touches) {
+  var ret = [];
+  for (var i = 0; i < touches.length; i++) {
+    ret.push({clientX: touches[i].clientX, clientY: touches[i].clientY});
+  }
+  return ret;
+}
+
+function centroid(touches) {
+  var ret = {clientX:0, clientY:0};
+  for (var i = 0; i < touches.length; i++) {
+    ret.clientX += touches[i].clientX;
+    ret.clientY += touches[i].clientY;
+  }
+  ret.clientX /= touches.length;
+  ret.clientY /= touches.length;
+  return ret;
+}
+
+function xSpan(touches) {
+  return Math.abs(touches[0].clientX - touches[1].clientX);
+}
+
+function ySpan(touches) {
+  return Math.abs(touches[0].clientY - touches[1].clientY);
+}
+
+function isXPinch(touches) {
+  return touches.length == 2 && xSpan(touches) > ySpan(touches);
+}
+
+function touchmove(e) {
+  var thisTouch = e.originalEvent.touches;
+  if (lastTouch && thisTouch.length == lastTouch.length) {
+    translatePixels(centroid(thisTouch).clientX - centroid(lastTouch).clientX);
+    if (isXPinch(thisTouch) && isXPinch(lastTouch)) {
+      zoomAbout(centroid(thisTouch).clientX, xSpan(thisTouch) / xSpan(lastTouch));
+    }
+  }
+  // Some platforms reuse the touch list
+  lastTouch = copyTouches(thisTouch);
+  return false;
+}
+
+function touchend(e) {
+  lastTouch = null;
+  return false;
+}
+
+var lastMouse = null;
+
+function mousedown(e) {
+  lastMouse = e;
+  return false;
+}
+
+function translatePixels(dx) {
+  var xScale = canvas.width / (view.xmax - view.xmin);
+  view.xmin -= dx / xScale;
+  view.xmax -= dx / xScale;
+  limitView();
+}
+
+// scale > 1 means "zoom in"
+function zoomAbout(pixelX, scale) {
+  // Limit scale to not zoom out past "width"
+  var width = view.xmax - view.xmin;
+  if (width / scale > maxWidth()) {
+    scale = width / maxWidth();
+  }
+  // Zoom about pixelX
+  var x = pixelToX(pixelX);
+  view.xmin -= x;
+  view.xmax -= x;
+  view.xmin /= scale;
+  view.xmax /= scale;
+  view.xmin += x;
+  view.xmax += x;
+
+  limitView();
+}
+
+function mousemove(e) {
+  // If mouse button is up, we probably missed the up event when the mouse was outside
+  // the window
+  if (!e.which) {
+    mouseup(e);
+    return;
+  }
+  
+  if (lastMouse) {
+    translatePixels(e.clientX - lastMouse.clientX);
+  }
+  lastMouse = e;
+  return false;
+}
+
+function mouseup(e) {
+  lastMouse = null;
+}
+
+function mousewheel(e) {
+  zoomAbout(event.clientX, Math.pow(1.0005, event.deltaY));
+  return false;
 }
 
 function resize() {
@@ -50,11 +173,15 @@ function maximizeWidth() {
   limitView();
 }
 
+function maxWidth() {
+  return 3600 * ($('input:radio[name=count]:checked').attr('id') == 'count1k' ? 1000 : 5000);
+}
+
 function limitView() {
   // Limit view width
-  var width = 3600 * ($('input:radio[name=count]:checked').attr('id') == 'count1k' ? 1000 : 5000);
+  var width = maxWidth();
   if (view.xmax - view.xmin > width) {
-    var xcenter = (bounds.xmin + bounds.xmax) / 2;
+    var xcenter = (view.xmin + view.xmax) / 2;
     view.xmin = xcenter - width / 2;
     view.xmax = xcenter + width / 2;
   }
@@ -81,8 +208,14 @@ function redraw() {
   window.requestAnimationFrame(redraw);
 }
 
+function pixelToX(px) {
+  var xOffset = -view.xmin;
+  var xScale = canvas.width / (view.xmax - view.xmin);
+  return px / xScale - xOffset;
+}
+
 function redrawCanvas() {
-  console.log('redrawCanvas');
+  //console.log('redrawCanvas');
   var ctx = canvas.getContext('2d');
   ctx.clearRect (0 ,0 ,canvas.width, canvas.height);
   
@@ -115,7 +248,7 @@ function redrawCanvas() {
   }
   var end = max + 1;
 
-  console.log('Drawing ' + (end - begin + 1) + ' samples from ' + begin + ' to ' + end);
+  $('#numSegments').text(end - begin + 1 + ' segments');
 
   for (var i = begin; i <= end - 1; i++) {
     ctx.beginPath();
@@ -128,12 +261,11 @@ function redrawWebGL() {
   console.log('redrawWebGL');
 }
 $(init);
-console.log(data.length);
 </script>
 </head>
 <body>
 <canvas id="canvas" style="width:100%; height:100%"></canvas>
-<div style="position:absolute; right: 3px; top: 9px; font-size:9px">
+<div style="position:absolute; right: 3px; top: 9px">
 <span class="buttonset">
 <input type="radio" name="count" id="count1k" checked="checked"><label for="count1k">1K</label>
 <input type="radio" name="count" id="count5k"><label for="count5k">5K</label>
@@ -142,6 +274,8 @@ console.log(data.length);
 <input type="radio" name="method" id="2d" checked="checked"><label for="2d">canvas</label>
 <input type="radio" name="method" id="3d"><label for="3d">webgl</label>
 </span>-->
+</div>
+<div id="numSegments" style="position:absolute; left: 10px; top: 60px; font-size: 18pt"></div>
 </body>
 </html>
 
