@@ -1,11 +1,13 @@
 # experimental-fast-timeline
 Explorations into a faster explorable timeline
 
+Test here:  http://j.mp/fastgraph
 
 iPhone 6 / Safari
 -----------------
-    1000 segments: 60 FPS
-    5000 segments: 20 FPS
+    Canvas 1000 segments: 60 FPS
+    Canvas 5000 segments: 20 FPS
+    WebGL: 10K segments: 60 FPS
 
 iPhone 5s / Safari
 ------------------
