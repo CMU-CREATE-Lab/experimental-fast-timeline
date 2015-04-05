@@ -47,14 +47,14 @@ function init() {
   $(window).scroll(resize);
   $('body').bind('orientationchange', resize);
 
-  $('body').mousedown(mousedown);
-  $('body').mousemove(mousemove);
-  $('body').mouseup(mouseup);
-  $('body').mousewheel(mousewheel);
-  $('body').bind('touchstart', touchstart);
-  $('body').bind('touchmove', touchmove);
-  $('body').bind('touchend', touchend);
-  $('body').bind('touchcancel', touchend);
+  $('#canvas2d,#canvas3d').mousedown(mousedown);
+  $('#canvas2d,#canvas3d').mousemove(mousemove);
+  $('#canvas2d,#canvas3d').mouseup(mouseup);
+  $('#canvas2d,#canvas3d').mousewheel(mousewheel);
+  $('#canvas2d,#canvas3d').bind('touchstart', touchstart);
+  $('#canvas2d,#canvas3d').bind('touchmove', touchmove);
+  $('#canvas2d,#canvas3d').bind('touchend', touchend);
+  $('#canvas2d,#canvas3d').bind('touchcancel', touchend);
 
   resize();
   redraw();
