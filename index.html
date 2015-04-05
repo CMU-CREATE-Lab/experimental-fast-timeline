@@ -30,6 +30,7 @@ function init() {
   canvas3d = $('#canvas3d')[0];
   initWebgl();
   
+  
   $('.buttonset').buttonset();
   $("input[name=count]:radio").click(setWidth);
   bounds = {xmin: Number.MAX_VALUE, xmax: -Number.MAX_VALUE, ymin: Number.MAX_VALUE, ymax: -Number.MAX_VALUE};
@@ -238,7 +239,11 @@ function redraw() {
   } else {
     $('#canvas2d').hide();
     $('#canvas3d').show();
-    redrawWebGL();
+    if (gl) {
+      redrawWebGL();
+    } else {
+      $('#numSegments').text('WebGL not available');
+    }
   }
   window.requestAnimationFrame(redraw);
 }
@@ -359,6 +364,7 @@ var segments;
 
 function initWebgl() {
   gl = canvas3d.getContext("experimental-webgl", { antialias: true });
+  if (!gl) return false;
 
   var vertexShader = get_shader(gl.VERTEX_SHADER, vtxShaderSource);
   var fragmentShader = get_shader(gl.FRAGMENT_SHADER, fragShaderSource);
@@ -396,6 +402,7 @@ function initWebgl() {
   //segmentsBuf = initBuffer(gl.ARRAY_BUFFER, segments);
   vbuf = initBuffer(gl.ARRAY_BUFFER, segments);
   gl.vertexAttribPointer(shaderProgram.aposAttrib, 2, gl.FLOAT, false, 0, 0);
+  return true;
 }
 
 $(init);
@@ -410,8 +417,8 @@ $(init);
 <input type="radio" name="count" id="count5k"><label for="count5k">5K</label>
 </span>
 <span class="buttonset">
-<input type="radio" name="method" id="2d"><label for="2d">canvas</label>
-<input type="radio" name="method" id="3d" checked="checked"><label for="3d">webgl</label>
+<input type="radio" name="method" id="2d" checked="checked"><label for="2d">canvas</label>
+<input type="radio" name="method" id="3d"><label for="3d">webgl</label>
 </span>
 </div>
 <div id="numSegments" style="position:absolute; left: 10px; top: 60px; font-size: 18pt"></div>
