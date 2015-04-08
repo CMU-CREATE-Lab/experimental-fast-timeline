@@ -12,8 +12,8 @@ iPhone 5s / Safari                             | 60 FPS             | 20 FPS    
 iPhone 5s / Chrome                             | 60 FPS             | 16 FPS             |
 iPhone 5 / Safari                              | 30 FPS             | 8 FPS              |
 iPad 3rd gen / iOS 8.1.1 / Safari              | 17 FPS             | 6 FPS              | 50 FPS
-iPad 3rd gen / iOS 7.1.2 / Safari              | 28 FPS             | 8 FPS              | Not available
-iPad 3rd gen / iOS 7.1.2 / Chrome              | 20 FPS             | 5 FPS              | Not available
+iPad 3rd gen / iOS 7.1.2 / Safari              | 28 FPS             | 8 FPS              | Not available (requires iOS 8)
+iPad 3rd gen / iOS 7.1.2 / Chrome              | 20 FPS             | 5 FPS              | Not available (requires iOS 8)
 Nexus 5 / Chrome                               | 30 FPS             | 7 FPS              |
 Nexus 10 / Chrome                              | 30 FPS             | 8 FPS              |
 Nexus 7 / Android 4.4.4 / Chrome               | 16 FPS             | 4 FPS and touch events seem to break | Runs but does not display
