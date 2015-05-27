@@ -59,7 +59,6 @@ TileView.prototype._tileidxAt = function(level, offset) {
 TileView.prototype._computeVisibleTileRange = function(level, view) {
   var tilemin = this._tileidxAt(level, this._computeOffset(view.min,level));
   var tilemax = this._tileidxAt(level, this._computeOffset(view.max,level));
-  debugger;
   return {min: tilemin, max: tilemax}
 }
 
@@ -105,7 +104,8 @@ TileView.prototype.tileInfo = function() {
 
 // Find first ancestor of tileidx that's ready, and mark it as required, for now
 TileView.prototype._findReadyAncestor = function(tileidx) {
-  while (true) {
+    var i = 0;
+    while (i < 5) {
     tileidx = tileidx.parent();
     if (tileidx == null) {
       return null;
@@ -113,6 +113,7 @@ TileView.prototype._findReadyAncestor = function(tileidx) {
     if (this._tiles[tileidx.key] && this._tiles[tileidx.key].isReady()) {
       return tileidx;
     }
+    i+=1;
   }
 }
 
@@ -155,7 +156,7 @@ TileView.prototype.setView = function(view) {
       var ti = new TileIdx(level, o);
       if (!(ti.key in this._tiles)) {
         this._tiles[ti.key] = this._addTileidx(ti);
-        added[ti.key] = true;
+        added[ti.key] =   true;
       }
       required[ti.key] = true;
       // If tile isn't ready, hold onto its first ready ancestor
