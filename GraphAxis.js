@@ -30,6 +30,12 @@ cr.GraphAxis = function (canvas, ctx, min, max, basis, isXAxis) {
     this.layout();
 }
 
+cr.GraphAxis.prototype.resize = function() {
+    this._canvas.height = this._canvas.offsetHeight;
+    this._canvas.width = this._canvas.offsetWidth;
+    this.layout();
+}
+
 cr.GraphAxis.prototype.layout = function() {
 	var axisLength;
 	if (this.isXAxis) {

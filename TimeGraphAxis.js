@@ -62,6 +62,12 @@ cr.TimeGraphAxis = function (canvas, ctx, min, max, basis, isXAxis) {
     this.layout();
 }
 
+cr.TimeGraphAxis.prototype.resize = function() {
+    this._canvas.height = this._canvas.offsetHeight;
+    this._canvas.width = this._canvas.offsetWidth;
+    this.layout();
+}
+
 cr.TimeGraphAxis.prototype.layout = function() {
 	var axisLength;
 	if (this.isXAxis) {
