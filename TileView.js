@@ -174,9 +174,9 @@ TileView.prototype.setView = function(view) {
   var highLevelTileidxs = [];
   var currentLevel = level;
   for (var key in this._tiles) {
-    var tileidx = this._tiles[key].index;
-    if (tileidx.l > currentLevel) {
-      if (this._isTileVisible(view, tileidx)) {
+    var tileidx = this._tiles[key]._tileidx;
+    if (tileidx.l < currentLevel) {
+      if (this._isTileVisible(tileidx, view)) {
         if (this._tiles[tileidx.key].isReady()) {
           highLevelTileidxs.push(tileidx);
         }
