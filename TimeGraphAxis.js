@@ -58,25 +58,34 @@ cr.TimeGraphAxis = function (canvas, ctx, min, max, basis, isXAxis) {
     this._verboseMonths = ["January", "February", "March", "April", "May",
     		"June", "July", "August", "September", "October", "November", "December"];
 
+
+    this.resolutionScale = window.devicePixelRatio || 1;
+
     this.clampToRange();
-    this.layout();
+    this.resize();
 }
 
 cr.TimeGraphAxis.prototype.resize = function() {
-    this._canvas.height = this._canvas.offsetHeight;
-    this._canvas.width = this._canvas.offsetWidth;
+    this.height = this._canvas.offsetHeight;
+    this.width = this._canvas.offsetWidth;
+
+    this._canvas.height = this._canvas.offsetHeight * this.resolutionScale;
+    this._canvas.width = this._canvas.offsetWidth * this.resolutionScale;
+    this._ctx.scale(1,1);
+    this._ctx.scale(this.resolutionScale,this.resolutionScale);
+
     this.layout();
 }
 
 cr.TimeGraphAxis.prototype.layout = function() {
 	var axisLength;
 	if (this.isXAxis) {
-		axisLength = this._canvas.width;
+		axisLength = this.width;
 	} else {
-		axisLength = this._canvas.height;
+		axisLength = this.height;
 	}
 
-    this._begin = new cr.Vector2(0,this._canvas.height);
+    this._begin = new cr.Vector2(0,this.height);
     this._length = axisLength;
     this.rescale();
 }
@@ -109,7 +118,7 @@ cr.TimeGraphAxis.prototype.rescale = function() {
 }
 
 cr.TimeGraphAxis.prototype.paint = function() {
-	this._ctx.clearRect(0,0,this._canvas.width,this._canvas.height);
+	this._ctx.clearRect(0,0,this.width,this.height);
 
 	this._ctx.beginPath();
     var mt = this.project2D(this._min);
@@ -130,7 +139,7 @@ cr.TimeGraphAxis.prototype.paint = function() {
     var timeMajorTickSize = this.computeTimeTickSize(timeMajorPixels);
     var timeMajorNoLabelTickSize = this.computeTimeTickSize(timeMajorNoLabelPixels);
 
-    var topLabelPixelOffset = this._canvas.height / 2;
+    var topLabelPixelOffset = this.height / 2;
 
 
     var dayMajorTickSize = this._secondsInDay;
@@ -160,9 +169,9 @@ cr.TimeGraphAxis.prototype.paint = function() {
             formatter = new cr.DateLabelFormatter();
     	}
 
-        this.renderTicksRangeLabelInline(this._canvas.height/2, dayMajorTickSize,
+        this.renderTicksRangeLabelInline(this.height/2, dayMajorTickSize,
                                          this.createDateTickGenerator(dayMajorTickSize),
-                                         this._canvas.height, formatter);
+                                         this.height, formatter);
 
     	if (timeMajorNoLabelTickSize <= 3600*12 + epsilon) {
             this.renderTicks(0, timeMajorTickSize,
@@ -199,7 +208,7 @@ cr.TimeGraphAxis.prototype.paint = function() {
 
         this.renderRangeLabelInline(0, dayMajorTickSize, this.createDateTickGenerator(dayMajorTickSize), 0, dayFormatter);
         this.renderTicksRangeLabelInline(topLabelPixelOffset, monthMajorTickSize,
-            this.createDateTickGenerator(monthMajorTickSize), this._canvas.height,
+            this.createDateTickGenerator(monthMajorTickSize), this.height,
             monthFormatter);
     }
     else if (yearMajorTickWidth >= 80){
@@ -224,7 +233,7 @@ cr.TimeGraphAxis.prototype.paint = function() {
 
 			this.renderTicksRangeLabelInline(topLabelPixelOffset, yearMajorTickSize,
 					this.createDateTickGenerator(yearMajorTickSize),
-					this._canvas.height, new cr.YearLabelFormatter());
+					this.height, new cr.YearLabelFormatter());
 
 	}
     else if (decadeMajorTickWidth >= 150) {
@@ -253,7 +262,7 @@ cr.TimeGraphAxis.prototype.paint = function() {
 
         this.renderTicksRangeLabelInline(topLabelPixelOffset, decadeMajorTickSize,
             this.createDateTickGenerator(decadeMajorTickSize),
-            this._canvas.height, new cr.DecadeLabelFormatter());
+            this.height, new cr.DecadeLabelFormatter());
     }
     else {
         console.log("else");
@@ -284,7 +293,7 @@ cr.TimeGraphAxis.prototype.paint = function() {
 
         this.renderTicksRangeLabelInline(topLabelPixelOffset, centuryMajorTickSize,
         					this.createDateTickGenerator(centuryMajorTickSize),
-        					this._canvas.height, centuryFormatter);
+        					this.height, centuryFormatter);
     }
 
     this._ctx.stroke();
@@ -395,7 +404,7 @@ cr.TimeGraphAxis.prototype.renderTickLabelWithFormatter = function (tick, labelO
   if (abbreviatedFormatter != null) {
     var textWidth = this._ctx.measureText(text).width;
     var xOffset = this.project2D(tick).add(this.basis.x.scale(labelOffsetPixels))._x;
-    if (this._canvas.width - textWidth - xOffset < 0) {
+    if (this.width - textWidth - xOffset < 0) {
       text = abbreviatedFormatter.format(tick);
     }
   }
@@ -404,7 +413,7 @@ cr.TimeGraphAxis.prototype.renderTickLabelWithFormatter = function (tick, labelO
 
 
 cr.TimeGraphAxis.prototype.renderTickLabel = function(y, labelOffsetPixels, label) {
-    //labelOffsetPixels = this._canvas.height/2 - labelOffsetPixels;
+    //labelOffsetPixels = this.height/2 - labelOffsetPixels;
     var position = this.project2D(y).add(this._basis.x.scale(labelOffsetPixels));
     this._ctx.fillText(label, position._x, position._y);
     //debugger;
@@ -419,7 +428,7 @@ cr.TimeGraphAxis.prototype.setupText = function() {
     if (textParallelToAxis) {
         this._ctx.textAlign = "center";
         this._ctx.textBaseline = "top";
-        labelOffsetPixels = Math.floor(this._canvas.height/2.66);//15;
+        labelOffsetPixels = Math.floor(this.height/2.66);//15;
     } else {
         this._ctx.textAlign = "left";
         this._ctx.textBaseline = "middle";

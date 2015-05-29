@@ -26,25 +26,33 @@ cr.GraphAxis = function (canvas, ctx, min, max, basis, isXAxis) {
 	this._basis = basis;
 	this.isXAxis = isXAxis;
 
+    this.resolutionScale = window.devicePixelRatio || 1;
+
     this.clampToRange();
-    this.layout();
+    this.resize();
 }
 
 cr.GraphAxis.prototype.resize = function() {
-    this._canvas.height = this._canvas.offsetHeight;
-    this._canvas.width = this._canvas.offsetWidth;
+    this.height = this._canvas.offsetHeight;
+    this.width = this._canvas.offsetWidth;
+
+    this._canvas.height = this._canvas.offsetHeight * this.resolutionScale;
+    this._canvas.width = this._canvas.offsetWidth * this.resolutionScale;
+    this._ctx.scale(1,1);
+    this._ctx.scale(this.resolutionScale,this.resolutionScale);
+
     this.layout();
 }
 
 cr.GraphAxis.prototype.layout = function() {
 	var axisLength;
 	if (this.isXAxis) {
-		axisLength = this._canvas.width;
+		axisLength = this.width;
 	} else {
-		axisLength = this._canvas.height;
+		axisLength = this.height;
 	}
 
-    this._begin = new cr.Vector2(0,this._canvas.height);
+    this._begin = new cr.Vector2(0,this.height);
     this._length = axisLength;
     this.rescale();
 }
@@ -77,8 +85,7 @@ cr.GraphAxis.prototype.rescale = function() {
 }
 
 cr.GraphAxis.prototype.paint = function() {
-	this._ctx.clearRect(0,0,this._canvas.width,this._canvas.height);
-
+	this._ctx.clearRect(0,0,this._canvas.width,this.height);
 	this._ctx.beginPath();
     var mt = this.project2D(this._min);
     var lt = this.project2D(this._max)
