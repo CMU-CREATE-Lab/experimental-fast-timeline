@@ -70,7 +70,7 @@ isReady = function() {
 
 DataStoreTile.prototype.
 delete = function() {
-  console.log('delete');
+  console.log('delete: ' + this._tileidx.toString());
 }
 
 DataStoreTile.prototype.
