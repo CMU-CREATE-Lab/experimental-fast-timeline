@@ -1,12 +1,24 @@
 "use strict";
 var cr = cr || {};
 
-cr.TimeGraphAxis = function (canvas, ctx, min, max, basis, isXAxis) {
+cr.TimeGraphAxis = function (timeGraphAxisDiv, min, max, basis, isXAxis) {
+    this._canvas = document.createElement("canvas");
+    this._canvas.setAttribute("id", "x-axis-canvas");
+    this._canvas.style["width"] = "100%";
+    this._canvas.style["height"] = "100%";
+    this._canvas.width = timeGraphAxisDiv.offsetWidth;
+    this._canvas.height = timeGraphAxisDiv.offsetHeight;
+
+    this._canvas.style["position"] = "absolute";
+    timeGraphAxisDiv.appendChild(this._canvas);
+
+    this._ctx = this._canvas.getContext('2d');
+
     this.majorTickMinSpacingPixels = 30;
-    this.majorTickWidthPixels = Math.floor(canvas.height/5);//8;
+    this.majorTickWidthPixels = Math.floor(this._canvas.height/5);//8;
 
     this.minorTickMinSpacingPixels = 10;
-    this.minorTickWidthPixels = Math.floor(canvas.height/13.33);//3;
+    this.minorTickWidthPixels = Math.floor(this._canvas.height/13.33);//3;
 
     this.hasMinRange = false;
     this.minRange = -1e+100;
@@ -19,8 +31,6 @@ cr.TimeGraphAxis = function (canvas, ctx, min, max, basis, isXAxis) {
     this._length;
     this._scale;
 
-    this._canvas = canvas;
-    this._ctx = ctx;
 	this._min = min;
 	this._max = max;
 	this._basis = basis;
