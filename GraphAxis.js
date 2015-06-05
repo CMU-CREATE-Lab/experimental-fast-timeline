@@ -1,7 +1,20 @@
 "use strict";
 var cr = cr || {};
 
-cr.GraphAxis = function (canvas, ctx, min, max, basis, isXAxis) {
+cr.GraphAxis = function (graphAxisDiv, min, max, basis, isXAxis) {
+    this._canvas = document.createElement("canvas");
+    this._canvas.setAttribute("id", "y-axis-canvas");
+    this._canvas.style["width"] = "100%";
+    this._canvas.style["height"] = "100%";
+    this._canvas.width = graphAxisDiv.offsetWidth;
+    this._canvas.height = graphAxisDiv.offsetHeight;
+
+    this._canvas.style["position"] = "absolute";
+    graphAxisDiv.appendChild(this._canvas);
+
+    this._ctx = this._canvas.getContext('2d');
+
+
     this.majorTickMinSpacingPixels = 30;
     this.majorTickWidthPixels = 8;
 
@@ -19,8 +32,6 @@ cr.GraphAxis = function (canvas, ctx, min, max, basis, isXAxis) {
     this._length;
     this._scale;
 
-    this._canvas = canvas;
-    this._ctx = ctx;
 	this._min = min;
 	this._max = max;
 	this._basis = basis;
