@@ -20,6 +20,8 @@ function DataStoreTile(glb, tileidx, url) {
   this._url = url;
   this._ready = false;
   this.program = glb.programFromSources(cr.Shaders.TileVertexShader, cr.Shaders.TileFragmentShader);
+  this.pointProgram = glb.programFromSources(cr.Shaders.PointVertexShader, cr.Shaders.PointFragmentShader);
+
   this._load();
 
 }
@@ -93,6 +95,23 @@ draw = function(transform) {
     gl.uniform4f(colorLoc, 0, 0, 0, 1);
 
     gl.drawArrays(gl.LINE_STRIP, 0, this._pointCount);
+
+    gl.useProgram(this.pointProgram);
+
+    var matrixLoc = gl.getUniformLocation(this.pointProgram, 'u_pMatrix');
+    gl.uniformMatrix4fv(matrixLoc, false, transform);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, this._arrayBuffer);
+
+    var attributeLoc = gl.getAttribLocation(this.pointProgram, 'a_position');
+    gl.enableVertexAttribArray(attributeLoc);
+    gl.vertexAttribPointer(attributeLoc, 2, gl.FLOAT, false, 16, 0);
+
+    var colorLoc = gl.getUniformLocation(this.pointProgram, 'u_color');
+    gl.uniform4f(colorLoc, 0, 0, 0, 1);
+
+    gl.drawArrays(gl.POINTS, 0, this._pointCount);
+
   }
 }
 
