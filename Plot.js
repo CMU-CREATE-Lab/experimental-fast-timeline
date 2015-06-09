@@ -41,8 +41,8 @@ cr.Plot.prototype._resize = function() {
     var canvasHeight = this.div.offsetHeight * window.devicePixelRatio;
     if (this.canvas2d.width != canvasWidth ||
         this.canvas2d.height != canvasHeight) {
-      this.canvas2d.width = this.width = canvasWidth;
-      this.canvas2d.height = this.height = canvasHeight;
+      this.canvas2d.width = this.canvas3d.width = canvasWidth;
+      this.canvas2d.height = this.canvas3d.height = canvasHeight;
       console.log('Resized canvas to ' + this.canvas2d.width + ' x ' + this.canvas2d.height);
     }
 
