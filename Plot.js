@@ -3,6 +3,7 @@
 var cr = cr || {};
 
 cr.Plot = function (plotDiv) {
+    this.div = plotDiv;
     this.canvas2d = document.createElement("canvas");
     this.canvas2d.setAttribute("id", "canvas2d");
     this.canvas2d.style["width"] = "100%";
@@ -31,6 +32,18 @@ cr.Plot = function (plotDiv) {
     }
 
     this.tlayer = new DataStoreTileLayer(url, this.glb, this.ctx);
-    
+
+    this._resize();
+}
+
+cr.Plot.prototype._resize = function() {
+    var canvasWidth = this.div.offsetWidth * window.devicePixelRatio;
+    var canvasHeight = this.div.offsetHeight * window.devicePixelRatio;
+    if (this.canvas2d.width != canvasWidth ||
+        this.canvas2d.height != canvasHeight) {
+      this.canvas2d.width = this.width = canvasWidth;
+      this.canvas2d.height = this.height = canvasHeight;
+      console.log('Resized canvas to ' + this.canvas2d.width + ' x ' + this.canvas2d.height);
+    }
 
 }
