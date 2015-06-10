@@ -52,11 +52,15 @@ CanvasTile.prototype.draw = function(transform) {
 
       for (var i = 0; i <= this._pointCount*4; i+=2) {
           this.ctx.beginPath();
-          this.ctx.moveTo(transform.xScale * (this._data[i * 2 + 0] + transform.xOffset), transform.yScale * (this._data[i * 2 + 1] + transform.yOffset));
-          this.ctx.lineTo(transform.xScale * (this._data[i * 2 + 4] + transform.xOffset), transform.yScale * (this._data[i * 2 + 5] + transform.yOffset));
+          this.ctx.moveTo(transform.xScale * (this._data[i * 2 + 0] + transform.xOffset),
+                          transform.yScale * (this._data[i * 2 + 1] + transform.yOffset));
+          this.ctx.lineTo(transform.xScale * (this._data[i * 2 + 4] + transform.xOffset),
+                          transform.yScale * (this._data[i * 2 + 5] + transform.yOffset));
           this.ctx.stroke();
           this.ctx.beginPath();
-          this.ctx.arc(transform.xScale * (this._data[i * 2 + 0] + transform.xOffset), transform.yScale * (this._data[i * 2 + 1] + transform.yOffset),2,0,Math.PI*2,true); // Outer circle
+          this.ctx.arc(transform.xScale * (this._data[i * 2 + 0] + transform.xOffset),
+                       transform.yScale * (this._data[i * 2 + 1] + transform.yOffset),
+                       2*window.devicePixelRatio, 0, Math.PI*2, true); // Outer circle
           this.ctx.fill();
       }
 
