@@ -110,6 +110,9 @@ draw = function(transform) {
     var colorLoc = gl.getUniformLocation(this.pointProgram, 'u_color');
     gl.uniform4f(colorLoc, 0, 0, 0, 1);
 
+    var sizeLoc = gl.getUniformLocation(this.pointProgram, 'u_size');
+    gl.uniform1f(sizeLoc, 4 * window.devicePixelRatio);
+
     gl.drawArrays(gl.POINTS, 0, this._pointCount);
 
   }

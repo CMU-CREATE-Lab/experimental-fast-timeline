@@ -30,9 +30,10 @@ cr.Shaders.PointFragmentShader = "" +
 
 cr.Shaders.PointVertexShader = "" +
 "  attribute vec3 a_position;\n" +
+"  uniform float u_size;\n" +
 "  uniform vec4 u_color;\n" +
 "  uniform mat4 u_pMatrix;\n" +
 "  void main(void) {\n" +
 "    gl_Position = u_pMatrix * vec4(a_position, 1.0);\n" +
-"    gl_PointSize = 4.;\n" +
+"    gl_PointSize = u_size;\n" +
 "  }";
