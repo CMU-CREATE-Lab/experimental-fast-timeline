@@ -20,7 +20,7 @@ cr.Plot = function (plotDiv) {
 
     this.ctx = this.canvas2d.getContext('2d');
 
-    this.highlight = document.createElement("canvas");
+    /*this.highlight = document.createElement("canvas");
     this.highlight.setAttribute("id", "highlight");
     this.highlight.style["width"] = "100%";
     this.highlight.style["height"] = "100%";
@@ -29,6 +29,20 @@ cr.Plot = function (plotDiv) {
 
     plotDiv.appendChild(this.highlight);
     this.highlightCtx = this.highlight.getContext('2d');
+*/
+    this.highlight = new cr.Highlight(plotDiv);
+    /*this.cursor = document.createElement("div");
+    this.cursor.setAttribute("id", "cursor");
+    this.cursor.style["width"] = 0;
+    this.cursor.style["height"] = 0;
+    this.cursor.style["borderStyle"] = "solid";
+    this.cursor.style["borderWidth"] = "20px 10px 0 10px";
+    this.cursor.style["borderColor"] = "rgb(255,0,0) transparent transparent transparent";
+    this.cursor.style["position"] = "absolute";
+    plotDiv.appendChild(this.cursor);
+    */
+
+    this.cursor = new cr.Cursor(plotDiv);
 
     try {
         this.gl = this.canvas3d.getContext('experimental-webgl');
@@ -51,21 +65,45 @@ cr.Plot.prototype._resize = function() {
     var canvasHeight = this.div.offsetHeight * window.devicePixelRatio;
     if (this.canvas2d.width != canvasWidth ||
         this.canvas2d.height != canvasHeight) {
-      this.highlight.width = this.canvas2d.width = this.canvas3d.width = canvasWidth;
-      this.highlight.height = this.canvas2d.height = this.canvas3d.height = canvasHeight;
+      this.highlight._highlight.width = this.canvas2d.width = this.canvas3d.width = canvasWidth;
+      this.highlight._highlight.height = this.canvas2d.height = this.canvas3d.height = canvasHeight;
       console.log('Resized canvas to ' + this.canvas2d.width + ' x ' + this.canvas2d.height);
     }
 
 }
 
+cr.Plot.prototype.drawCursorAndHighlight = function(view) {
+    var transform = {};
+    transform.xOffset = -view.xmin;
+    transform.xScale = this.canvas2d.width / (view.xmax - view.xmin);
+    transform.yOffset = -view.ymax;
+    transform.yScale = this.canvas2d.height / (view.ymin - view.ymax);
+    if (this.showCursor) {
+        this.cursor.draw(transform);
+    }
+    this.highlight._ctx.clearRect (0, 0, plot.canvas2d.width, plot.canvas2d.height);
+
+    if (this.showHighlightLine) {
+        this.highlight.drawLine(transform, view);
+    }
+    if (this.showHighlightPoint) {
+        this.highlight.drawPoint(transform, view);
+    }
+    if (this.showHighlightMOPoint) {
+        this.highlight.drawMOPoint(transform, view);
+    }
+
+}
+
 cr.Plot.prototype.renderHighlight = function(coord, view) {
+    console.log(coord);
     var transform = {};
     transform.xOffset = -view.xmin;
     transform.xScale = this.canvas2d.width / (view.xmax - view.xmin);
     transform.yOffset = -view.ymax;
     transform.yScale = this.canvas2d.height / (view.ymin - view.ymax);
 
-    this.highlightCtx.beginPath();
+/*    this.highlightCtx.beginPath();
     this.highlightCtx.arc(transform.xScale * (coord.x + transform.xOffset),
                  transform.yScale * (coord.y + transform.yOffset),
                  3*window.devicePixelRatio, 0, Math.PI*2, true);
@@ -79,13 +117,24 @@ cr.Plot.prototype.renderHighlight = function(coord, view) {
     this.highlightCtx.lineTo(transform.xScale * (coord.x + transform.xOffset), transform.yScale * (view.ymin + transform.yOffset));
     this.highlightCtx.stroke();
 
-    this.highlightCtx.beginPath();
+    //this.cursor.style["left"] = (transform.xScale * (coord.x + transform.xOffset))/window.devicePixelRatio - 10 + "px";
+    if (this.setCursorPosition) {
+        this.cursor.position = (transform.xScale * (coord.x + transform.xOffset))/window.devicePixelRatio - 10;
+        this.setCursorPosition = false;
+    }
+    //this.cursor.position = (transform.xScale * (coord.x + transform.xOffset))/window.devicePixelRatio - 10;
+
+    this.cursor.render();
+*/
+/*    this.highlightCtx.beginPath();
     this.highlightCtx.lineWidth = 1.5*window.devicePixelRatio;
     this.highlightCtx.strokeStyle = "rgb(255,0,0)";
     this.highlightCtx.moveTo(0, transform.yScale * (coord.y + transform.yOffset));
     this.highlightCtx.lineTo(transform.xScale * (view.xmax + transform.xOffset), transform.yScale * (coord.y + transform.yOffset));
     this.highlightCtx.stroke();
-
+*/
+/*
+    // TRIANGLES
     this.highlightCtx.beginPath();
     this.highlightCtx.fillStyle = "rgb(255,0,0)";
     this.highlightCtx.moveTo(transform.xScale * (coord.x + transform.xOffset), 20*window.devicePixelRatio);
@@ -99,9 +148,9 @@ cr.Plot.prototype.renderHighlight = function(coord, view) {
     this.highlightCtx.lineTo(transform.xScale * (coord.x + transform.xOffset) + 7*window.devicePixelRatio, transform.yScale * (view.ymin + transform.yOffset));
     this.highlightCtx.lineTo(transform.xScale * (coord.x + transform.xOffset) - 7*window.devicePixelRatio, transform.yScale * (view.ymin + transform.yOffset));
     this.highlightCtx.fill();
+*/
 
-
-    this.highlightCtx.beginPath();
+/*    this.highlightCtx.beginPath();
     this.highlightCtx.fillStyle = "rgb(255,0,0)";
     this.highlightCtx.moveTo(20*window.devicePixelRatio, transform.yScale * (coord.y + transform.yOffset));
     this.highlightCtx.lineTo(0, transform.yScale * (coord.y + transform.yOffset) + 7*window.devicePixelRatio);
@@ -115,5 +164,5 @@ cr.Plot.prototype.renderHighlight = function(coord, view) {
     this.highlightCtx.lineTo(transform.xScale * (view.xmax + transform.xOffset), transform.yScale * (coord.y + transform.yOffset) + 7*window.devicePixelRatio);
     this.highlightCtx.lineTo(transform.xScale * (view.xmax + transform.xOffset), transform.yScale * (coord.y + transform.yOffset) - 7*window.devicePixelRatio);
     this.highlightCtx.fill();
-
+*/
 }
