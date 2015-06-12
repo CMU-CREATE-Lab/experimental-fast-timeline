@@ -88,3 +88,19 @@ DataStoreTileLayer.prototype.search = function(bbox) {
     }
     return null;
 }
+
+DataStoreTileLayer.prototype.searchByX = function(bbox) {
+    var keys = Object.keys(this._tileView._tiles).sort();
+    var matches = [];
+    for (var i = 0; i < keys.length; i++) {
+        var data = this._tileView._tiles[keys[i]]._data;
+        if (data) {
+        for (var j = 0; j < data.length; j+=4) {
+            if (bbox.xmin <= data[j] && bbox.xmax >= data[j]) {
+                    return {x: data[j], y: data[j + 1]};
+            }
+        }
+        }
+    }
+    return null;
+}
