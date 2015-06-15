@@ -9,9 +9,13 @@ cr.Cursor = function (plotDiv) {
     this._cursor.style["borderWidth"] = "20px 10px 0 10px";
     this._cursor.style["borderColor"] = "rgb(255,0,0) transparent transparent transparent";
     this._cursor.style["position"] = "absolute";
+    this._cursor.style["display"] = "none";
     plotDiv.appendChild(this._cursor);
 }
 
 cr.Cursor.prototype.draw = function(transform) {
+    if (this._cursor.style["display"] == "none") {
+        this._cursor.style["display"] = "block";
+    }
     this._cursor.style["left"] = (transform.xScale * (this.position + transform.xOffset))/window.devicePixelRatio - 10 + "px";
 }
