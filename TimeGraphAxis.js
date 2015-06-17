@@ -2,6 +2,20 @@
 var cr = cr || {};
 
 cr.TimeGraphAxis = function (timeGraphAxisDiv, min, max, basis, isXAxis) {
+    this._div = timeGraphAxisDiv;
+    this._div.style["display"] = "block";
+    this._div.style["position"] = "absolute";
+    this._div.style["height"] = "80px";
+    this._div.style["width"] = "auto";
+    this._div.style["top"] = "0px";
+    this._div.style["left"] = "0px";
+    this._div.style["bottom"] = "40px";
+    this._div.style["right"] = "0px";
+    this._div.style["marginTop"] = "0px";
+    this._div.style["marginLeft"] = "0px";
+    this._div.style["marginBottom"] = "0px";
+    this._div.style["marginRight"] = "80px";
+
     this._canvas = document.createElement("canvas");
     this._canvas.setAttribute("id", "x-axis-canvas");
     this._canvas.style["width"] = "100%";

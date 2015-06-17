@@ -4,6 +4,19 @@ var cr = cr || {};
 
 cr.Plot = function (plotDiv) {
     this.div = plotDiv;
+
+    this.div.style.display = "block";
+    this.div.style.position = "absolute";
+    this.div.style.height = "auto";
+    this.div.style.top = "80px";
+    this.div.style.left = "0";
+    this.div.style.bottom = "0";
+    this.div.style.right = "0";
+    this.div.style.marginTop = "0px";
+    this.div.style.marginLeft = "0px";
+    this.div.style.marginBottom = "0px";
+    this.div.style.marginRight = "80px";
+
     this.canvas2d = document.createElement("canvas");
     this.canvas2d.setAttribute("id", "canvas2d");
     this.canvas2d.style["width"] = "100%";
@@ -20,27 +33,7 @@ cr.Plot = function (plotDiv) {
 
     this.ctx = this.canvas2d.getContext('2d');
 
-    /*this.highlight = document.createElement("canvas");
-    this.highlight.setAttribute("id", "highlight");
-    this.highlight.style["width"] = "100%";
-    this.highlight.style["height"] = "100%";
-    this.highlight.style["position"] = "absolute";
-    this.highlight.style.pointerEvents = 'none';
-
-    plotDiv.appendChild(this.highlight);
-    this.highlightCtx = this.highlight.getContext('2d');
-*/
     this.highlight = new cr.Highlight(plotDiv);
-    /*this.cursor = document.createElement("div");
-    this.cursor.setAttribute("id", "cursor");
-    this.cursor.style["width"] = 0;
-    this.cursor.style["height"] = 0;
-    this.cursor.style["borderStyle"] = "solid";
-    this.cursor.style["borderWidth"] = "20px 10px 0 10px";
-    this.cursor.style["borderColor"] = "rgb(255,0,0) transparent transparent transparent";
-    this.cursor.style["position"] = "absolute";
-    plotDiv.appendChild(this.cursor);
-    */
 
     this.cursor = new cr.Cursor(plotDiv);
 

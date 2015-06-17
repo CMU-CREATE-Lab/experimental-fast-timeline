@@ -2,6 +2,19 @@
 var cr = cr || {};
 
 cr.GraphAxis = function (graphAxisDiv, min, max, basis, isXAxis) {
+    this._div = graphAxisDiv;
+    this._div.style["display"] = "block";
+    this._div.style["position"] = "absolute";
+    this._div.style["height"] = "auto";
+    this._div.style["width"] = "80px";
+    this._div.style["top"] = "0px";
+    this._div.style["bottom"] = "0px";
+    this._div.style["right"] = "0px";
+    this._div.style["marginTop"] = "80px";
+    this._div.style["marginLeft"] = "0px";
+    this._div.style["marginBottom"] = "0px";
+    this._div.style["marginRight"] = "0px";
+
     this._canvas = document.createElement("canvas");
     this._canvas.setAttribute("id", "y-axis-canvas");
     this._canvas.style["width"] = "100%";
