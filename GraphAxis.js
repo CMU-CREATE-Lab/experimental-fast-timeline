@@ -1,8 +1,40 @@
 "use strict";
 var cr = cr || {};
 
-cr.GraphAxis = function (graphAxisDiv, min, max, basis, isXAxis) {
-    this._div = graphAxisDiv;
+cr.GraphAxis = function (div, min, max, basis, isXAxis) {
+    this._min = min;
+    this._max = max;
+    this._basis = basis;
+    this.isXAxis = isXAxis;
+
+    this._initDiv(div);
+    this._initCanvas();
+
+    this.majorTickMinSpacingPixels = 30;
+    var dim = isXAxis ? this._canvas.height : this._canvas.width;
+    this.majorTickWidthPixels = Math.floor(dim/5);//8;
+
+    this.minorTickMinSpacingPixels = 10;
+    this.minorTickWidthPixels = Math.floor(dim/13.33);//3;
+
+    this.hasMinRange = false;
+    this.minRange = -1e+100;
+
+    this.hasMaxRange = false;
+    this.maxRange = 1e+100;
+
+    this._begin;
+    this._length;
+    this._scale;
+
+    this.resolutionScale = window.devicePixelRatio || 1;
+
+    this.clampToRange();
+    this.resize();
+}
+
+cr.GraphAxis.prototype._initDiv = function(div) {
+    this._div = div;
     this._div.style["display"] = "block";
     this._div.style["position"] = "absolute";
     this._div.style["height"] = "auto";
@@ -14,46 +46,19 @@ cr.GraphAxis = function (graphAxisDiv, min, max, basis, isXAxis) {
     this._div.style["marginLeft"] = "0px";
     this._div.style["marginBottom"] = "0px";
     this._div.style["marginRight"] = "0px";
+}
 
+cr.GraphAxis.prototype._initCanvas = function() {
     this._canvas = document.createElement("canvas");
-    this._canvas.setAttribute("id", "y-axis-canvas");
+    this._canvas.setAttribute("id", this.isXAxis ? "x-axis-canvas" : "y-axis-canvas");
     this._canvas.style["width"] = "100%";
     this._canvas.style["height"] = "100%";
-    this._canvas.width = graphAxisDiv.offsetWidth;
-    this._canvas.height = graphAxisDiv.offsetHeight;
+    this._canvas.width = this._div.offsetWidth;
+    this._canvas.height = this._div.offsetHeight;
 
     this._canvas.style["position"] = "absolute";
-    graphAxisDiv.appendChild(this._canvas);
-
+    this._div.appendChild(this._canvas);
     this._ctx = this._canvas.getContext('2d');
-
-
-    this.majorTickMinSpacingPixels = 30;
-    this.majorTickWidthPixels = 8;
-
-    this.minorTickMinSpacingPixels = 10;
-    this.minorTickWidthPixels = 3;
-
-    this.hasMinRange = false;
-    this.minRange = -1e+100;
-
-    this.hasMaxRange = false;
-    this.maxRange = 1e+100;
-
-
-    this._begin;
-    this._length;
-    this._scale;
-
-	this._min = min;
-	this._max = max;
-	this._basis = basis;
-	this.isXAxis = isXAxis;
-
-    this.resolutionScale = window.devicePixelRatio || 1;
-
-    this.clampToRange();
-    this.resize();
 }
 
 cr.GraphAxis.prototype.resize = function() {
@@ -133,6 +138,7 @@ cr.GraphAxis.prototype.project2D = function(value) {
 }
 
 cr.GraphAxis.prototype.computeTickSize = function(minPixels, unitSize) {
+    unitSize = unitSize||1;
     var minDelta = (this._max - this._min) * (minPixels / this._length) / unitSize;
     var minDeltaMantissa = minDelta / Math.pow(10, Math.floor(Math.log10(minDelta)));
 
@@ -218,7 +224,7 @@ cr.GraphAxis.prototype.setupText = function() {
     if (textParallelToAxis) {
         this._ctx.textAlign = "center";
         this._ctx.textBaseline = "top";
-        labelOffsetPixels = 15;
+        labelOffsetPixels = Math.floor(this.height/2.66);//15;
     } else {
         this._ctx.textAlign = "left";
         this._ctx.textBaseline = "middle";
