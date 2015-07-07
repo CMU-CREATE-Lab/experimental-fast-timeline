@@ -4,34 +4,7 @@ var cr = cr || {};
 
 cr.Plot = function (plotDiv) {
     this.div = plotDiv;
-
-    this.div.style.display = "block";
-    this.div.style.position = "absolute";
-    this.div.style.height = "auto";
-    this.div.style.top = "80px";
-    this.div.style.left = "0";
-    this.div.style.bottom = "0";
-    this.div.style.right = "0";
-    this.div.style.marginTop = "0px";
-    this.div.style.marginLeft = "0px";
-    this.div.style.marginBottom = "0px";
-    this.div.style.marginRight = "80px";
-
-    this.canvas2d = document.createElement("canvas");
-    this.canvas2d.setAttribute("id", "canvas2d");
-    this.canvas2d.style["width"] = "100%";
-    this.canvas2d.style["height"] = "100%";
-    this.canvas2d.style["position"] = "absolute";
-    plotDiv.appendChild(this.canvas2d);
-
-    this.canvas3d = document.createElement("canvas");
-    this.canvas3d.setAttribute("id", "canvas3d");
-    this.canvas3d.style["width"] = "100%";
-    this.canvas3d.style["height"] = "100%";
-    this.canvas3d.style["position"] = "absolute";
-    plotDiv.appendChild(this.canvas3d);
-
-    this.ctx = this.canvas2d.getContext('2d');
+    this._initCanvases();
 
     this.highlight = new cr.Highlight(plotDiv);
 
@@ -51,6 +24,36 @@ cr.Plot = function (plotDiv) {
     this.tlayer = new DataStoreTileLayer(url, this.glb, this.ctx);
 
     this._resize();
+}
+
+cr.Plot.prototype._initCanvases = function() {
+    this.div.style.display = "block";
+    this.div.style.position = "absolute";
+    this.div.style.height = "auto";
+    this.div.style.top = "80px";
+    this.div.style.left = "0";
+    this.div.style.bottom = "0";
+    this.div.style.right = "0";
+    this.div.style.marginTop = "0px";
+    this.div.style.marginLeft = "0px";
+    this.div.style.marginBottom = "0px";
+    this.div.style.marginRight = "80px";
+
+    this.canvas2d = document.createElement("canvas");
+    this.canvas2d.setAttribute("id", "canvas2d");
+    this.canvas2d.style["width"] = "100%";
+    this.canvas2d.style["height"] = "100%";
+    this.canvas2d.style["position"] = "absolute";
+    this.div.appendChild(this.canvas2d);
+
+    this.canvas3d = document.createElement("canvas");
+    this.canvas3d.setAttribute("id", "canvas3d");
+    this.canvas3d.style["width"] = "100%";
+    this.canvas3d.style["height"] = "100%";
+    this.canvas3d.style["position"] = "absolute";
+    this.div.appendChild(this.canvas3d);
+
+    this.ctx = this.canvas2d.getContext('2d');
 }
 
 cr.Plot.prototype._resize = function() {
@@ -85,5 +88,48 @@ cr.Plot.prototype.drawCursorAndHighlight = function(view) {
     if (this.showHighlightMOPoint) {
         this.highlight.drawMOPoint(transform, view);
     }
+}
+
+cr.Plot.prototype.registerPlotContainer = function(plotContainer) {
+
+}
+
+cr.Plot.prototype.unregisterPlotContainer = function(plotContainer) {
+
+}
+
+cr.Plot.prototype.getXAxis = function() {
+
+}
+
+cr.Plot.prototype.getYAxis = function() {
+
+}
+
+cr.Plot.prototype.unhighlight = function() {
+
+}
+
+cr.Plot.prototype.isHighlighted = function() {
+
+}
+
+cr.Plot.prototype.highlightIfNear = function(pos) {
+
+}
+
+cr.Plot.prototype.getHighlightedPoint = function() {
+
+}
+
+cr.Plot.prototype.getPointClosestToXCursor = function() {
+
+}
+
+cr.Plot.prototype.getClosestPointToXValue = function(value, threshhold) {
+
+}
+
+cr.Plot.prototype.setHighlightedPoint = function(highlightedPoint) {
 
 }
