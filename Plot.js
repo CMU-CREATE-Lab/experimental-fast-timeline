@@ -2,58 +2,48 @@
 
 var cr = cr || {};
 
-cr.Plot = function (plotDiv) {
-    this.div = plotDiv;
-    this._initCanvases();
+cr.Plot = function (id, url, xAxis, yAxis) {
+//    this.highlight = new cr.Highlight(plotDiv);
 
-    this.highlight = new cr.Highlight(plotDiv);
+//    this.cursor = new cr.Cursor(plotDiv);
+    this.id = id;
 
-    this.cursor = new cr.Cursor(plotDiv);
+    this.xAxis = xAxis;
+    this.yAxis = yAxis;
+    this.url = url;
+    this.view = {};
+    this.bounds = {
+        xmin: Number.MAX_VALUE,
+        xmax: -Number.MAX_VALUE,
+        ymin: Number.MAX_VALUE,
+        ymax: -Number.MAX_VALUE
+    };
 
-    try {
-        this.gl = this.canvas3d.getContext('experimental-webgl');
-        this.glb = new Glb(this.gl);
-        this.usewebgl = true;
-    } catch (x) {
-        this.gl = null;
-        this.glb = null;
-        this.usewebgl = false;
-        console.log("experimental-webgl unsupported");
-    }
+    this.view = {
+        xmin: this.xAxis._min,
+        xmax: this.xAxis._max,
+        ymin: this.yAxis._min,
+        ymax: this.yAxis._max
+    };
 
-    this.tlayer = new DataStoreTileLayer(url, this.glb, this.ctx);
-
-    this._resize();
+    //this.tlayer = new DataStoreTileLayer(url, this.glb, this.ctx);
+    //this._resize();
 }
 
-cr.Plot.prototype._initCanvases = function() {
-    this.div.style.display = "block";
-    this.div.style.position = "absolute";
-    this.div.style.height = "auto";
-    this.div.style.top = "80px";
-    this.div.style.left = "0";
-    this.div.style.bottom = "0";
-    this.div.style.right = "0";
-    this.div.style.marginTop = "0px";
-    this.div.style.marginLeft = "0px";
-    this.div.style.marginBottom = "0px";
-    this.div.style.marginRight = "80px";
-
-    this.canvas2d = document.createElement("canvas");
-    this.canvas2d.setAttribute("id", "canvas2d");
-    this.canvas2d.style["width"] = "100%";
-    this.canvas2d.style["height"] = "100%";
-    this.canvas2d.style["position"] = "absolute";
-    this.div.appendChild(this.canvas2d);
-
-    this.canvas3d = document.createElement("canvas");
-    this.canvas3d.setAttribute("id", "canvas3d");
-    this.canvas3d.style["width"] = "100%";
-    this.canvas3d.style["height"] = "100%";
-    this.canvas3d.style["position"] = "absolute";
-    this.div.appendChild(this.canvas3d);
-
-    this.ctx = this.canvas2d.getContext('2d');
+cr.Plot.prototype.limitView = function() {
+    if (this.view.xmax - vthis.iew.xmin > this.bounds.xmax - this.bounds.xmin) {
+      // Tried to zoom out beyond bounds
+      this.view.xmax = this.bounds.xmax;
+      this.view.xmin = this.bounds.xmin;
+    } else if (this.view.xmin < this.bounds.xmin) {
+      // Tried to pan too far left
+      this.view.xmax += this.bounds.xmin - this.view.xmin;
+      this.view.xmin = this.bounds.xmin;
+  } else if (this.view.xmax > this.bounds.xmax) {
+      // Tried to pan too far right
+      this.view.xmin -= this.view.xmax - this.bounds.xmax;
+      this.view.xmax = this.bounds.xmax;
+    }
 }
 
 cr.Plot.prototype._resize = function() {
@@ -90,46 +80,19 @@ cr.Plot.prototype.drawCursorAndHighlight = function(view) {
     }
 }
 
-cr.Plot.prototype.registerPlotContainer = function(plotContainer) {
-
+cr.Plot.prototype.getId = function() {
+    return this.id;
 }
 
-cr.Plot.prototype.unregisterPlotContainer = function(plotContainer) {
-
+cr.Plot.prototype.getView = function() {
+    return {
+        xmin: this.xAxis._min,
+        xmax: this.xAxis._max,
+        ymin: this.yAxis._min,
+        ymax: this.yAxis._max,
+    }
 }
-
-cr.Plot.prototype.getXAxis = function() {
-
-}
-
-cr.Plot.prototype.getYAxis = function() {
-
-}
-
-cr.Plot.prototype.unhighlight = function() {
-
-}
-
-cr.Plot.prototype.isHighlighted = function() {
-
-}
-
-cr.Plot.prototype.highlightIfNear = function(pos) {
-
-}
-
-cr.Plot.prototype.getHighlightedPoint = function() {
-
-}
-
-cr.Plot.prototype.getPointClosestToXCursor = function() {
-
-}
-
-cr.Plot.prototype.getClosestPointToXValue = function(value, threshhold) {
-
-}
-
-cr.Plot.prototype.setHighlightedPoint = function(highlightedPoint) {
-
+cr.Plot.prototype.update = function() {
+    this.tlayer.draw(this.getView());
+    this._needsUpdate = this.tlayer._needsUpdate;
 }
