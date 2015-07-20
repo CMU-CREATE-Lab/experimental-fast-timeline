@@ -31,6 +31,71 @@ cr.GraphAxis = function (div, min, max, basis, isXAxis) {
 
     this.clampToRange();
     this.resize();
+
+    this.lastMouse = null;
+
+    $('#'+this._canvas.id).mousedown(this, this.mousedown);
+    $('#'+this._canvas.id).mousemove(this, this.mousemove);
+    $('#'+this._canvas.id).mouseup(this, this.mouseup);
+    //$('#'+this._canvas.id).mousewheel(this.mousewheel, this);
+    $('#'+this._canvas.id).on("mousewheel", this, this.mousewheel);
+}
+
+cr.GraphAxis.prototype.mousedown = function(e) {
+    var that = e.data;
+    that.lastMouse = e;
+    return false;
+}
+
+cr.GraphAxis.prototype.mousemove = function(e) {
+  // If mouse button is up, we probably missed the up event when the mouse was outside
+  // the window
+
+    var that = e.data;
+    if (!e.which) {
+        that.mouseup(e);
+        return;
+    }
+
+    if (that.lastMouse) {
+        if (that.isXAxis) {
+            that.translatePixels(e.clientX - that.lastMouse.clientX);
+        } else  {
+            that.translatePixels(that.lastMouse.clientY - e.clientY);
+        }
+        that.lastMouse = e;
+    }
+    return false;
+}
+
+cr.GraphAxis.prototype.mouseup = function(e) {
+    var that = e.data;
+    that.lastMouse = null;
+}
+
+cr.GraphAxis.prototype.mousewheel = function(e) {
+    var that = e.data;
+    if (that.isXAxis) {
+        that.zoomAboutX(e.clientX, Math.pow(1.0005, e.deltaY));
+    } else {
+        that.zoomAboutY(e.clientY, Math.pow(1.0005, e.deltaY));
+    }
+    return false;
+}
+
+
+cr.GraphAxis.prototype.translatePixels = function (delta) {
+    if (this.isXAxis) {
+        var xScale = this._canvas.width / window.devicePixelRatio / (this._max - this._min);
+        this._min -= delta / xScale;
+        this._max -= delta / xScale;
+    } else {
+        var yScale = this._canvas.height / window.devicePixelRatio / (this._max - this._min);
+        this._min -= delta / yScale;
+        this._max -= delta / yScale;
+    }
+
+    this.limitView();
 }
 
 cr.GraphAxis.prototype._initDiv = function(div) {
@@ -38,14 +103,17 @@ cr.GraphAxis.prototype._initDiv = function(div) {
     this._div.style["display"] = "block";
     this._div.style["position"] = "absolute";
     this._div.style["height"] = "auto";
-    this._div.style["width"] = "80px";
+    this._div.style["width"] = "42px";
     this._div.style["top"] = "0px";
     this._div.style["bottom"] = "0px";
     this._div.style["right"] = "0px";
-    this._div.style["marginTop"] = "80px";
+    this._div.style["marginTop"] = "42px";
     this._div.style["marginLeft"] = "0px";
     this._div.style["marginBottom"] = "0px";
     this._div.style["marginRight"] = "0px";
+    this._div.style["borderTop"] = "1px solid black";
+    this._div.style["borderRight"] = "1px solid black";
+    this._div.style["borderBottom"] = "1px solid black";
 }
 
 cr.GraphAxis.prototype._initCanvas = function() {
@@ -216,6 +284,81 @@ cr.GraphAxis.prototype.renderTickLabel = function(value, labelOffsetPixels) {
 
 }
 
+cr.GraphAxis.prototype.zoomAboutY = function(pixelY, scale) {
+  // Limit scale to not zoom out past "width"
+  var maxWidth = function() {};
+  var height = this._max - this._min;
+  if (height / scale > maxWidth()) {
+    scale = height / maxWidth();
+  }
+  // Zoom about pixelX
+  var y = this.pixelToY(pixelY);
+  this._min -= y;
+  this._max -= y;
+  this._min /= scale;
+  this._max /= scale;
+  this._min += y;
+  this._max += y;
+
+  this.limitView();
+}
+
+
+cr.GraphAxis.prototype.zoomAboutX = function(pixelX, scale) {
+    console.log(pixelX + ", " + scale);
+  // Limit scale to not zoom out past "width"
+  var maxWidth = function() {};
+  var width = this._max - this._min;
+  if (width / scale > maxWidth()) {
+    scale = width / maxWidth();
+  }
+  // Zoom about pixelX
+  var x = this.pixelToX(pixelX);
+  console.log('pixelToX ' + x);
+  console.log('pixelToX ' + x);
+  console.log('pixelToX ' + x);
+  console.log('pixelToX ' + x);
+  this._min -= x;
+  this._max -= x;
+  this._min /= scale;
+  this._max /= scale;
+  this._min += x;
+  this._max += x;
+
+  this.limitView();
+}
+
+cr.GraphAxis.prototype.limitView = function() {
+    if (this._max - this._min > this.maxRange - this.minRange) {
+      // Tried to zoom out beyond bounds
+      this._max = this.maxRange;
+      this._min = this.minRange;
+  } else if (this._min < this.minRange) {
+      // Tried to pan too far left
+      this._max += this.minRange - this._min;
+      this._min = this.minRange;
+    } else if (this._max > this.maxRange) {
+      // Tried to pan too far right
+      this._min -= this._max - this.maxRange;
+      this._max = this.maxRange;
+    }
+    this.grapher.scheduleUpdate();
+}
+
+cr.GraphAxis.prototype.pixelToX = function(px) {
+    console.log('px' + px);
+  var xOffset = -this._min;
+  var xScale = this._canvas.width / window.devicePixelRatio / (this._max - this._min);
+  return px / xScale - xOffset;
+}
+
+
+cr.GraphAxis.prototype.pixelToY = function(px) {
+  var yOffset = -this._max;
+  var yScale = this._canvas.height / window.devicePixelRatio / (this._min - this._max);
+  return px / yScale - yOffset;
+}
+
 
 cr.GraphAxis.prototype.setupText = function() {
     var textParallelToAxis = (Math.abs(this._basis.x._y) > Math.abs(this._basis.y._y));
@@ -238,4 +381,21 @@ cr.GraphAxis.prototype.setRange = function(min, max) {
         this._min = min;
         this._max = max;
     }
+}
+
+cr.GraphAxis.prototype.setBounds = function(view) {
+    if (this.isXAxis) {
+        this.setRange(view.xmin, view.xmax);
+    } else {
+        this.setRange(view.ymin, view.ymax);
+    }
+}
+
+cr.GraphAxis.prototype.update = function(view) {
+    if (view) {
+        this.setBounds(view);
+    }
+    this.clampToRange();
+    this.rescale();
+    this.paint();
 }
