@@ -218,6 +218,18 @@ TileView.prototype.setView = function(view) {
     console.log('setView: ' + status);
     this._lastStatus = status;
   }
+  this._needsUpdate = false;
+  for (var i = 0; i < keys.length; i++) {
+    var key = keys[i];
+    var tile = this._tiles[key];
+    if (tile) {
+    if (!tile.isReady()) {
+        this._needsUpdate = true;
+        break;
+    }
+    }
+  }
+
 };
 
 
