@@ -33,6 +33,7 @@ DataStoreTileLayer.prototype.draw = function(view) {
     } else {
         this.drawCanvas(view);
     }
+    this._needsUpdate = this._tileView._needsUpdate;
 }
 
 DataStoreTileLayer.prototype.drawWebgl = function(view) {
@@ -62,9 +63,9 @@ DataStoreTileLayer.prototype.drawCanvas = function(view) {
 
     var transform = {};
     transform.xOffset = -view.xmin;
-    transform.xScale = plot.canvas2d.width / (view.xmax - view.xmin);
+    transform.xScale = this.ctx.canvas.width / (view.xmax - view.xmin);
     transform.yOffset = -view.ymax;
-    transform.yScale = plot.canvas2d.height / (view.ymin - view.ymax);
+    transform.yScale = this.ctx.canvas.height / (view.ymin - view.ymax);
 
     this._tileView.setView({min:view.xmin, max:view.xmax});
     this._tileView.update(transform);
