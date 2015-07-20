@@ -41,16 +41,19 @@ cr.TimeGraphAxis.prototype._initDiv = function(div) {
     this._div = div;
     this._div.style["display"] = "block";
     this._div.style["position"] = "absolute";
-    this._div.style["height"] = "80px";
+    this._div.style["height"] = "42px";
     this._div.style["width"] = "auto";
     this._div.style["top"] = "0px";
     this._div.style["left"] = "0px";
-    this._div.style["bottom"] = "40px";
+    this._div.style["bottom"] = "21px";
     this._div.style["right"] = "0px";
     this._div.style["marginTop"] = "0px";
     this._div.style["marginLeft"] = "0px";
     this._div.style["marginBottom"] = "0px";
-    this._div.style["marginRight"] = "80px";
+    this._div.style["marginRight"] = "42px";
+    this._div.style["borderLeft"] = "1px solid black";
+    this._div.style["borderTop"] = "1px solid black";
+    this._div.style["borderRight"] = "1px solid black";
 
 }
 
