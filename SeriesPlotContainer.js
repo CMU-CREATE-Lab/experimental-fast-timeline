@@ -14,6 +14,7 @@ cr.SeriesPlotContainer = function(elementId, ignoreClickEvents, plots) {
 
     this._initCanvases();
     try {
+        console.log("Using webgl...");
         this.gl = this.canvas3d.getContext('experimental-webgl');
         this.glb = new Glb(this.gl);
         this.usewebgl = true;
@@ -31,6 +32,7 @@ cr.SeriesPlotContainer.prototype.getId = function() {
     return this.div.id;
 }
 cr.SeriesPlotContainer.prototype._initCanvases = function() {
+/*
     this.div.style.display = "block";
     this.div.style.position = "absolute";
     this.div.style.height = "auto";
@@ -42,20 +44,24 @@ cr.SeriesPlotContainer.prototype._initCanvases = function() {
     this.div.style.marginLeft = "0px";
     this.div.style.marginBottom = "0px";
     this.div.style.marginRight = "42px";
-
+*/
     this.canvas3d = document.createElement("canvas");
     this.canvas3d.setAttribute("id", this.div.id + "-canvas3d");
-    this.canvas3d.style["width"] = "100%";
-    this.canvas3d.style["height"] = "100%";
+    this.canvas3d.style["width"] = this.div.offsetWidth;
+    this.canvas3d.style["height"] = this.div.offsetHeight;
     this.canvas3d.style["position"] = "absolute";
     this.div.appendChild(this.canvas3d);
 
 
     this.canvas2d = document.createElement("canvas");
     this.canvas2d.setAttribute("id", this.div.id + "-canvas2d");
-    this.canvas2d.style["width"] = "100%";
-    this.canvas2d.style["height"] = "100%";
+//    this.canvas2d.style["width"] = "100%";
+//    this.canvas2d.style["height"] = "100%";
+    this.canvas2d.style["width"] = this.div.offsetWidth;
+    this.canvas2d.style["height"] = this.div.offsetHeight;
+
     this.canvas2d.style["position"] = "absolute";
+
     this.div.appendChild(this.canvas2d);
 
     this.ctx = this.canvas2d.getContext('2d');
@@ -64,6 +70,11 @@ cr.SeriesPlotContainer.prototype._initCanvases = function() {
     $('#'+this.canvas2d.id).mousemove(this, this.mousemove);
     $('#'+this.canvas2d.id).mouseup(this, this.mouseup);
     $('#'+this.canvas2d.id).on("mousewheel", this, this.mousewheel);
+
+    $('#'+this.canvas3d.id).mousedown(this, this.mousedown);
+    $('#'+this.canvas3d.id).mousemove(this, this.mousemove);
+    $('#'+this.canvas3d.id).mouseup(this, this.mouseup);
+    $('#'+this.canvas3d.id).on("mousewheel", this, this.mousewheel);
 
     this.lastMouse = null;
 
@@ -132,6 +143,9 @@ cr.SeriesPlotContainer.prototype.update = function() {
 }
 
 cr.SeriesPlotContainer.prototype.resize = function() {
+    console.log('cr.SeriesPlotContainer.prototype.resize');
+    console.log('div is' + this.div.offsetWidth + "x" + this.div.offsetHeight);
+
     var canvasWidth = this.div.offsetWidth * window.devicePixelRatio;
     var canvasHeight = this.div.offsetHeight * window.devicePixelRatio;
     if (this.canvas2d.width != canvasWidth ||
@@ -140,7 +154,9 @@ cr.SeriesPlotContainer.prototype.resize = function() {
       this.canvas2d.height = this.canvas3d.height = canvasHeight;
       console.log('Resized canvas to ' + this.canvas2d.width + ' x ' + this.canvas2d.height);
     }
-
+    if (this.usewebgl) {
+        this.gl.viewport(0, 0, this.canvas3d.width, this.canvas3d.height);
+    }
 }
 
 cr.SeriesPlotContainer.prototype._resize = function() {
@@ -158,6 +174,7 @@ cr.SeriesPlotContainer.prototype._resize = function() {
 cr.SeriesPlotContainer.prototype.addPlot = function(plot) {
     this._plots[plot.getId()] = plot;
     this._plots[plot.getId()].tlayer = new DataStoreTileLayer(plot.url, this.glb, this.ctx);
+        this._plots[plot.getId()].tlayer.usewebgl = this.usewebgl;
     console.log(plot.url);
 
 }
@@ -168,4 +185,7 @@ cr.SeriesPlotContainer.prototype.removePlot = function(plot) {
 
 cr.SeriesPlotContainer.prototype.setSize = function(width, height) {
     // Set the canvas2d && canvas3d width, height
+    this.div.style["width"] = width +"px";
+    this.div.style["height"] = height + "px";
+    this.resize();
  }
