@@ -131,10 +131,15 @@ cr.SeriesPlotContainer.prototype.mousewheel = function(e) {
 cr.SeriesPlotContainer.prototype.update = function() {
     for (var plot in this._plots) {
         this._plots[plot].update();
+        this._plots[plot].yAxis.update();
     }
     this._needsUpdate = false;
     for (var plot in this._plots) {
         if (this._plots[plot]._needsUpdate) {
+            this._needsUpdate = true;
+            break;
+        }
+        if (this._plots[plot].yAxis._needsUpdate) {
             this._needsUpdate = true;
             break;
         }
