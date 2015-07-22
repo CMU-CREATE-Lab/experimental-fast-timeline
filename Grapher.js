@@ -114,6 +114,7 @@ cr.Grapher.prototype.scheduleUpdate = function() {
 };
 
 cr.Grapher.prototype.resize = function() {
+    console.log('resize');
     if (this.timeGraphAxis) {
         this.timeGraphAxis.resize();
     }
@@ -123,6 +124,7 @@ cr.Grapher.prototype.resize = function() {
     if (this.plotContainer) {
         this.plotContainer.resize();
     }
+    this.scheduleUpdate();
 }
 
 cr.Grapher.prototype.update = function() {
