@@ -100,7 +100,7 @@ cr.GraphAxis.prototype.translatePixels = function (delta) {
 
 cr.GraphAxis.prototype._initDiv = function(div) {
     this._div = div;
-    this._div.style["display"] = "block";
+/*    this._div.style["display"] = "block";
     this._div.style["position"] = "absolute";
     this._div.style["height"] = "auto";
     this._div.style["width"] = "42px";
@@ -114,13 +114,14 @@ cr.GraphAxis.prototype._initDiv = function(div) {
     this._div.style["borderTop"] = "1px solid black";
     this._div.style["borderRight"] = "1px solid black";
     this._div.style["borderBottom"] = "1px solid black";
+    */
 }
 
 cr.GraphAxis.prototype._initCanvas = function() {
     this._canvas = document.createElement("canvas");
-    this._canvas.setAttribute("id", this.isXAxis ? "x-axis-canvas" : "y-axis-canvas");
-    this._canvas.style["width"] = "100%";
-    this._canvas.style["height"] = "100%";
+    this._canvas.setAttribute("id", this.isXAxis ? this._div.id + "-x-axis-canvas" : this._div.id + "y-axis-canvas");
+    this._canvas.style["width"] = this._div.width;
+    this._canvas.style["height"] = this._div.height;
     this._canvas.width = this._div.offsetWidth;
     this._canvas.height = this._div.offsetHeight;
 
@@ -305,7 +306,6 @@ cr.GraphAxis.prototype.zoomAboutY = function(pixelY, scale) {
 
 
 cr.GraphAxis.prototype.zoomAboutX = function(pixelX, scale) {
-    console.log(pixelX + ", " + scale);
   // Limit scale to not zoom out past "width"
   var maxWidth = function() {};
   var width = this._max - this._min;
@@ -314,10 +314,6 @@ cr.GraphAxis.prototype.zoomAboutX = function(pixelX, scale) {
   }
   // Zoom about pixelX
   var x = this.pixelToX(pixelX);
-  console.log('pixelToX ' + x);
-  console.log('pixelToX ' + x);
-  console.log('pixelToX ' + x);
-  console.log('pixelToX ' + x);
   this._min -= x;
   this._max -= x;
   this._min /= scale;
@@ -346,7 +342,6 @@ cr.GraphAxis.prototype.limitView = function() {
 }
 
 cr.GraphAxis.prototype.pixelToX = function(px) {
-    console.log('px' + px);
   var xOffset = -this._min;
   var xScale = this._canvas.width / window.devicePixelRatio / (this._max - this._min);
   return px / xScale - xOffset;
@@ -398,4 +393,19 @@ cr.GraphAxis.prototype.update = function(view) {
     this.clampToRange();
     this.rescale();
     this.paint();
+}
+
+cr.GraphAxis.prototype.setSize = function(width, height) {
+    this._canvas.width = width;
+    this._canvas.height = height;
+    this.resize();
+    this.grapher.resize();
+}
+
+cr.GraphAxis.prototype.setMaxRange = function(min, max) {
+    this.minRange = min;
+    this.maxRange = max;
+    this.hasMinRange = this.hasMaxRange = true;
+    this.update();
+
 }
