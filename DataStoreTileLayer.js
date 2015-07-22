@@ -8,9 +8,10 @@ function DataStoreTileLayer(rootUrl, glb, ctx) {
 
   function createTile(ti, bounds) {
     var url = rootUrl + '/' + ti.l + '.' + ti.o;
-    if (that.glb && that.useWebgl) {
+    if (that.glb && that.usewebgl) {
+        console.log('createTile returning webGL tile');
       return new DataStoreTile(glb, ti, url);
-  } else {
+    } else {
       return new CanvasTile(ctx, ti, url);
     }
   }
@@ -28,7 +29,7 @@ function DataStoreTileLayer(rootUrl, glb, ctx) {
 }
 
 DataStoreTileLayer.prototype.draw = function(view) {
-    if (this.glb && this.useWebgl) {
+    if (this.glb && this.usewebgl) {
         this.drawWebgl(view);
     } else {
         this.drawCanvas(view);
@@ -37,7 +38,7 @@ DataStoreTileLayer.prototype.draw = function(view) {
 }
 
 DataStoreTileLayer.prototype.drawWebgl = function(view) {
-    this.glb.gl.clear(plot.gl.COLOR_BUFFER_BIT);
+    this.glb.gl.clear(this.glb.gl.COLOR_BUFFER_BIT);
 
     var pMatrix = new Float32Array([1, 0, 0, 0,
                                 0, 1, 0, 0,
