@@ -9,8 +9,9 @@ cr.Grapher = function (grapherDiv) {
     this._updateHandler = null;
     this._requestAnimationFrameId = null;
     this.timeGraphAxis = null;
-    this.dataAxis = null;
+    //this.dataAxis = null;
     this.plotContainer = null;
+    this.plotContainers = {};
 
     function simpleBindShim(thisArg, func) {
       return function() { func.apply(thisArg); };
@@ -37,7 +38,9 @@ cr.Grapher = function (grapherDiv) {
 
 cr.Grapher.prototype.addPlotContainer = function(plotContainer) {
     this.plotContainer = plotContainer;
+    this.plotContainers[plotContainer.div.id] = plotContainer;
 }
+
 cr.Grapher.prototype._requestAnimFrame =
     window.requestAnimationFrame ||
     window.webkitRequestAnimationFrame ||
@@ -91,15 +94,25 @@ cr.Grapher.prototype._update = function() {
   if (this.timeGraphAxis) {
       this.timeGraphAxis.update();
   }
-  if (this.dataAxis) {
-      this.dataAxis.update();
-  }
+//  if (this.dataAxis) {
+//      this.dataAxis.update();
+// }
   if (this.plotContainer) {
       this.plotContainer.update();
       if (this.plotContainer._needsUpdate) {
         this.scheduleUpdate();
       }
   }
+
+  if (this.plotContainers) {
+      var keys = Object.keys(this.plotContainers);
+      for(var i = 0; i < keys.length; i++) {
+          var key = keys[i];
+          var plotContainer = this.plotContainers[key];
+          plotContainer.update();
+      }
+  }
+
 
   if (this._updateHandler) {
     this._updateHandler();
@@ -118,12 +131,21 @@ cr.Grapher.prototype.resize = function() {
     if (this.timeGraphAxis) {
         this.timeGraphAxis.resize();
     }
-    if (this.dataAxis) {
-        this.dataAxis.resize();
-    }
+//    if (this.dataAxis) {
+//        this.dataAxis.resize();
+//    }
     if (this.plotContainer) {
         this.plotContainer.resize();
     }
+    if (this.plotContainers) {
+        var keys = Object.keys(this.plotContainers);
+        for(var i = 0; i < keys.length; i++) {
+            var key = keys[i];
+            var plotContainer = this.plotContainers[key];
+            plotContainer.resize();
+        }
+    }
+
     this.scheduleUpdate();
 }
 
