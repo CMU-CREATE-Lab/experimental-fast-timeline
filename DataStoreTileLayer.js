@@ -38,7 +38,7 @@ DataStoreTileLayer.prototype.draw = function(view) {
 }
 
 DataStoreTileLayer.prototype.drawWebgl = function(view) {
-    this.glb.gl.clear(this.glb.gl.COLOR_BUFFER_BIT);
+    //this.glb.gl.clear(this.glb.gl.COLOR_BUFFER_BIT);
 
     var pMatrix = new Float32Array([1, 0, 0, 0,
                                 0, 1, 0, 0,
