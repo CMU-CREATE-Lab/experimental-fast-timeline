@@ -120,8 +120,8 @@ cr.GraphAxis.prototype._initDiv = function(div) {
 cr.GraphAxis.prototype._initCanvas = function() {
     this._canvas = document.createElement("canvas");
     this._canvas.setAttribute("id", this.isXAxis ? this._div.id + "-x-axis-canvas" : this._div.id + "y-axis-canvas");
-    this._canvas.style["width"] = this._div.width;
-    this._canvas.style["height"] = this._div.height;
+    this._canvas.style["width"] = this._div.offsetWidth + "px";
+    this._canvas.style["height"] = this._div.offsetHeight + "px";
     this._canvas.width = this._div.offsetWidth;
     this._canvas.height = this._div.offsetHeight;
 
@@ -131,11 +131,12 @@ cr.GraphAxis.prototype._initCanvas = function() {
 }
 
 cr.GraphAxis.prototype.resize = function() {
-    this.height = this._canvas.offsetHeight;
-    this.width = this._canvas.offsetWidth;
-
-    this._canvas.height = this._canvas.offsetHeight * this.resolutionScale;
-    this._canvas.width = this._canvas.offsetWidth * this.resolutionScale;
+    this.height = this._div.offsetHeight;
+    this.width = this._div.offsetWidth;
+    this._canvas.style["width"] = this._div.offsetWidth + "px";
+    this._canvas.style["height"] = this._div.offsetHeight + "px";
+    this._canvas.height = this._div.offsetHeight * this.resolutionScale;
+    this._canvas.width = this._div.offsetWidth * this.resolutionScale;
     this._ctx.scale(1,1);
     this._ctx.scale(this.resolutionScale,this.resolutionScale);
 
@@ -396,8 +397,8 @@ cr.GraphAxis.prototype.update = function(view) {
 }
 
 cr.GraphAxis.prototype.setSize = function(width, height) {
-    this._canvas.width = width;
-    this._canvas.height = height;
+    this._div.style["width"] = width + "px";
+    this._div.style["height"] = height + "px";
     this.resize();
     this.grapher.resize();
 }
