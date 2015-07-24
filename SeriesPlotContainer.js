@@ -47,8 +47,8 @@ cr.SeriesPlotContainer.prototype._initCanvases = function() {
 */
     this.canvas3d = document.createElement("canvas");
     this.canvas3d.setAttribute("id", this.div.id + "-canvas3d");
-    this.canvas3d.style["width"] = this.div.offsetWidth;
-    this.canvas3d.style["height"] = this.div.offsetHeight;
+    this.canvas3d.style["width"] = this.div.style["width"];
+    this.canvas3d.style["height"] = this.div.style["height"];
     this.canvas3d.style["position"] = "absolute";
     this.div.appendChild(this.canvas3d);
 
@@ -57,8 +57,8 @@ cr.SeriesPlotContainer.prototype._initCanvases = function() {
     this.canvas2d.setAttribute("id", this.div.id + "-canvas2d");
 //    this.canvas2d.style["width"] = "100%";
 //    this.canvas2d.style["height"] = "100%";
-    this.canvas2d.style["width"] = this.div.offsetWidth;
-    this.canvas2d.style["height"] = this.div.offsetHeight;
+    this.canvas2d.style["width"] = this.div.style["width"];
+    this.canvas2d.style["height"] = this.div.style["height"];
 
     this.canvas2d.style["position"] = "absolute";
 
@@ -157,8 +157,17 @@ cr.SeriesPlotContainer.prototype.resize = function() {
         this.canvas2d.height != canvasHeight) {
       this.canvas2d.width = this.canvas3d.width = canvasWidth;
       this.canvas2d.height = this.canvas3d.height = canvasHeight;
+
+      this.canvas3d.style["width"] = this.div.style["width"];
+      this.canvas3d.style["height"] = this.div.style["height"];
+      this.canvas2d.style["width"] = this.div.style["width"];
+      this.canvas2d.style["height"] = this.div.style["height"];
+
+
       console.log('Resized canvas to ' + this.canvas2d.width + ' x ' + this.canvas2d.height);
     }
+
+
     if (this.usewebgl) {
         this.gl.viewport(0, 0, this.canvas3d.width, this.canvas3d.height);
     }
