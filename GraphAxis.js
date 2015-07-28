@@ -1,7 +1,7 @@
 "use strict";
 var cr = cr || {};
 
-cr.GraphAxis = function (div, min, max, basis, isXAxis) {
+cr.GraphAxis = function (div, min, max, basis, isXAxis, grapher) {
     this._min = min;
     this._max = max;
     this._basis = basis;
@@ -39,6 +39,10 @@ cr.GraphAxis = function (div, min, max, basis, isXAxis) {
     $('#'+this._canvas.id).mouseup(this, this.mouseup);
     //$('#'+this._canvas.id).mousewheel(this.mousewheel, this);
     $('#'+this._canvas.id).on("mousewheel", this, this.mousewheel);
+
+    if (grapher == null) {
+        this.grapher = __grapher__;
+    }
 }
 
 cr.GraphAxis.prototype.mousedown = function(e) {

@@ -2,8 +2,7 @@
 
 var cr = cr || {};
 
-cr.Grapher = function (grapherDiv) {
-    this.div = grapherDiv;
+cr.Grapher = function () {
     this._isAdded = true; // should maybe be false
     this._isAnimated = false;
     this._updateHandler = null;
@@ -163,6 +162,7 @@ cr.Grapher.prototype.addDataAxis = function(dataAxis) {
     this.dataAxis.grapher = this;
 }
 
+var __grapher__ = new cr.Grapher();
 
 var DateAxis = function(divName, orientation) {
   return new cr.TimeGraphAxis(document.getElementById(divName), null,

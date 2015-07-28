@@ -24,6 +24,12 @@ cr.SeriesPlotContainer = function(elementId, ignoreClickEvents, plots) {
         this.usewebgl = false;
         console.log("experimental-webgl unsupported");
     }
+
+    if (this.grapher == null) {
+        this.grapher = __grapher__;
+    }
+    this.grapher.addPlotContainer(this);
+
     this._resize();
 
 }
@@ -144,12 +150,9 @@ cr.SeriesPlotContainer.prototype.update = function() {
             break;
         }
     }
-
 }
 
 cr.SeriesPlotContainer.prototype.resize = function() {
-    console.log('cr.SeriesPlotContainer.prototype.resize');
-    console.log('div is' + this.div.offsetWidth + "x" + this.div.offsetHeight);
 
     var canvasWidth = this.div.offsetWidth * window.devicePixelRatio;
     var canvasHeight = this.div.offsetHeight * window.devicePixelRatio;
@@ -186,11 +189,11 @@ cr.SeriesPlotContainer.prototype._resize = function() {
 }
 
 cr.SeriesPlotContainer.prototype.addPlot = function(plot) {
+    console.log("addPlot");
+    console.log(plot);
     this._plots[plot.getId()] = plot;
     this._plots[plot.getId()].tlayer = new DataStoreTileLayer(plot.url, this.glb, this.ctx);
-        this._plots[plot.getId()].tlayer.usewebgl = this.usewebgl;
-    console.log(plot.url);
-
+    this._plots[plot.getId()].tlayer.usewebgl = this.usewebgl;
 }
 
 cr.SeriesPlotContainer.prototype.removePlot = function(plot) {

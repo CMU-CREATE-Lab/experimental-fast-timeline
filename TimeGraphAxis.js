@@ -34,6 +34,8 @@ cr.TimeGraphAxis = function (div, min, max, basis, isXAxis) {
     			"Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     this._verboseMonths = ["January", "February", "March", "April", "May",
     		"June", "July", "August", "September", "October", "November", "December"];
+
+    this.grapher.timeGraphAxis = this;
 }
 cr.TimeGraphAxis.prototype = Object.create(cr.GraphAxis.prototype);
 
