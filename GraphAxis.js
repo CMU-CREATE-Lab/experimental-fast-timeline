@@ -63,12 +63,29 @@ cr.GraphAxis.prototype.mousemove = function(e) {
 
     if (that.lastMouse) {
         if (that.isXAxis) {
+            if (that.cursorX) {
+                var bbox = {
+                    xmin: that.project1D(that.cursorX) - 10,
+                    xmax: that.project1D(that.cursorX) + 10,
+                    ymin: Math.floor(that._div.clientHeight/2),
+                    ymax: that._div.clientHeight
+                }
+                if (bbox.xmin <= e.offsetX && bbox.xmax >= e.offsetX && bbox.ymin <= e.offsetY && bbox.ymax >= e.offsetY) {
+                        var xScale = that._canvas.width / window.devicePixelRatio / (that._max - that._min);
+                    var x = that.cursorX + (e.clientX - that.lastMouse.clientX) / xScale;
+                        that.setCursor(x);
+                        that.grapher.scheduleUpdate();
+                } else {
+                    that.translatePixels(e.clientX - that.lastMouse.clientX);
+                }
+            } else {
             that.translatePixels(e.clientX - that.lastMouse.clientX);
-        } else  {
+          }
+          } else  {
             that.translatePixels(that.lastMouse.clientY - e.clientY);
-        }
+          }
         that.lastMouse = e;
-    }
+      }
     return false;
 }
 
@@ -80,6 +97,7 @@ cr.GraphAxis.prototype.mouseup = function(e) {
 cr.GraphAxis.prototype.mousewheel = function(e) {
     var that = e.data;
     if (that.isXAxis) {
+        console.log("Called from mouseweel on GraphAxis");
         that.zoomAboutX(e.clientX, Math.pow(1.0005, e.deltaY));
     } else {
         that.zoomAboutY(e.clientY, Math.pow(1.0005, e.deltaY));
@@ -124,10 +142,10 @@ cr.GraphAxis.prototype._initDiv = function(div) {
 cr.GraphAxis.prototype._initCanvas = function() {
     this._canvas = document.createElement("canvas");
     this._canvas.setAttribute("id", this.isXAxis ? this._div.id + "-x-axis-canvas" : this._div.id + "y-axis-canvas");
-    this._canvas.style["width"] = this._div.offsetWidth + "px";
-    this._canvas.style["height"] = this._div.offsetHeight + "px";
-    this._canvas.width = this._div.offsetWidth;
-    this._canvas.height = this._div.offsetHeight;
+    this._canvas.style["width"] = this._div.clientWidth + "px";
+    this._canvas.style["height"] = this._div.clientHeight + "px";
+    this._canvas.width = this._div.clientWidth;
+    this._canvas.height = this._div.clientHeight;
 
     this._canvas.style["position"] = "absolute";
     this._div.appendChild(this._canvas);
@@ -135,12 +153,12 @@ cr.GraphAxis.prototype._initCanvas = function() {
 }
 
 cr.GraphAxis.prototype.resize = function() {
-    this.height = this._div.offsetHeight;
-    this.width = this._div.offsetWidth;
-    this._canvas.style["width"] = this._div.offsetWidth + "px";
-    this._canvas.style["height"] = this._div.offsetHeight + "px";
-    this._canvas.height = this._div.offsetHeight * this.resolutionScale;
-    this._canvas.width = this._div.offsetWidth * this.resolutionScale;
+    this.height = this._div.clientHeight;
+    this.width = this._div.clientWidth;
+    this._canvas.style["width"] = this._div.clientWidth + "px";
+    this._canvas.style["height"] = this._div.clientHeight + "px";
+    this._canvas.height = this._div.clientHeight * this.resolutionScale;
+    this._canvas.width = this._div.clientWidth * this.resolutionScale;
     this._ctx.scale(1,1);
     this._ctx.scale(this.resolutionScale,this.resolutionScale);
 
@@ -200,7 +218,6 @@ cr.GraphAxis.prototype.paint = function() {
     var minorTickSize = this.computeTickSize(this.minorTickMinSpacingPixels, 1);
     this.renderTicks(0, minorTickSize, this.minorTickWidthPixels);
     this._ctx.stroke();
-
 }
 
 cr.GraphAxis.prototype.project1D = function(value) {
@@ -350,6 +367,12 @@ cr.GraphAxis.prototype.pixelToX = function(px) {
   var xOffset = -this._min;
   var xScale = this._canvas.width / window.devicePixelRatio / (this._max - this._min);
   return px / xScale - xOffset;
+}
+
+cr.GraphAxis.prototype.xToPixel = function(x) {
+  var xOffset = -this._min;
+  var xScale = this._canvas.width / window.devicePixelRatio / (this._max - this._min);
+  return x *  (xScale - xOffset);
 }
 
 
