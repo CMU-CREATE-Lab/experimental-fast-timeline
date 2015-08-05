@@ -5,6 +5,10 @@ var cr = cr || {};
 cr.SeriesPlotContainer = function(elementId, ignoreClickEvents, plots) {
     this.div = document.getElementById(elementId);
     this.div.style["border"] = "1px solid black";
+    this.highlight = {};
+    this.highlightedPoints = [];
+    this.cursorX = null;
+
     this._plots = {};
     if (plots) {
         for (var i = 0; i < plots.length; i++) {
@@ -17,6 +21,8 @@ cr.SeriesPlotContainer = function(elementId, ignoreClickEvents, plots) {
         console.log("Using webgl...");
         this.gl = this.canvas3d.getContext('experimental-webgl');
         this.glb = new Glb(this.gl);
+        this.pointProgram = this.glb.programFromSources(cr.Shaders.PointVertexShader, cr.Shaders.PointFragmentShader);
+        this.lineProgram = this.glb.programFromSources(cr.Shaders.TileVertexShader, cr.Shaders.TileFragmentShader);
         this.usewebgl = true;
     } catch (x) {
         this.gl = null;
@@ -32,6 +38,15 @@ cr.SeriesPlotContainer = function(elementId, ignoreClickEvents, plots) {
 
     this._resize();
 
+}
+
+cr.SeriesPlotContainer.prototype.getXAxis = function() {
+    var keys = Object.keys(this._plots);
+    if (keys.length == 0) {
+        return null;
+    } else {
+        return this._plots[keys[0]].xAxis;
+    }
 }
 
 cr.SeriesPlotContainer.prototype.getId = function() {
@@ -91,6 +106,32 @@ cr.SeriesPlotContainer.prototype._initCanvases = function() {
 cr.SeriesPlotContainer.prototype.mousedown = function(e) {
     var that = e.data;
     that.lastMouse = e;
+
+    var bbox = {
+      xmin: e.clientX - e.currentTarget.offsetParent.offsetLeft - 5,
+      xmax: e.clientX - e.currentTarget.offsetParent.offsetLeft + 5,
+      ymin: e.clientY - e.currentTarget.offsetParent.offsetTop + 5,
+      ymax: e.clientY - e.currentTarget.offsetParent.offsetTop - 5
+    };
+    var keys = Object.keys(that._plots);
+    for (var i = 0; i < keys.length; i++) {
+        var key = keys[i];
+        var plot = that._plots[key];
+        var coords = {};
+        coords.xmin = plot.xAxis.pixelToX(bbox.xmin);
+        coords.xmax = plot.xAxis.pixelToX(bbox.xmax);
+        coords.ymin = plot.yAxis.pixelToY(bbox.ymin);
+        coords.ymax = plot.yAxis.pixelToY(bbox.ymax);
+        var point = plot.tlayer.search(coords);
+        if (point) {
+            plot.xAxis.showCursor = true;
+            plot.xAxis.setCursor(point.x);
+            that.highlight.line = point;
+            that.highlight.plotKey = key;
+            that.grapher.scheduleUpdate();
+        }
+    }
+
     return false;
 }
 
@@ -100,6 +141,36 @@ cr.SeriesPlotContainer.prototype.mousemove = function(e) {
 
     var that = e.data;
     if (!e.which) {
+        var bbox = {
+          xmin: e.clientX - e.currentTarget.offsetParent.offsetLeft - 5,
+          xmax: e.clientX - e.currentTarget.offsetParent.offsetLeft + 5,
+          ymin: e.clientY - e.currentTarget.offsetParent.offsetTop + 5,
+          ymax: e.clientY - e.currentTarget.offsetParent.offsetTop - 5
+        };
+        var keys = Object.keys(that._plots);
+        for (var i = 0; i < keys.length; i++) {
+            var key = keys[i];
+            var plot = that._plots[key];
+            var coords = {};
+            coords.xmin = plot.xAxis.pixelToX(bbox.xmin);
+            coords.xmax = plot.xAxis.pixelToX(bbox.xmax);
+            coords.ymin = plot.yAxis.pixelToY(bbox.ymin);
+            coords.ymax = plot.yAxis.pixelToY(bbox.ymax);
+            var point = plot.tlayer.search(coords);
+            if (point) {
+              that.mouseoverHighlightPoint = {point: point, key: key}
+              that.grapher.scheduleUpdate();
+              break;
+          } else {
+              if (that.mouseoverHighlightPoint) {
+              that.mouseoverHighlightPoint = null;
+              that.grapher.scheduleUpdate();
+}
+          }
+
+        }
+
+
         that.mouseup(e);
         return;
     }
@@ -135,6 +206,8 @@ cr.SeriesPlotContainer.prototype.mousewheel = function(e) {
 }
 
 cr.SeriesPlotContainer.prototype.update = function() {
+    this.drawHighlight();
+
     for (var plot in this._plots) {
         this._plots[plot].update();
         this._plots[plot].yAxis.update();
@@ -145,17 +218,147 @@ cr.SeriesPlotContainer.prototype.update = function() {
             this._needsUpdate = true;
             break;
         }
-        if (this._plots[plot].yAxis._needsUpdate) {
-            this._needsUpdate = true;
-            break;
-        }
     }
+    this.drawHighlightPoints();
+    this.drawMouseoverHighlightPoint();
 }
+
+cr.SeriesPlotContainer.prototype.drawHighlight = function() {
+    var xAxis = this.getXAxis();
+    if (xAxis.cursorX) {
+        if (this.cursorX != xAxis.cursorX) {
+            this.cursorX = xAxis.cursorX;
+            this.setHighlightPoints();
+        }
+        var pMatrix = new Float32Array([1, 0, 0, 0,
+                                        0, 1, 0, 0,
+                                        0, 0, 1, 0,
+                                        0, 0, 0, 1]);
+
+        var xscale = 2 / (xAxis._max - xAxis._min);
+        var xtranslate = -xAxis._min * xscale - 1;
+        var yscale = 2;
+        var ytranslate = 1;
+        var gl = this.gl;
+          gl.lineWidth(2*window.devicePixelRatio);
+          gl.useProgram(this.lineProgram);
+
+          var matrixLoc = gl.getUniformLocation(this.lineProgram, 'u_pMatrix');
+          gl.uniformMatrix4fv(matrixLoc, false, pMatrix);
+
+          var lineArrayBuffer = gl.createBuffer();
+          gl.bindBuffer(gl.ARRAY_BUFFER, lineArrayBuffer);
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([this.cursorX*xscale + xtranslate, 1, this.cursorX*xscale + xtranslate, -1]), gl.STATIC_DRAW);
+          var attributeLoc = gl.getAttribLocation(this.lineProgram, 'a_position');
+          gl.enableVertexAttribArray(attributeLoc);
+          gl.vertexAttribPointer(attributeLoc, 2, gl.FLOAT, false, 0, 0);
+
+          var colorLoc = gl.getUniformLocation(this.lineProgram, 'u_color');
+          gl.uniform4f(colorLoc, 1.0, 0, 0, 1);
+
+          gl.drawArrays(gl.LINES, 0, 2);
+
+    }
+
+}
+
+cr.SeriesPlotContainer.prototype.setHighlightPoints = function() {
+        this.highlightedPoints = [];
+        var xAxis = this.getXAxis();
+        var offset = xAxis.pixelToX(1) - xAxis.pixelToX(0);
+        for (var plot in this._plots) {
+            var point = this._plots[plot].tlayer.searchByX({xmin: this.cursorX - offset, xmax: this.cursorX + offset});
+            if (point) {
+                this.highlightedPoints.push({point: point, key: plot});
+            }
+        }
+}
+cr.SeriesPlotContainer.prototype.drawHighlightPoints = function() {
+    var xAxis = this.getXAxis();
+    if (xAxis.cursorX) {
+        var points = [];
+        var xscale = 2 / (xAxis._max - xAxis._min);
+        var xtranslate = -xAxis._min * xscale - 1;
+
+        for (var i = 0; i < this.highlightedPoints.length; i++) {
+                var point = this.highlightedPoints[i];
+                var view = this._plots[point.key].getView();
+                var yscale = 2 / (view.ymax - view.ymin);
+                var ytranslate = -view.ymin * yscale - 1;
+                points.push(point.point.x*xscale + xtranslate);
+                points.push(point.point.y*yscale + ytranslate);
+        }
+        var gl = this.gl;
+        gl.useProgram(this.pointProgram);
+        var pMatrix = new Float32Array([1, 0, 0, 0,
+                                        0, 1, 0, 0,
+                                        0, 0, 1, 0,
+                                        0, 0, 0, 1]);
+
+          var matrixLoc = gl.getUniformLocation(this.pointProgram, 'u_pMatrix');
+          gl.uniformMatrix4fv(matrixLoc, false, pMatrix);
+
+          var pointArrayBuffer = gl.createBuffer();
+          gl.bindBuffer(gl.ARRAY_BUFFER, pointArrayBuffer);
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(points), gl.STATIC_DRAW);
+
+          var attributeLoc = gl.getAttribLocation(this.pointProgram, 'a_position');
+          gl.enableVertexAttribArray(attributeLoc);
+          gl.vertexAttribPointer(attributeLoc, 2, gl.FLOAT, false, 0, 0);
+
+          var colorLoc = gl.getUniformLocation(this.pointProgram, 'u_color');
+          gl.uniform4f(colorLoc, 1.0, 0, 0, 1);
+
+          gl.drawArrays(gl.POINTS, 0, points.length/2);
+
+    }
+
+}
+
+cr.SeriesPlotContainer.prototype.drawMouseoverHighlightPoint = function() {
+    var xAxis = this.getXAxis();
+    if (this.mouseoverHighlightPoint) {
+        var points = [];
+        var point = this.mouseoverHighlightPoint;
+        var view = this._plots[point.key].getView();
+        var xscale = 2 / (xAxis._max - xAxis._min);
+        var xtranslate = -xAxis._min * xscale - 1;
+        var yscale = 2 / (view.ymax - view.ymin);
+        var ytranslate = -view.ymin * yscale - 1;
+        points.push(point.point.x*xscale + xtranslate);
+        points.push(point.point.y*yscale + ytranslate);
+        var gl = this.gl;
+        gl.useProgram(this.pointProgram);
+        var pMatrix = new Float32Array([1, 0, 0, 0,
+                                          0, 1, 0, 0,
+                                          0, 0, 1, 0,
+                                          0, 0, 0, 1]);
+
+          var matrixLoc = gl.getUniformLocation(this.pointProgram, 'u_pMatrix');
+          gl.uniformMatrix4fv(matrixLoc, false, pMatrix);
+
+          var pointArrayBuffer = gl.createBuffer();
+          gl.bindBuffer(gl.ARRAY_BUFFER, pointArrayBuffer);
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(points), gl.STATIC_DRAW);
+
+          var attributeLoc = gl.getAttribLocation(this.pointProgram, 'a_position');
+          gl.enableVertexAttribArray(attributeLoc);
+          gl.vertexAttribPointer(attributeLoc, 2, gl.FLOAT, false, 0, 0);
+
+          var colorLoc = gl.getUniformLocation(this.pointProgram, 'u_color');
+          gl.uniform4f(colorLoc, 1.0, 0, 0, 1);
+
+          gl.drawArrays(gl.POINTS, 0, points.length/2);
+
+    }
+
+}
+
 
 cr.SeriesPlotContainer.prototype.resize = function() {
 
-    var canvasWidth = this.div.offsetWidth * window.devicePixelRatio;
-    var canvasHeight = this.div.offsetHeight * window.devicePixelRatio;
+    var canvasWidth = this.div.clientWidth * window.devicePixelRatio;
+    var canvasHeight = this.div.clientHeight * window.devicePixelRatio;
     if (this.canvas2d.width != canvasWidth ||
         this.canvas2d.height != canvasHeight) {
       this.canvas2d.width = this.canvas3d.width = canvasWidth;
@@ -166,8 +369,6 @@ cr.SeriesPlotContainer.prototype.resize = function() {
       this.canvas2d.style["width"] = this.div.style["width"];
       this.canvas2d.style["height"] = this.div.style["height"];
 
-
-      console.log('Resized canvas to ' + this.canvas2d.width + ' x ' + this.canvas2d.height);
     }
 
 
@@ -177,20 +378,17 @@ cr.SeriesPlotContainer.prototype.resize = function() {
 }
 
 cr.SeriesPlotContainer.prototype._resize = function() {
-    var canvasWidth = this.div.offsetWidth * window.devicePixelRatio;
-    var canvasHeight = this.div.offsetHeight * window.devicePixelRatio;
+    var canvasWidth = this.div.clientWidth * window.devicePixelRatio;
+    var canvasHeight = this.div.clientHeight * window.devicePixelRatio;
     if (this.canvas2d.width != canvasWidth ||
         this.canvas2d.height != canvasHeight) {
       this.canvas2d.width = this.canvas3d.width = canvasWidth;
       this.canvas2d.height = this.canvas3d.height = canvasHeight;
-      console.log('Resized canvas to ' + this.canvas2d.width + ' x ' + this.canvas2d.height);
     }
 
 }
 
 cr.SeriesPlotContainer.prototype.addPlot = function(plot) {
-    console.log("addPlot");
-    console.log(plot);
     this._plots[plot.getId()] = plot;
     this._plots[plot.getId()].tlayer = new DataStoreTileLayer(plot.url, this.glb, this.ctx);
     this._plots[plot.getId()].tlayer.usewebgl = this.usewebgl;
