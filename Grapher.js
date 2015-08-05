@@ -8,7 +8,6 @@ cr.Grapher = function () {
     this._updateHandler = null;
     this._requestAnimationFrameId = null;
     this.timeGraphAxis = null;
-    //this.dataAxis = null;
     this.plotContainer = null;
     this.plotContainers = {};
 
@@ -93,15 +92,6 @@ cr.Grapher.prototype._update = function() {
   if (this.timeGraphAxis) {
       this.timeGraphAxis.update();
   }
-//  if (this.dataAxis) {
-//      this.dataAxis.update();
-// }
-  if (this.plotContainer) {
-      this.plotContainer.update();
-      if (this.plotContainer._needsUpdate) {
-        this.scheduleUpdate();
-      }
-  }
 
   if (this.plotContainers) {
       var keys = Object.keys(this.plotContainers);
@@ -109,9 +99,11 @@ cr.Grapher.prototype._update = function() {
           var key = keys[i];
           var plotContainer = this.plotContainers[key];
           plotContainer.update();
+          if (this.plotContainer._needsUpdate) {
+            this.scheduleUpdate();
+          }
       }
   }
-
 
   if (this._updateHandler) {
     this._updateHandler();
@@ -130,9 +122,6 @@ cr.Grapher.prototype.resize = function() {
     if (this.timeGraphAxis) {
         this.timeGraphAxis.resize();
     }
-//    if (this.dataAxis) {
-//        this.dataAxis.resize();
-//    }
     if (this.plotContainer) {
         this.plotContainer.resize();
     }
@@ -150,16 +139,6 @@ cr.Grapher.prototype.resize = function() {
 
 cr.Grapher.prototype.update = function() {
     this._update();
-}
-
-cr.Grapher.prototype.addTimeGraphAxis = function(timeGraphAxis) {
-    this.timeGraphAxis = timeGraphAxis;
-    this.timeGraphAxis.grapher = this;
-}
-
-cr.Grapher.prototype.addDataAxis = function(dataAxis) {
-    this.dataAxis = dataAxis;
-    this.dataAxis.grapher = this;
 }
 
 var __grapher__ = new cr.Grapher();
@@ -191,7 +170,11 @@ var PlotContainer = function(placeholder, ignoreClickEvents, plots) {
     return new cr.SeriesPlotContainer(placeholder, ignoreClickEvents, plots)
 }
 
-
+var SequenceNumber = function() {};
+SequenceNumber.getNext = function() {
+    console.log("SequenceNumber is deprecated");
+    return 1;
+}
 
 document.addEventListener('DOMContentLoaded', function() {
     var wnd = wnd || window.parent;
