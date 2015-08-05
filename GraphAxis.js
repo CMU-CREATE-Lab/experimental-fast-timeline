@@ -437,3 +437,7 @@ cr.GraphAxis.prototype.setMaxRange = function(min, max) {
     this.update();
 
 }
+
+cr.GraphAxis.prototype.getId = function() {
+    return this._div.id;
+}

@@ -161,8 +161,8 @@ var NumberAxis = function(id, orientation, range) {
     return new cr.GraphAxis(document.getElementById(id), range.min, range.max, basis, isXAxis);
 }
 
-var DataSeriesPlot = function(id, datasource, horizontalAxis, verticalAxis, optionalParams) {
-    return new cr.Plot(id, datasource, horizontalAxis, verticalAxis);
+var DataSeriesPlot = function(datasource, horizontalAxis, verticalAxis, optionalParams) {
+    return new cr.Plot(datasource, horizontalAxis, verticalAxis);
 }
 
 

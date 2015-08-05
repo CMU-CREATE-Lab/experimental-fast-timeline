@@ -2,12 +2,12 @@
 
 var cr = cr || {};
 
-cr.Plot = function (id, url, xAxis, yAxis) {
+cr.Plot = function (url, xAxis, yAxis) {
 //    this.highlight = new cr.Highlight(plotDiv);
 
 //    this.cursor = new cr.Cursor(plotDiv);
     this.point = null;
-    this.id = id;
+    this.id = 'plot-' + xAxis.getId() + '-' + yAxis.getId();
 
     this.xAxis = xAxis;
     this.yAxis = yAxis;
