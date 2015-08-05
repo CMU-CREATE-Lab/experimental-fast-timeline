@@ -9,7 +9,6 @@ function DataStoreTileLayer(rootUrl, glb, ctx) {
   function createTile(ti, bounds) {
     var url = rootUrl + '/' + ti.l + '.' + ti.o;
     if (that.glb && that.usewebgl) {
-        console.log('createTile returning webGL tile');
       return new DataStoreTile(glb, ti, url);
     } else {
       return new CanvasTile(ctx, ti, url);
@@ -55,7 +54,8 @@ DataStoreTileLayer.prototype.drawWebgl = function(view) {
     pMatrix[13] = ytranslate;
 
     this._tileView.setView({min:view.xmin, max:view.xmax});
-    this._tileView.update(pMatrix);
+//    this._tileView.update(pMatrix);
+    this._tileView.update(view);
 }
 
 
@@ -78,12 +78,17 @@ DataStoreTileLayer.prototype.search = function(bbox) {
     var keys = Object.keys(this._tileView._tiles).sort();
     var matches = [];
     for (var i = 0; i < keys.length; i++) {
+        var offset = this._tileView._tiles[keys[i]].offset;
         var data = this._tileView._tiles[keys[i]]._data;
         if (data) {
         for (var j = 0; j < data.length; j+=4) {
-            if (bbox.xmin <= data[j] && bbox.xmax >= data[j] &&
+            if (bbox.xmin <= data[j]+offset && bbox.xmax >= data[j]+offset &&
                 bbox.ymin <= data[j+1] && bbox.ymax >= data[j+1]) {
-                    return {x: data[j], y: data[j + 1]};
+                return {
+                    x: data[j]+offset,
+                    y: data[j + 1],
+                    tile: this._tileView._tiles[keys[i]]
+                };
             }
         }
         }
@@ -95,11 +100,12 @@ DataStoreTileLayer.prototype.searchByX = function(bbox) {
     var keys = Object.keys(this._tileView._tiles).sort();
     var matches = [];
     for (var i = 0; i < keys.length; i++) {
+        var offset = this._tileView._tiles[keys[i]].offset;
         var data = this._tileView._tiles[keys[i]]._data;
         if (data) {
         for (var j = 0; j < data.length; j+=4) {
-            if (bbox.xmin <= data[j] && bbox.xmax >= data[j]) {
-                    return {x: data[j], y: data[j + 1]};
+            if (data[j] + offset >= bbox.xmin && data[j] + offset <= bbox.xmax) {
+                    return {x: data[j] + offset, y: data[j + 1]};
             }
         }
         }
