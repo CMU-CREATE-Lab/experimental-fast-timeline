@@ -6,6 +6,7 @@ cr.Plot = function (id, url, xAxis, yAxis) {
 //    this.highlight = new cr.Highlight(plotDiv);
 
 //    this.cursor = new cr.Cursor(plotDiv);
+    this.point = null;
     this.id = id;
 
     this.xAxis = xAxis;
@@ -47,8 +48,8 @@ cr.Plot.prototype.limitView = function() {
 }
 
 cr.Plot.prototype._resize = function() {
-    var canvasWidth = this.div.offsetWidth * window.devicePixelRatio;
-    var canvasHeight = this.div.offsetHeight * window.devicePixelRatio;
+    var canvasWidth = this.div.clientWidth * window.devicePixelRatio;
+    var canvasHeight = this.div.clientWidthHeight * window.devicePixelRatio;
     if (this.canvas2d.width != canvasWidth ||
         this.canvas2d.height != canvasHeight) {
       this.highlight._highlight.width = this.canvas2d.width = this.canvas3d.width = canvasWidth;
