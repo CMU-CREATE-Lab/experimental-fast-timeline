@@ -21,7 +21,7 @@ function DataStoreTile(glb, tileidx, url) {
   this._ready = false;
   this.program = glb.programFromSources(cr.Shaders.TileVertexShader, cr.Shaders.TileFragmentShader);
   this.pointProgram = glb.programFromSources(cr.Shaders.PointVertexShader, cr.Shaders.PointFragmentShader);
-
+  this.offset = 0;
   this._load();
 
 }
@@ -40,11 +40,18 @@ DataStoreTile.prototype._load = function() {
 
 DataStoreTile.prototype._parseJSON = function(json) {
     var data = [];
+    if (json.data.data.length > 0) {
+        this.offset = json.data.data[0][0];
+    }
     for (var i = 0; i < json.data.data.length; i++) {
-        for (var j = 0; j < json.data.data[i].length; j++) {
-            data.push(json.data.data[i][j]);
+        data.push(json.data.data[i][0] - this.offset);
+        data.push(json.data.data[i][1]);
+        data.push(json.data.data[i][2]);
+        data.push(json.data.data[i][3]);
 
-        }
+//        for (var j = 0; j < json.data.data[i].length; j++) {
+//            data.push(json.data.data[i][j]);
+//        }
     }
     return new Float32Array(data);
 }
@@ -81,9 +88,23 @@ draw = function(transform) {
   if (this._ready) {
     gl.lineWidth(1);
     gl.useProgram(this.program);
+    var pMatrix = new Float32Array([1, 0, 0, 0,
+                                    0, 1, 0, 0,
+                                    0, 0, 1, 0,
+                                    0, 0, 0, 1]);
+
+    var xscale = 2 / (transform.xmax - transform.xmin);
+    var xtranslate = (-transform.xmin + this.offset) * xscale - 1;
+    var yscale = 2 / (transform.ymax - transform.ymin);
+    var ytranslate = -transform.ymin * yscale - 1;
+    pMatrix[0] = xscale;
+    pMatrix[12] = xtranslate;
+    pMatrix[5] = yscale;
+    pMatrix[13] = ytranslate;
 
     var matrixLoc = gl.getUniformLocation(this.program, 'u_pMatrix');
-    gl.uniformMatrix4fv(matrixLoc, false, transform);
+//    gl.uniformMatrix4fv(matrixLoc, false, transform);
+    gl.uniformMatrix4fv(matrixLoc, false, pMatrix);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this._arrayBuffer);
 
@@ -99,7 +120,8 @@ draw = function(transform) {
     gl.useProgram(this.pointProgram);
 
     var matrixLoc = gl.getUniformLocation(this.pointProgram, 'u_pMatrix');
-    gl.uniformMatrix4fv(matrixLoc, false, transform);
+    //gl.uniformMatrix4fv(matrixLoc, false, transform);
+    gl.uniformMatrix4fv(matrixLoc, false, pMatrix);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this._arrayBuffer);
 
