@@ -13,7 +13,7 @@ concat:
 	cat Polyfill.js Vector2.js Basis.js LabelFormatter.js TickGenerator.js \
 	IterableTickGenerator.js GraphAxis.js TimeGraphAxis.js Glb.js TileIdx.js \
 	TileView.js DataStoreTile.js CanvasTile.js DataStoreTileLayer.js Shaders.js \
-	Cursor.js Highlight.js Plot.js SeriesPlotContainer.js Grapher.js > ${CONCAT_PATH}
+	Plot.js SeriesPlotContainer.js Grapher.js > ${CONCAT_PATH}
 minify-simple: clean concat
 	java -jar ${CLOSURE} --compilation_level SIMPLE_OPTIMIZATIONS --js ${CONCAT_PATH} --js_output_file ${MINIFY_PATH} --language_in=ECMASCRIPT5 --warning_level=QUIET
 	cat ${MINIFY_PATH} > ${TEMP_PATH} && mv ${TEMP_PATH} ${MINIFY_PATH}
