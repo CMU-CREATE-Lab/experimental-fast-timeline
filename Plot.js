@@ -27,6 +27,7 @@ cr.Plot = function (url, xAxis, yAxis) {
         ymax: this.yAxis._max
     };
 
+    this.dataPointListeners = [];
     //this.tlayer = new DataStoreTileLayer(url, this.glb, this.ctx);
     //this._resize();
 }
@@ -96,4 +97,17 @@ cr.Plot.prototype.getView = function() {
 cr.Plot.prototype.update = function() {
     this.tlayer.draw(this.getView());
     this._needsUpdate = this.tlayer._needsUpdate;
+}
+
+cr.Plot.prototype.addDataPointListener = function(listener) {
+    this.dataPointListeners.push(listener);
+}
+
+cr.Plot.prototype.removeDataPointListener = function(listener) {
+    for (var i = 0; i < this.dataPointListeners.length; i++) {
+        if (this.dataPointListeners[i] == listener) break;
+    }
+    if (i < this.dataPointListeners.length) {
+        var removed = this.dataPointListeners.splice(i,1);
+    }
 }
