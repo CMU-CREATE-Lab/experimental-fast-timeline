@@ -111,3 +111,21 @@ cr.Plot.prototype.removeDataPointListener = function(listener) {
         var removed = this.dataPointListeners.splice(i,1);
     }
 }
+
+cr.Plot.prototype.getClosestDataPointToTimeWithinWindow = function(timeInSecs, numSecsBefore, numSecsAfter){
+    var dataPoint = null;
+    var point = this.tlayer.searchByX({xmin: timeInSecs - numSecsBefore, xmax: timeInSecs + numSecsAfter});
+    if (point) {
+        var d = new cr.DateLabelFormatter();
+        var t = new cr.TimeLabelFormatter();
+
+        dataPoint = {
+            date: point.x,
+            value: point.y,
+            dateString: d.format(point.x) + ", " + t.format(point.x),
+            valueString: point.y.toFixed(1),
+            comment: null
+        }
+    }
+  return dataPoint;
+}
