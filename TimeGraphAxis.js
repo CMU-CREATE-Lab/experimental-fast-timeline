@@ -228,7 +228,7 @@ cr.TimeGraphAxis.prototype.paint = function() {
 
     this._ctx.stroke();
 
-    if (this.showCursor) {
+    //if (this.showCursor) {
         if (this.cursorX) {
             this._ctx.fillStyle = "red";
             this._ctx.beginPath();
@@ -239,7 +239,7 @@ cr.TimeGraphAxis.prototype.paint = function() {
             this._ctx.fillStyle = "black";
 
         }
-    }
+    //}
 
 
 }
@@ -496,9 +496,13 @@ cr.TimeGraphAxis.prototype.renderLabels = function(offsetPixels, tickSize, tickG
 
 	}
 
-cr.TimeGraphAxis.prototype.setCursor = function(x) {
+cr.TimeGraphAxis.prototype.setCursorPosition = function(x) {
     if (x != this.cursorX) {
         this.cursorX = x;
     }
+    this.publishAxisChangeEvent();
+}
 
+cr.TimeGraphAxis.prototype.getCursorPosition = function() {
+    return this.cursorX;
 }

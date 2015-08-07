@@ -43,6 +43,8 @@ cr.GraphAxis = function (div, min, max, basis, isXAxis, grapher) {
     if (grapher == null) {
         this.grapher = __grapher__;
     }
+
+    this.axisChangeListeners = [];
 }
 
 cr.GraphAxis.prototype.mousedown = function(e) {
@@ -73,7 +75,7 @@ cr.GraphAxis.prototype.mousemove = function(e) {
                 if (bbox.xmin <= e.offsetX && bbox.xmax >= e.offsetX && bbox.ymin <= e.offsetY && bbox.ymax >= e.offsetY) {
                         var xScale = that._canvas.width / window.devicePixelRatio / (that._max - that._min);
                     var x = that.cursorX + (e.clientX - that.lastMouse.clientX) / xScale;
-                        that.setCursor(x);
+                        that.setCursorPosition(x);
                         that.grapher.scheduleUpdate();
                 } else {
                     that.translatePixels(e.clientX - that.lastMouse.clientX);
@@ -92,6 +94,7 @@ cr.GraphAxis.prototype.mousemove = function(e) {
 cr.GraphAxis.prototype.mouseup = function(e) {
     var that = e.data;
     that.lastMouse = null;
+    that.publishAxisChangeEvent();
 }
 
 cr.GraphAxis.prototype.mousewheel = function(e) {
@@ -360,6 +363,7 @@ cr.GraphAxis.prototype.limitView = function() {
       this._min -= this._max - this.maxRange;
       this._max = this.maxRange;
     }
+    this.publishAxisChangeEvent();
     this.grapher.scheduleUpdate();
 }
 
@@ -428,16 +432,46 @@ cr.GraphAxis.prototype.setSize = function(width, height) {
     this._div.style["height"] = height + "px";
     this.resize();
     this.grapher.resize();
+    this.publishAxisChangeEvent();
 }
 
 cr.GraphAxis.prototype.setMaxRange = function(min, max) {
     this.minRange = min;
     this.maxRange = max;
     this.hasMinRange = this.hasMaxRange = true;
+    this.publishAxisChangeEvent();
     this.update();
-
 }
 
 cr.GraphAxis.prototype.getId = function() {
     return this._div.id;
+}
+
+cr.GraphAxis.prototype.addAxisChangeListener = function(listener) {
+    this.axisChangeListeners.push(listener);
+}
+
+cr.GraphAxis.prototype.removeAxisChangeListener = function(listener) {
+    for (var i = 0; i < this.axisChangeListeners.length; i++) {
+        if (this.axisChangeListeners[i] == listener) break;
+    }
+    if (i < this.axisChangeListeners.length) {
+        var removed = this.axisChangeListeners.splice(i,1);
+    }
+}
+
+cr.GraphAxis.prototype.publishAxisChangeEvent = function() {
+    for (var i = 0; i < this.axisChangeListeners.length; i++) {
+        var d = new cr.DateLabelFormatter();
+        var t = new cr.TimeLabelFormatter();
+
+        var ret = {
+			min: this._min,
+			max: this._max,
+			cursorPosition: this.cursorX,
+			cursorPositionString: d.format(this.cursorX) + ", " + t.format(this.cursorX),
+			eventId: -1 // deprecated
+		}
+        this.axisChangeListeners[i](ret);
+    }
 }
