@@ -124,8 +124,8 @@ cr.SeriesPlotContainer.prototype.mousedown = function(e) {
         coords.ymax = plot.yAxis.pixelToY(bbox.ymax);
         var point = plot.tlayer.search(coords);
         if (point) {
-            plot.xAxis.showCursor = true;
-            plot.xAxis.setCursor(point.x);
+            //plot.xAxis.showCursor = true;
+            plot.xAxis.setCursorPosition(point.x);
             that.highlight.line = point;
             that.highlight.plotKey = key;
             that.grapher.scheduleUpdate();
@@ -278,7 +278,7 @@ cr.SeriesPlotContainer.prototype.drawHighlight = function() {
 cr.SeriesPlotContainer.prototype.setHighlightPoints = function() {
         this.highlightedPoints = [];
         var xAxis = this.getXAxis();
-        var offset = xAxis.pixelToX(1) - xAxis.pixelToX(0);
+        var offset = xAxis.pixelToX(2) - xAxis.pixelToX(0);
         for (var plot in this._plots) {
             var point = this._plots[plot].tlayer.searchByX({xmin: this.cursorX - offset, xmax: this.cursorX + offset});
             if (point) {
