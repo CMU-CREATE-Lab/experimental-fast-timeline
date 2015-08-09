@@ -109,7 +109,6 @@ cr.GraphAxis.prototype.mouseup = function(e) {
 cr.GraphAxis.prototype.mousewheel = function(e) {
     var that = e.data;
     if (that.isXAxis) {
-        console.log("Called from mouseweel on GraphAxis");
         that.zoomAboutX(e.clientX, Math.pow(1.0005, e.deltaY));
     } else {
         that.zoomAboutY(e.clientY, Math.pow(1.0005, e.deltaY));
