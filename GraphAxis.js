@@ -40,6 +40,15 @@ cr.GraphAxis = function (div, min, max, basis, isXAxis, grapher) {
     //$('#'+this._canvas.id).mousewheel(this.mousewheel, this);
     $('#'+this._canvas.id).on("mousewheel", this, this.mousewheel);
 
+    this.lastTouch = null;
+
+    this.touchUtils = new cr.TouchUtils();
+
+    $('#'+this._canvas.id).bind('touchstart', this, this.touchstart);
+    $('#'+this._canvas.id).bind('touchmove', this, this.touchmove);
+    $('#'+this._canvas.id).bind('touchend', this, this.touchend);
+    $('#'+this._canvas.id).bind('touchcancel', this, this.touchend);
+
     if (grapher == null) {
         this.grapher = __grapher__;
     }
@@ -105,6 +114,44 @@ cr.GraphAxis.prototype.mousewheel = function(e) {
     } else {
         that.zoomAboutY(e.clientY, Math.pow(1.0005, e.deltaY));
     }
+    return false;
+}
+
+cr.GraphAxis.prototype.touchstart = function(e) {
+    var that = e.data;
+    that.lastTouch = e.originalEvent.touches;
+    return false;
+}
+
+cr.GraphAxis.prototype.touchmove = function(e) {
+    var that = e.data;
+    var thisTouch = e.originalEvent.touches;
+    if (that.lastTouch && thisTouch.length == that.lastTouch.length) {
+        var dx = that.touchUtils.centroid(thisTouch).clientX - that.touchUtils.centroid(that.lastTouch).clientX;
+        var dy = that.touchUtils.centroid(that.lastTouch).clientY - that.touchUtils.centroid(thisTouch).clientY;
+        if (that.isXAxis) {
+            that.translatePixels(dx);
+        } else {
+            that.translatePixels(dy);
+        }
+        if (that.isXAxis) {
+            if (that.touchUtils.isXPinch(thisTouch) && that.touchUtils.isXPinch(that.lastTouch)) {
+                that.zoomAboutX(that.touchUtils.centroid(thisTouch).clientX, that.touchUtils.xSpan(thisTouch) / that.touchUtils.xSpan(that.lastTouch));
+            }
+        } else {
+            if (that.touchUtils.isYPinch(thisTouch) && that.touchUtils.isYPinch(that.lastTouch)) {
+                that.zoomAboutY(that.touchUtils.centroid(thisTouch).clientY, that.touchUtils.ySpan(thisTouch) / that.touchUtils.ySpan(that.lastTouch));
+            }
+        }
+    }
+    // Some platforms reuse the touch list
+    that.lastTouch = that.touchUtils.copyTouches(thisTouch);
+    return false;
+}
+
+cr.GraphAxis.prototype.touchend = function(e) {
+    var that = e.data;
+    that.lastTouch = null;
     return false;
 }
 

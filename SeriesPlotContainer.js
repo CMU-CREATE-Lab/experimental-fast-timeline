@@ -36,6 +36,20 @@ cr.SeriesPlotContainer = function(elementId, ignoreClickEvents, plots) {
     }
     this.grapher.addPlotContainer(this);
 
+    this.lastTouch = null;
+
+    this.touchUtils = new cr.TouchUtils();
+
+    $('#'+this.canvas2d.id).bind('touchstart', this, this.touchstart);
+    $('#'+this.canvas2d.id).bind('touchmove', this, this.touchmove);
+    $('#'+this.canvas2d.id).bind('touchend', this, this.touchend);
+    $('#'+this.canvas2d.id).bind('touchcancel', this, this.touchend);
+
+    $('#'+this.canvas3d.id).bind('touchstart', this, this.touchstart);
+    $('#'+this.canvas3d.id).bind('touchmove', this, this.touchmove);
+    $('#'+this.canvas3d.id).bind('touchend', this, this.touchend);
+    $('#'+this.canvas3d.id).bind('touchcancel', this, this.touchend);
+
     this._resize();
 
 }
@@ -215,6 +229,44 @@ cr.SeriesPlotContainer.prototype.mousewheel = function(e) {
         plot.xAxis.zoomAboutX(e.clientX, Math.pow(1.0005, e.deltaY));
         plot.yAxis.zoomAboutY(e.clientY, Math.pow(1.0005, e.deltaY));
     }
+    return false;
+}
+
+cr.SeriesPlotContainer.prototype.touchstart = function(e) {
+    var that = e.data;
+    that.lastTouch = e.originalEvent.touches;
+    return false;
+}
+
+cr.SeriesPlotContainer.prototype.touchmove = function(e) {
+    var that = e.data;
+    var thisTouch = e.originalEvent.touches;
+    if (that.lastTouch && thisTouch.length == that.lastTouch.length) {
+        var dx = that.touchUtils.centroid(thisTouch).clientX - that.touchUtils.centroid(that.lastTouch).clientX;
+        var dy = that.touchUtils.centroid(that.lastTouch).clientY - that.touchUtils.centroid(thisTouch).clientY;
+        var xAxis = that.getXAxis();
+        xAxis.translatePixels(dx);
+        if (that.touchUtils.isXPinch(thisTouch) && that.touchUtils.isXPinch(that.lastTouch)) {
+            xAxis.zoomAboutX(that.touchUtils.centroid(thisTouch).clientX, that.touchUtils.xSpan(thisTouch) / that.touchUtils.xSpan(that.lastTouch));
+        }
+
+        for (var key in that._plots) {
+            var plot = that._plots[key];
+            plot.yAxis.translatePixels(dy);
+            if (that.touchUtils.isYPinch(thisTouch) && that.touchUtils.isYPinch(that.lastTouch)) {
+                plot.yAxis.zoomAboutY(that.touchUtils.centroid(thisTouch).clientY, that.touchUtils.ySpan(thisTouch) / that.touchUtils.ySpan(that.lastTouch));
+            }
+
+        }
+    }
+    // Some platforms reuse the touch list
+    that.lastTouch = that.touchUtils.copyTouches(thisTouch);
+    return false;
+}
+
+cr.SeriesPlotContainer.prototype.touchend = function(e) {
+    var that = e.data;
+    that.lastTouch = null;
     return false;
 }
 
