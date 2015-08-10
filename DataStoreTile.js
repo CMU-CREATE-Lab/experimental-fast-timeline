@@ -22,6 +22,8 @@ function DataStoreTile(glb, tileidx, url) {
   this.program = glb.programFromSources(cr.Shaders.TileVertexShader, cr.Shaders.TileFragmentShader);
   this.pointProgram = glb.programFromSources(cr.Shaders.PointVertexShader, cr.Shaders.PointFragmentShader);
   this.offset = 0;
+  this._resolutionScale = window.devicePixelRatio || 1;
+
   this._load();
 
 }
@@ -133,7 +135,7 @@ draw = function(transform) {
     gl.uniform4f(colorLoc, 0, 0, 0, 1);
 
     var sizeLoc = gl.getUniformLocation(this.pointProgram, 'u_size');
-    gl.uniform1f(sizeLoc, 4 * window.devicePixelRatio);
+    gl.uniform1f(sizeLoc, 4 * this._resolutionScale);
 
     gl.drawArrays(gl.POINTS, 0, this._pointCount);
 

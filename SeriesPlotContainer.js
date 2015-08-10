@@ -8,7 +8,7 @@ cr.SeriesPlotContainer = function(elementId, ignoreClickEvents, plots) {
     this.highlight = {};
     this.highlightedPoints = [];
     this.cursorX = null;
-    this.resolutionScale = window.devicePixelRatio || 1;
+    this._resolutionScale = window.devicePixelRatio || 1;
     this._plots = {};
     if (plots) {
         for (var i = 0; i < plots.length; i++) {
@@ -50,7 +50,7 @@ cr.SeriesPlotContainer = function(elementId, ignoreClickEvents, plots) {
     $('#'+this.canvas3d.id).bind('touchend', this, this.touchend);
     $('#'+this.canvas3d.id).bind('touchcancel', this, this.touchend);
 
-    this._resize();
+    this.resize();
 
 }
 
@@ -328,7 +328,7 @@ cr.SeriesPlotContainer.prototype.drawHighlightWebgl = function() {
     var yscale = 2;
     var ytranslate = 1;
     var gl = this.gl;
-    gl.lineWidth(2*window.devicePixelRatio);
+    gl.lineWidth(2*this._resolutionScale);
     gl.useProgram(this.lineProgram);
 
     var matrixLoc = gl.getUniformLocation(this.lineProgram, 'u_pMatrix');
@@ -351,7 +351,7 @@ cr.SeriesPlotContainer.prototype.drawHighlightWebgl = function() {
 cr.SeriesPlotContainer.prototype.drawHighlightCanvas = function() {
     var xAxis = this.getXAxis();
     this.ctx.beginPath();
-    this.ctx.lineWidth = 2*window.devicePixelRatio;
+    this.ctx.lineWidth = 2*this._resolutionScale;
     this.ctx.strokeStyle = "rgb(255,0,0)";
     var scale = this.ctx.canvas.width / (xAxis._max - xAxis._min);
     var translate = -xAxis._min;
@@ -450,7 +450,7 @@ cr.SeriesPlotContainer.prototype.drawHighlightPointsCanvas = function() {
         this.ctx.beginPath();
         this.ctx.fillStyle = "red";
         this.ctx.arc(points[i].x, points[i].y,
-        2*window.devicePixelRatio, 0, Math.PI*2, true); // Outer circle
+        2*this._resolutionScale, 0, Math.PI*2, true); // Outer circle
         this.ctx.fill();
 
     }
@@ -524,12 +524,8 @@ cr.SeriesPlotContainer.prototype.drawMouseoverHighlightPoint = function() {
 
 
 cr.SeriesPlotContainer.prototype.resize = function() {
-    console.log(this.div);
-    console.log(this.div.clientHeight);
-    console.log(window.devicePixelRatio);
-    var canvasWidth = this.div.clientWidth * window.devicePixelRatio;
-    var canvasHeight = this.div.clientHeight * window.devicePixelRatio;
-    console.log('resize to ' + canvasWidth +'x' + canvasHeight);
+    var canvasWidth = this.div.clientWidth * this._resolutionScale;
+    var canvasHeight = this.div.clientHeight * this._resolutionScale;
     if (this.canvas2d.width != canvasWidth ||
         this.canvas2d.height != canvasHeight) {
       this.canvas2d.width = this.canvas3d.width = canvasWidth;
@@ -548,8 +544,8 @@ cr.SeriesPlotContainer.prototype.resize = function() {
 }
 
 cr.SeriesPlotContainer.prototype._resize = function() {
-    var canvasWidth = this.div.clientWidth * window.devicePixelRatio;
-    var canvasHeight = this.div.clientHeight * window.devicePixelRatio;
+    var canvasWidth = this.div.clientWidth * this._resolutionScale;
+    var canvasHeight = this.div.clientHeight * this._resolutionScale;
     if (this.canvas2d.width != canvasWidth ||
         this.canvas2d.height != canvasHeight) {
       this.canvas2d.width = this.canvas3d.width = canvasWidth;

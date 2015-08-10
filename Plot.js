@@ -28,6 +28,8 @@ cr.Plot = function (url, xAxis, yAxis) {
     };
 
     this.dataPointListeners = [];
+    this._resolutionScale = window.devicePixelRatio || 1;
+
     //this.tlayer = new DataStoreTileLayer(url, this.glb, this.ctx);
     //this._resize();
 }
@@ -49,8 +51,8 @@ cr.Plot.prototype.limitView = function() {
 }
 
 cr.Plot.prototype._resize = function() {
-    var canvasWidth = this.div.clientWidth * window.devicePixelRatio;
-    var canvasHeight = this.div.clientWidthHeight * window.devicePixelRatio;
+    var canvasWidth = this.div.clientWidth * this._resolutionScale;
+    var canvasHeight = this.div.clientWidthHeight * this._resolutionScale;
     if (this.canvas2d.width != canvasWidth ||
         this.canvas2d.height != canvasHeight) {
       this.highlight._highlight.width = this.canvas2d.width = this.canvas3d.width = canvasWidth;

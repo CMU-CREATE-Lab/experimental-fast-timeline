@@ -27,7 +27,7 @@ cr.GraphAxis = function (div, min, max, basis, isXAxis, grapher) {
     this._length;
     this._scale;
 
-    this.resolutionScale = window.devicePixelRatio || 1;
+    this._resolutionScale = window.devicePixelRatio || 1;
 
     this.clampToRange();
     this.resize();
@@ -82,7 +82,7 @@ cr.GraphAxis.prototype.mousemove = function(e) {
                     ymax: that._div.clientHeight
                 }
                 if (bbox.xmin <= e.offsetX && bbox.xmax >= e.offsetX && bbox.ymin <= e.offsetY && bbox.ymax >= e.offsetY) {
-                        var xScale = that._canvas.width / window.devicePixelRatio / (that._max - that._min);
+                        var xScale = that._canvas.width / that._resolutionScale / (that._max - that._min);
                     var x = that.cursorX + (e.clientX - that.lastMouse.clientX) / xScale;
                         that.setCursorPosition(x);
                         that.grapher.scheduleUpdate();
@@ -157,11 +157,11 @@ cr.GraphAxis.prototype.touchend = function(e) {
 
 cr.GraphAxis.prototype.translatePixels = function (delta) {
     if (this.isXAxis) {
-        var xScale = this._canvas.width / window.devicePixelRatio / (this._max - this._min);
+        var xScale = this._canvas.width / this._resolutionScale / (this._max - this._min);
         this._min -= delta / xScale;
         this._max -= delta / xScale;
     } else {
-        var yScale = this._canvas.height / window.devicePixelRatio / (this._max - this._min);
+        var yScale = this._canvas.height / this._resolutionScale / (this._max - this._min);
         this._min -= delta / yScale;
         this._max -= delta / yScale;
     }
@@ -206,10 +206,10 @@ cr.GraphAxis.prototype.resize = function() {
     this.width = this._div.clientWidth;
     this._canvas.style["width"] = this._div.clientWidth + "px";
     this._canvas.style["height"] = this._div.clientHeight + "px";
-    this._canvas.height = this._div.clientHeight * this.resolutionScale;
-    this._canvas.width = this._div.clientWidth * this.resolutionScale;
+    this._canvas.height = this._div.clientHeight * this._resolutionScale;
+    this._canvas.width = this._div.clientWidth * this._resolutionScale;
     this._ctx.scale(1,1);
-    this._ctx.scale(this.resolutionScale,this.resolutionScale);
+    this._ctx.scale(this._resolutionScale,this._resolutionScale);
 
     this.layout();
 }
@@ -415,20 +415,20 @@ cr.GraphAxis.prototype.limitView = function() {
 
 cr.GraphAxis.prototype.pixelToX = function(px) {
   var xOffset = -this._min;
-  var xScale = this._canvas.width / window.devicePixelRatio / (this._max - this._min);
+  var xScale = this._canvas.width / this._resolutionScale / (this._max - this._min);
   return px / xScale - xOffset;
 }
 
 cr.GraphAxis.prototype.xToPixel = function(x) {
   var xOffset = -this._min;
-  var xScale = this._canvas.width / window.devicePixelRatio / (this._max - this._min);
+  var xScale = this._canvas.width / this._resolutionScale / (this._max - this._min);
   return x *  (xScale - xOffset);
 }
 
 
 cr.GraphAxis.prototype.pixelToY = function(px) {
   var yOffset = -this._max;
-  var yScale = this._canvas.height / window.devicePixelRatio / (this._min - this._max);
+  var yScale = this._canvas.height / this._resolutionScale / (this._min - this._max);
   return px / yScale - yOffset;
 }
 

@@ -6,6 +6,8 @@ function CanvasTile(ctx, tileidx, url) {
   this._tileidx = tileidx;
   this._url = url;
   this._ready = false;
+  this._resolutionScale = window.devicePixelRatio || 1;
+
   this._load();
 
 }
@@ -66,7 +68,7 @@ CanvasTile.prototype.draw = function(transform) {
           this.ctx.fillStyle = "black";
           this.ctx.arc(transform.xScale * (this._data[i + 0] + transform.xOffset),
                        transform.yScale * (this._data[i + 1] + transform.yOffset),
-                       2*window.devicePixelRatio, 0, Math.PI*2, true); // Outer circle
+                       2*this._resolutionScale, 0, Math.PI*2, true); // Outer circle
           this.ctx.fill();
 
       }
