@@ -9,60 +9,12 @@ body {
 .ui-state-active {
   font-weight: bold;
 }
-
-#graph {
-    display: block;
-    position: absolute;
-    height: auto;
-    top: 80px;
-    left: 0;
-    bottom: 0;
-    right: 0;
-    margin-top: 0px;
-    margin-left: 0px;
-    margin-bottom: 0px;
-    margin-right: 80px;
-}
-#x-axis {
-    display: block;
-    position: absolute;
-    height: 80px;
-    top: 0px;
-    left: 0;
-    bottom: 80px;
-    right: 0;
-    margin-top: 0px;
-    margin-left: 0px;
-    margin-bottom: 0px;
-    margin-right: 80px;
-}
-
-#y-axis {
-    display: block;
-    position: absolute;
-    height: auto;
-    width:80px;
-    top: 0px;
-    bottom: 0px;
-    right: 0;
-    margin-top: 80px;
-    margin-left: 0px;
-    margin-bottom: 0px;
-    margin-right: 0px;
-}
-
 </style>
 <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
 <script src="https://code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
 <script src="js/jquery.mousewheel.min.js"></script>
 <script src="data.js"></script>
 <script src="js/fpsmeter.min.js"></script>
-<script src="Vector2.js"></script>
-<script src="Basis.js"></script>
-<script src="TickGenerator.js"></script>
-<script src="IterableTickGenerator.js"></script>
-<script src="GraphAxis.js"></script>
-
 <script>
 
 var canvas2d, ctx;
@@ -70,51 +22,15 @@ var canvas3d, gl;
 var bounds, view, meter;
 var maxGap = 5000;
 
-var yaxis, yaxis_canvas, yaxis_ctx, ybasis, yGraphAxis;
-
-var xaxis, xaxis_canvas, xaxis_ctx, xbasis, xGraphAxis;
-
-function initAxes() {
-    yaxis = document.getElementById('y-axis');
-    yaxis_canvas = document.getElementById('y-axis-canvas');
-    yaxis_canvas.width = yaxis.offsetWidth;
-    yaxis_canvas.height = yaxis.offsetHeight;
-    yaxis_ctx = yaxis_canvas.getContext('2d');
-    ybasis = cr.Basis.YAxisBasis;
-    yGraphAxis = new cr.GraphAxis(yaxis_canvas, yaxis_ctx, view.ymin, view.ymax, ybasis, false);
-
-    xaxis = document.getElementById('x-axis');
-
-    xaxis_canvas = document.getElementById('x-axis-canvas');
-    xaxis_canvas.width = xaxis.offsetWidth;
-    xaxis_canvas.height = xaxis.offsetHeight;
-    xaxis_ctx = xaxis_canvas.getContext('2d');
-    xbasis = cr.Basis.XAxisBasis;
-    xGraphAxis = new cr.GraphAxis(xaxis_canvas, xaxis_ctx, view.xmin, view.xmax, xbasis, true);
-}
-
-function drawAxes() {
-    yGraphAxis._min = view.ymin;
-    yGraphAxis._max = view.ymax;
-    yGraphAxis.clampToRange();
-    yGraphAxis.rescale();
-    yGraphAxis.paint();
-
-    xGraphAxis._min = view.xmin;
-    xGraphAxis._max = view.xmax;
-    xGraphAxis.clampToRange();
-    xGraphAxis.rescale();
-    xGraphAxis.paint();
-}
-
 function init() {
-  meter = new FPSMeter({graph:1, position: 'absolute', top: '85px'});
+  meter = new FPSMeter({graph:1});
   canvas2d = $('#canvas2d')[0];
   ctx = canvas2d.getContext('2d');
 
   canvas3d = $('#canvas3d')[0];
   initWebgl();
-
+  
+  
   $('.buttonset').buttonset();
   $("input[name=count]:radio").click(setWidth);
   bounds = {xmin: Number.MAX_VALUE, xmax: -Number.MAX_VALUE, ymin: Number.MAX_VALUE, ymax: -Number.MAX_VALUE};
@@ -140,28 +56,8 @@ function init() {
   $('#canvas2d,#canvas3d').bind('touchend', touchend);
   $('#canvas2d,#canvas3d').bind('touchcancel', touchend);
 
-  $('#x-axis-canvas').mousedown(mousedown);
-  $('#x-axis-canvas').mousemove(mousemove);
-  $('#x-axis-canvas').mouseup(mouseup);
-  $('#x-axis-canvas').mousewheel(mousewheel);
-  $('#x-axis-canvas').bind('touchstart', touchstart);
-  $('#x-axis-canvas').bind('touchmove', touchmove);
-  $('#x-axis-canvas').bind('touchend', touchend);
-  $('#x-axis-canvas').bind('touchcancel', touchend);
-
-  $('#y-axis-canvas').mousedown(mousedown);
-  $('#y-axis-canvas').mousemove(mousemove);
-  $('#y-axis-canvas').mouseup(mouseup);
-  $('#y-axis-canvas').mousewheel(mousewheel);
-  $('#y-axis-canvas').bind('touchstart', touchstart);
-  $('#y-axis-canvas').bind('touchmove', touchmove);
-  $('#y-axis-canvas').bind('touchend', touchend);
-  $('#y-axis-canvas').bind('touchcancel', touchend);
-
   resize();
-  initAxes();
   redraw();
-
 }
 
 var lastTouch = null;
@@ -207,7 +103,7 @@ function touchmove(e) {
   if (lastTouch && thisTouch.length == lastTouch.length) {
     translatePixels(centroid(thisTouch).clientX - centroid(lastTouch).clientX);
     if (isXPinch(thisTouch) && isXPinch(lastTouch)) {
-      zoomAboutX(centroid(thisTouch).clientX, xSpan(thisTouch) / xSpan(lastTouch));
+      zoomAbout(centroid(thisTouch).clientX, xSpan(thisTouch) / xSpan(lastTouch));
     }
   }
   // Some platforms reuse the touch list
@@ -227,17 +123,10 @@ function mousedown(e) {
   return false;
 }
 
-function translatePixelsX(dx) {
+function translatePixels(dx) {
   var xScale = canvas2d.width / window.devicePixelRatio / (view.xmax - view.xmin);
   view.xmin -= dx / xScale;
   view.xmax -= dx / xScale;
-  limitView();
-}
-
-function translatePixelsY(dy) {
-  var yScale = canvas2d.height / window.devicePixelRatio / (view.ymax - view.ymin);
-  view.ymin -= dy / yScale;
-  view.ymax -= dy / yScale;
   limitView();
 }
 
@@ -247,34 +136,8 @@ function pixelToX(px) {
   return px / xScale - xOffset;
 }
 
-
-function pixelToY(px) {
-  var yOffset = -view.ymin;
-  var yScale = canvas2d.height / window.devicePixelRatio / (view.ymax - view.ymin);
-  return px / yScale - yOffset;
-}
-
 // scale > 1 means "zoom in"
-function zoomAboutY(pixelY, scale) {
-  // Limit scale to not zoom out past "width"
-  var height = view.ymax - view.xymin;
-  if (height / scale > maxWidth()) {
-    scale = height / maxWidth();
-  }
-  // Zoom about pixelX
-  var y = pixelToY(pixelY);
-  view.ymin -= y;
-  view.ymax -= y;
-  view.ymin /= scale;
-  view.ymax /= scale;
-  view.ymin += y;
-  view.ymax += y;
-
-  limitView();
-}
-
-
-function zoomAboutX(pixelX, scale) {
+function zoomAbout(pixelX, scale) {
   // Limit scale to not zoom out past "width"
   var width = view.xmax - view.xmin;
   if (width / scale > maxWidth()) {
@@ -299,16 +162,9 @@ function mousemove(e) {
     mouseup(e);
     return;
   }
-
+  
   if (lastMouse) {
-    if (e.currentTarget.id == xaxis_canvas.id) {
-      translatePixelsX(e.clientX - lastMouse.clientX);
-  } else if (e.currentTarget.id == yaxis_canvas.id) {
-      translatePixelsY(lastMouse.clientY - e.clientY);
-    } else {
-      translatePixelsX(e.clientX - lastMouse.clientX);
-      translatePixelsY(lastMouse.clientY - e.clientY)
-    }
+    translatePixels(e.clientX - lastMouse.clientX);
   }
   lastMouse = e;
   return false;
@@ -319,14 +175,8 @@ function mouseup(e) {
 }
 
 function mousewheel(e) {
-  if (e.currentTarget.id == xaxis_canvas.id) {
-    zoomAboutX(event.clientX, Math.pow(1.0005, event.deltaY));
-  } else if (e.currentTarget.id == yaxis_canvas.id) {
-    zoomAboutY(event.clientY, Math.pow(1.0005, event.deltaY));
-  } else {
-    zoomAboutX(event.clientX, Math.pow(1.0005, event.deltaY));
-    zoomAboutY(event.clientY, Math.pow(1.0005, event.deltaY));
-  }
+console.log(e.deltaY);
+  zoomAbout(e.clientX, Math.pow(1.0005, e.deltaY));
   return false;
 }
 
@@ -338,7 +188,7 @@ function resize() {
     console.log('Resized body to ' + window.innerWidth + ' x ' + window.innerHeight);
   }
   // Adding the != 0 test here prevented continuous resize loop on iOS
-  if (document.body.scrollLeft != 0 || document.body.scrollTop != 0) {
+  if (document.body.scrollLeft != 0 || document.body.scrollTop != 0) {  
     document.body.scrollLeft=0;
     document.body.scrollTop=0;
     console.log('Scrolled to 0,0');
@@ -346,14 +196,14 @@ function resize() {
   var canvasWidth = Math.round(window.innerWidth * window.devicePixelRatio);
   var canvasHeight = Math.round(window.innerHeight * window.devicePixelRatio);
   if (canvas2d.width != canvasWidth ||
-      canvas2d.height != canvasHeight) {
-    canvas2d.width = canvas3d.width = canvasWidth;
+      canvas2d.height != canvasHeight) {  
+    canvas2d.width = canvas3d.width = canvasWidth;  
     canvas2d.height = canvas3d.height = window.innerHeight * window.devicePixelRatio;
     console.log('Resized canvas to ' + canvas2d.width + ' x ' + canvas2d.height);
   }
 }
 
-// Set width to requested value
+// Set width to requested value    
 function setWidth() {
   var width = 3600 * ($('input:radio[name=count]:checked').attr('id') == 'count1k' ? 1000 : 5000);
   var xcenter = (view.xmin + view.xmax) / 2;
@@ -371,7 +221,7 @@ function limitView() {
     view.xmax = bounds.xmax;
     view.xmin = bounds.xmin;
   } else if (view.xmin < bounds.xmin) {
-    // Tried to pan too far left
+    // Tried to pan too far left                            
     view.xmax += bounds.xmin - view.xmin;
     view.xmin = bounds.xmin;
   } else if (view.xmax > bounds.xmax) {
@@ -379,7 +229,6 @@ function limitView() {
     view.xmin -= view.xmax - bounds.xmax;
     view.xmax = bounds.xmax;
   }
-
 }
 
 function redraw() {
@@ -397,13 +246,12 @@ function redraw() {
       $('#numSegments').text('WebGL not available');
     }
   }
-  drawAxes();
   window.requestAnimationFrame(redraw);
 }
 
 function redrawCanvas() {
   ctx.clearRect (0, 0, canvas2d.width, canvas2d.height);
-
+  
   var xOffset = -view.xmin;
   var xScale = canvas2d.width / (view.xmax - view.xmin);
   var yOffset = -view.ymax;
@@ -562,17 +410,8 @@ $(init);
 </script>
 </head>
 <body>
-    <div id="x-axis">
-        <canvas id="x-axis-canvas" style="width:100%; height:100%; position: absolute;"></canvas>
-    </div>
-    <div id="y-axis">
-        <canvas id="y-axis-canvas" style="width:100%; height:100%; position: absolute;"></canvas>
-    </div>
-
-    <div id="graph">
-        <canvas id="canvas2d" style="width:100%; height:100%; position: absolute"></canvas>
-        <canvas id="canvas3d" style="width:100%; height:100%; position: absolute"></canvas>
-    </div>
+<canvas id="canvas2d" style="width:100%; height:100%; position: absolute"></canvas>
+<canvas id="canvas3d" style="width:100%; height:100%; position: absolute"></canvas>
 <div style="position:absolute; right: 3px; top: 9px">
 <span class="buttonset">
 <input type="radio" name="count" id="count1k" checked="checked"><label for="count1k">1K</label>
@@ -583,6 +422,8 @@ $(init);
 <input type="radio" name="method" id="3d"><label for="3d">webgl</label>
 </span>
 </div>
-<div id="numSegments" style="position:absolute; left: 10px; top: 135px; font-size: 18pt"></div>
+<div id="numSegments" style="position:absolute; left: 10px; top: 60px; font-size: 18pt"></div>
 </body>
 </html>
+
+
