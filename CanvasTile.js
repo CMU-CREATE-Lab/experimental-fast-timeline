@@ -14,14 +14,41 @@ function CanvasTile(ctx, tileidx, url) {
 
 CanvasTile.prototype._load = function() {
   var that = this;
-  var xhr = new XMLHttpRequest();
-  xhr.open('GET', that._url);
-  xhr.onload = function() {
-    var json = JSON.parse(this.responseText);
-    var float32Array = that._parseJSON(json);
-    that._setData(float32Array);
+  function getInternetExplorerVersion() {
+    var rv = -1; // Return value assumes failure.
+    if (navigator.appName == 'Microsoft Internet Explorer') {
+      var ua = navigator.userAgent;
+      var re  = new RegExp("MSIE ([0-9]{1,}[\.0-9]{0,})");
+      if (re.exec(ua) != null)
+        rv = parseFloat( RegExp.$1 );
+    }
+    return rv;
   }
-  xhr.send();
+
+  if (XDomainRequest && getInternetExplorerVersion() < 10.) {
+      var xdr = new window.XDomainRequest();
+      xdr.onprogress = function() {}; // no aborting
+      xdr.ontimeout = function() {}; // "
+      xdr.onload = function() {
+          var json = JSON.parse(this.responseText);
+          var float32Array = that._parseJSON(json);
+          that._setData(float32Array);
+      };
+      xdr.onerror = function() {
+          // error handling
+      };
+      xdr.open("GET", that._url, true);
+      xdr.send();
+  } else {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', that._url);
+      xhr.onload = function() {
+        var json = JSON.parse(this.responseText);
+        var float32Array = that._parseJSON(json);
+        that._setData(float32Array);
+      }
+      xhr.send();
+  }
 }
 
 CanvasTile.prototype._parseJSON = function(json) {
@@ -31,7 +58,8 @@ CanvasTile.prototype._parseJSON = function(json) {
             data.push(json.data.data[i][j]);
         }
     }
-    return new Float32Array(data);
+    //return new Float32Array(data);
+    return data;
 }
 
 CanvasTile.prototype._setData = function(arrayBuffer) {
