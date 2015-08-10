@@ -60,7 +60,7 @@ DataStoreTileLayer.prototype.drawWebgl = function(view) {
 
 
 DataStoreTileLayer.prototype.drawCanvas = function(view) {
-    this.ctx.clearRect (0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+    //this.ctx.clearRect (0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
 
     var transform = {};
     transform.xOffset = -view.xmin;
@@ -78,7 +78,7 @@ DataStoreTileLayer.prototype.search = function(bbox) {
     var keys = Object.keys(this._tileView._tiles).sort();
     var matches = [];
     for (var i = 0; i < keys.length; i++) {
-        var offset = this._tileView._tiles[keys[i]].offset;
+        var offset = this._tileView._tiles[keys[i]].offset || 0;
         var data = this._tileView._tiles[keys[i]]._data;
         if (data) {
         for (var j = 0; j < data.length; j+=4) {
@@ -100,7 +100,7 @@ DataStoreTileLayer.prototype.searchByX = function(bbox) {
     var keys = Object.keys(this._tileView._tiles).sort();
     var matches = [];
     for (var i = 0; i < keys.length; i++) {
-        var offset = this._tileView._tiles[keys[i]].offset;
+        var offset = this._tileView._tiles[keys[i]].offset || 0;
         var data = this._tileView._tiles[keys[i]]._data;
         if (data) {
         for (var j = 0; j < data.length; j+=4) {
