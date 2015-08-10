@@ -109,9 +109,9 @@ cr.GraphAxis.prototype.mouseup = function(e) {
 cr.GraphAxis.prototype.mousewheel = function(e) {
     var that = e.data;
     if (that.isXAxis) {
-        that.zoomAboutX(e.clientX, Math.pow(1.0005, e.deltaY));
+        that.zoomAboutX(e.clientX, Math.pow(1.0005, e.originalEvent.deltaY));
     } else {
-        that.zoomAboutY(e.clientY, Math.pow(1.0005, e.deltaY));
+        that.zoomAboutY(e.clientY, Math.pow(1.0005, e.originalEvent.deltaY));
     }
     return false;
 }
