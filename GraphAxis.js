@@ -434,7 +434,7 @@ cr.GraphAxis.prototype.pixelToY = function(px) {
 
 
 cr.GraphAxis.prototype.setupText = function() {
-    var textParallelToAxis = (Math.abs(this._basis.x._y) > Math.abs(this._basis.y._y));
+    var textParallelToAxis = (Math.abs(this._basis.x.getY()) > Math.abs(this._basis.y.getY()));
     var labelOffsetPixels = 0;
 
     if (textParallelToAxis) {
