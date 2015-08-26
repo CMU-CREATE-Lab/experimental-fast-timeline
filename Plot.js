@@ -7,7 +7,7 @@ cr.Plot = function (url, xAxis, yAxis) {
 
 //    this.cursor = new cr.Cursor(plotDiv);
     this.point = null;
-    this.id = 'plot-' + xAxis.getId() + '-' + yAxis.getId();
+    this.id = 'plot-' + xAxis.getId() + '-' + yAxis.getId() + Date.now();
 
     this.xAxis = xAxis;
     this.yAxis = yAxis;
