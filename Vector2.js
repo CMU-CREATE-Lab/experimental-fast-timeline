@@ -27,7 +27,6 @@ cr.Vector2.prototype.getY = function() {
     return this._y;
 };
 
-
 /**
  * Scale a vector
  * @param  {number} value

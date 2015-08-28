@@ -5,9 +5,10 @@
  * @return {number}
  */
 
- Math.log2 = Math.log2 || function(x) {
-    return Math.log(x) / Math.LN2;
-};
+Math.log2 = Math.log2 ||
+            function(x) {
+                return Math.log(x) / Math.LN2;
+            };
 
 /**
  * Polyfill for emulating Math.log10 function
@@ -15,6 +16,7 @@
  * @param  {number} x
  * @return {number}
  */
-Math.log10 = Math.log10 || function(x) {
-    return Math.log(x) / Math.LN10;
-};
+Math.log10 = Math.log10 ||
+             function(x) {
+                 return Math.log(x) / Math.LN10;
+             };

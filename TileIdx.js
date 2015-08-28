@@ -10,23 +10,25 @@
 // lexicographic sorting to match sorting by [level, row, column]
 
 function TileIdx(l, o) {
-  this.l = l;
-  this.o = o;
-  var level,offset;
+    this.l = l;
+    this.o = o;
+    var level, offset;
 
-  if (l < 0) {
-      level = "-" + ('00' + (l).toString().split("-")[1]).substr(-3);
-  } else {
-      level = ('00' + l).substr(-3);
-  }
+    if (l < 0) {
+        level = "-" + ('00' + (l).toString().split("-")[1]).substr(-3);
+    }
+    else {
+        level = ('00' + l).substr(-3);
+    }
 
-  if (o < 0) {
-      offset = "-" + ('00000000000000000000' + (o).toString().split("-")[1]).substr(-19);
-  } else {
-      offset = ('00000000000000000000' + o).substr(-19);
-  }
+    if (o < 0) {
+        offset = "-" + ('00000000000000000000' + (o).toString().split("-")[1]).substr(-19);
+    }
+    else {
+        offset = ('00000000000000000000' + o).substr(-19);
+    }
 
-  this.key = level + offset;
+    this.key = level + offset;
 }
 
 TileIdx.prototype.parent = function() {
@@ -34,5 +36,5 @@ TileIdx.prototype.parent = function() {
 };
 
 TileIdx.prototype.toString = function() {
-  return this.l + '.' + this.o;
+    return this.l + '.' + this.o;
 };

@@ -1,18 +1,19 @@
 "use strict";
 var cr = cr || {};
 
-cr.TouchUtils = function() {};
+cr.TouchUtils = function() {
+};
 
 cr.TouchUtils.prototype.copyTouches = function(touches) {
     var ret = [];
     for (var i = 0; i < touches.length; i++) {
-        ret.push({clientX: touches[i].clientX, clientY: touches[i].clientY});
+        ret.push({ clientX : touches[i].clientX, clientY : touches[i].clientY });
     }
     return ret;
 };
 
 cr.TouchUtils.prototype.centroid = function(touches) {
-    var ret = { clientX:0, clientY:0 };
+    var ret = { clientX : 0, clientY : 0 };
     for (var i = 0; i < touches.length; i++) {
         ret.clientX += touches[i].clientX;
         ret.clientY += touches[i].clientY;

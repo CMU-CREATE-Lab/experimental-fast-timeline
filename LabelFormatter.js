@@ -41,15 +41,15 @@ cr.LabelFormatter.VERBOSE_MONTHS = [
     'September', 'October', 'November', 'December'
 ];
 
-
-cr.TimeLabelFormatter = function() {};
+cr.TimeLabelFormatter = function() {
+};
 
 cr.TimeLabelFormatter.prototype.format = function(time) {
     var whole = Math.floor(time + (.5 / 1000000.));
     var microseconds = Math.round(1000000 * (time - whole));
     var d = new Date((whole * 1000.));
     var ret = String('00' + d.getHours()).slice(-2) +
-        ':' + String('00' + d.getMinutes()).slice(-2);
+              ':' + String('00' + d.getMinutes()).slice(-2);
     var seconds = d.getSeconds();
     if (seconds != 0 || microseconds != 0) {
         ret += ':' + seconds;
@@ -67,10 +67,9 @@ cr.VerboseDateLabelFormatter = function() {
 
 cr.VerboseDateLabelFormatter.prototype.format = function(time) {
     var ret = this.dayFormatter.format(time) +
-        ' ' + this.monthFormatter.format(time);
+              ' ' + this.monthFormatter.format(time);
     return ret;
 };
-
 
 cr.DateLabelFormatter = function() {
     this.dayFormatter = new cr.DayLabelFormatter();
@@ -79,19 +78,18 @@ cr.DateLabelFormatter = function() {
 
 cr.DateLabelFormatter.prototype.format = function(time) {
     var ret = this.dayFormatter.format(time) +
-        ' ' + this.monthFormatter.format(time);
+              ' ' + this.monthFormatter.format(time);
     return ret;
 };
 
-
-cr.DateNumberLabelFormatter = function() {};
+cr.DateNumberLabelFormatter = function() {
+};
 
 cr.DateNumberLabelFormatter.prototype.format = function(time) {
     var d = new Date(Math.round(time * 1000.));
     var ret = d.getDate();
     return ret;
 };
-
 
 cr.DayLabelFormatter = function() {
     this.dateNumberFormatter = new cr.DateNumberLabelFormatter();
@@ -100,11 +98,12 @@ cr.DayLabelFormatter = function() {
 cr.DayLabelFormatter.prototype.format = function(time) {
     var d = new Date(Math.round(time * 1000.));
     var ret = cr.LabelFormatter.DAYS[d.getDay()] +
-        ' ' + this.dateNumberFormatter.format(time);
+              ' ' + this.dateNumberFormatter.format(time);
     return ret;
 };
 
-cr.VerboseDayLabelFormatter = function() {};
+cr.VerboseDayLabelFormatter = function() {
+};
 
 cr.VerboseDayLabelFormatter.prototype.format = function(time) {
     var d = new Date(Math.round(time * 1000.));
@@ -120,7 +119,7 @@ cr.MonthLabelFormatter = function(includeYear) {
 cr.MonthLabelFormatter.prototype.format = function(time) {
     var d = new Date(Math.round(time * 1000.0));
     var ret = cr.LabelFormatter.MONTHS[d.getMonth()] +
-        (this.includeYear ? ' ' + this.YearLabelFormatter.format(time) : '');
+              (this.includeYear ? ' ' + this.YearLabelFormatter.format(time) : '');
     return ret;
 };
 
@@ -132,18 +131,20 @@ cr.VerboseMonthLabelFormatter = function(includeYear) {
 cr.VerboseMonthLabelFormatter.prototype.format = function(time) {
     var d = new Date(Math.round(time * 1000.0));
     var ret = cr.LabelFormatter.VERBOSE_MONTHS[d.getMonth()] +
-        (this.includeYear ? ' ' + this.YearLabelFormatter.format(time) : '');
+              (this.includeYear ? ' ' + this.YearLabelFormatter.format(time) : '');
     return ret;
 };
 
-cr.YearLabelFormatter = function() {};
+cr.YearLabelFormatter = function() {
+};
 
 cr.YearLabelFormatter.prototype.format = function(time) {
     var d = new Date(Math.round(time * 1000.0));
     return d.getYear() + 1900;
 };
 
-cr.YearSmallLabelFormatter = function() {};
+cr.YearSmallLabelFormatter = function() {
+};
 
 cr.YearSmallLabelFormatter.prototype.format = function(time) {
     var d = new Date(Math.round(time * 1000.0));
@@ -154,8 +155,8 @@ cr.YearSmallLabelFormatter.prototype.format = function(time) {
     return (year < 10 ? '0' : '') + year;
 };
 
-
-cr.DecadeLabelFormatter = function() {};
+cr.DecadeLabelFormatter = function() {
+};
 
 cr.DecadeLabelFormatter.prototype.format = function(time) {
     var d = new Date(Math.round(time * 1000.0));
@@ -164,7 +165,8 @@ cr.DecadeLabelFormatter.prototype.format = function(time) {
     return decadeStart + ' - ' + decadeEnd;
 };
 
-cr.DecadeSmallLabelFormatter = function() {};
+cr.DecadeSmallLabelFormatter = function() {
+};
 
 cr.DecadeSmallLabelFormatter.prototype.format = function(time) {
     var d = new Date(Math.round(time * 1000.0));
@@ -176,7 +178,8 @@ cr.DecadeSmallLabelFormatter.prototype.format = function(time) {
     return (decadeStart == 0 ? '0' : '') + decadeStart + 's';
 };
 
-cr.CenturyLabelFormatter = function() {};
+cr.CenturyLabelFormatter = function() {
+};
 
 cr.CenturyLabelFormatter.prototype.format = function(time) {
     var d = new Date(Math.round(time * 1000.0));
@@ -185,7 +188,8 @@ cr.CenturyLabelFormatter.prototype.format = function(time) {
     return centuryStart + ' - ' + centuryEnd;
 };
 
-cr.CenturySmallLabelFormatter = function() {};
+cr.CenturySmallLabelFormatter = function() {
+};
 
 cr.CenturySmallLabelFormatter.prototype.format = function(time) {
     var d = new Date(Math.round(time * 1000.0));
