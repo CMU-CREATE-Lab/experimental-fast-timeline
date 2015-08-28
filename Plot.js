@@ -35,7 +35,7 @@ cr.Plot = function(url, xAxis, yAxis) {
 };
 
 cr.Plot.prototype.limitView = function() {
-    if (this.view.xmax - vthis.iew.xmin > this.bounds.xmax - this.bounds.xmin) {
+    if (this.view.xmax - this.view.xmin > this.bounds.xmax - this.bounds.xmin) {
         // Tried to zoom out beyond bounds
         this.view.xmax = this.bounds.xmax;
         this.view.xmin = this.bounds.xmin;
