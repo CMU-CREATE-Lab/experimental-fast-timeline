@@ -32,12 +32,12 @@ cr.Grapher = function () {
     };
     this.lastMouse;
     this.lastTouch;
-}
+};
 
 cr.Grapher.prototype.addPlotContainer = function(plotContainer) {
     this.plotContainer = plotContainer;
     this.plotContainers[plotContainer.div.id] = plotContainer;
-}
+};
 
 cr.Grapher.prototype._requestAnimFrame =
     window.requestAnimationFrame ||
@@ -135,18 +135,18 @@ cr.Grapher.prototype.resize = function() {
     }
 
     this.scheduleUpdate();
-}
+};
 
 cr.Grapher.prototype.update = function() {
     this._update();
-}
+};
 
 var __grapher__ = new cr.Grapher();
 
 var DateAxis = function(divName, orientation) {
   return new cr.TimeGraphAxis(document.getElementById(divName), null,
                               null, cr.Basis.XAxisBasis, true);
-}
+};
 
 var NumberAxis = function(id, orientation, range) {
     var basis, isXAxis;
@@ -159,22 +159,22 @@ var NumberAxis = function(id, orientation, range) {
         isXAxis = true;
     }
     return new cr.GraphAxis(document.getElementById(id), range.min, range.max, basis, isXAxis);
-}
+};
 
 var DataSeriesPlot = function(datasource, horizontalAxis, verticalAxis, optionalParams) {
     return new cr.Plot(datasource, horizontalAxis, verticalAxis);
-}
+};
 
 
 var PlotContainer = function(placeholder, ignoreClickEvents, plots) {
     return new cr.SeriesPlotContainer(placeholder, ignoreClickEvents, plots)
-}
+};
 
 var SequenceNumber = function() {};
 SequenceNumber.getNext = function() {
     console.log("SequenceNumber is deprecated");
     return 1;
-}
+};
 
 document.addEventListener('DOMContentLoaded', function() {
     var wnd = wnd || window.parent;

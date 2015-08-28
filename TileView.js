@@ -36,7 +36,7 @@ function TileView(settings) {
 TileView.prototype.toString = function() {
   var msg = 'TileView: ';
   return msg;
-}
+};
 
 TileView.prototype._computeLevel = function(view) {
     var width = view.max - view.min;
@@ -44,12 +44,12 @@ TileView.prototype._computeLevel = function(view) {
         return Number.MIN_VALUE;
 
     return Math.floor(Math.log2(width / 512));
-}
+};
 
 TileView.prototype._computeOffset = function(time,level) {
     var tileWidth = Math.pow(2, level) * 512;
     return Math.floor(time/tileWidth);
-}
+};
 
 TileView.prototype._tileidxAt = function(level, offset) {
   return new TileIdx(level, offset);
@@ -60,12 +60,12 @@ TileView.prototype._computeVisibleTileRange = function(level, view) {
   var tilemin = this._tileidxAt(level, this._computeOffset(view.min,level));
   var tilemax = this._tileidxAt(level, this._computeOffset(view.max,level));
   return {min: tilemin, max: tilemax}
-}
+};
 
 TileView.prototype._isTileVisible = function(tileidx, view) {
   var visibleRange = this._computeVisibleTileRange(tileidx.l,view);
   return visibleRange.min.o <= tileidx.o && tileidx.o <= visibleRange.max.o;
-}
+};
 
 TileView.prototype._addTileidx = function(tileidx) {
   if (!this._tiles[tileidx.key]) {
@@ -74,14 +74,14 @@ TileView.prototype._addTileidx = function(tileidx) {
     this._tiles[tileidx.key].index = tileidx;
   }
   return this._tiles[tileidx.key];
-}
+};
 
 TileView.prototype._deleteTile = function(tile) {
   if (this._tiles[tile.index.key]) {
     tile.delete();
     delete this._tiles[tile.index.key];
   }
-}
+};
 
 TileView.prototype._destroy = function() {
   var keys = Object.keys(this._tiles);
@@ -91,7 +91,7 @@ TileView.prototype._destroy = function() {
     this._deleteTile(this._tiles[key]);
     delete this._tiles[key];
   }
-}
+};
 
 TileView.prototype.tileInfo = function() {
   var ret = [];
@@ -100,7 +100,7 @@ TileView.prototype.tileInfo = function() {
     ret.push(tileidxs[i].toString());
   }
   return 'tileInfo: ' + ret.join(' ');
-}
+};
 
 // Find first ancestor of tileidx that's ready, and mark it as required, for now
 TileView.prototype._findReadyAncestor = function(tileidx) {
@@ -115,7 +115,7 @@ TileView.prototype._findReadyAncestor = function(tileidx) {
     }
     i+=1;
   }
-}
+};
 
 // Find first ancestor in keys
 TileView.prototype._findFirstAncestorIn = function(tileidx, map) {
@@ -128,7 +128,7 @@ TileView.prototype._findFirstAncestorIn = function(tileidx, map) {
       return tileidx;
     }
   }
-}
+};
 
 // Record drawable videos
 // +1,1,1 -2,2,2 +(3,3,3) ^4,4,4 lower higher
@@ -242,4 +242,4 @@ TileView.prototype.update = function(transform) {
     tiles.push(this._tiles[keys[i]]);
   }
   this._updateTileCallback(tiles, transform);
-}
+};

@@ -52,7 +52,7 @@ cr.SeriesPlotContainer = function(elementId, ignoreClickEvents, plots) {
 
     this.resize();
 
-}
+};
 
 cr.SeriesPlotContainer.prototype.getXAxis = function() {
     var keys = Object.keys(this._plots);
@@ -61,11 +61,11 @@ cr.SeriesPlotContainer.prototype.getXAxis = function() {
     } else {
         return this._plots[keys[0]].xAxis;
     }
-}
+};
 
 cr.SeriesPlotContainer.prototype.getId = function() {
     return this.div.id;
-}
+};
 cr.SeriesPlotContainer.prototype._initCanvases = function() {
 /*
     this.div.style.display = "block";
@@ -115,7 +115,7 @@ cr.SeriesPlotContainer.prototype._initCanvases = function() {
 
 
 
-}
+};
 
 cr.SeriesPlotContainer.prototype.mousedown = function(e) {
     var that = e.data;
@@ -147,7 +147,7 @@ cr.SeriesPlotContainer.prototype.mousedown = function(e) {
     }
 
     return false;
-}
+};
 
 cr.SeriesPlotContainer.prototype.mousemove = function(e) {
   // If mouse button is up, we probably missed the up event when the mouse was outside
@@ -172,7 +172,7 @@ cr.SeriesPlotContainer.prototype.mousemove = function(e) {
             coords.ymax = plot.yAxis.pixelToY(bbox.ymax);
             var point = plot.tlayer.search(coords);
             if (point) {
-              that.mouseoverHighlightPoint = {point: point, key: key}
+              that.mouseoverHighlightPoint = {point: point, key: key};
               that.grapher.scheduleUpdate();
               for (var i = 0; i < plot.dataPointListeners.length; i++) {
                   var d = new cr.DateLabelFormatter();
@@ -184,7 +184,7 @@ cr.SeriesPlotContainer.prototype.mousemove = function(e) {
                       dateString: d.format(point.x) + ", " + t.format(point.x),
                       valueString: point.y.toFixed(1),
                       comment: null
-                  }
+                  };
                   plot.dataPointListeners[i](dataPoint);
               }
               break;
@@ -213,12 +213,12 @@ cr.SeriesPlotContainer.prototype.mousemove = function(e) {
         that.lastMouse = e;
     }
     return false;
-}
+};
 
 cr.SeriesPlotContainer.prototype.mouseup = function(e) {
     var that = e.data;
     that.lastMouse = null;
-}
+};
 
 cr.SeriesPlotContainer.prototype.mousewheel = function(e) {
     var that = e.data;
@@ -230,7 +230,7 @@ cr.SeriesPlotContainer.prototype.mousewheel = function(e) {
         plot.yAxis.zoomAboutY(e.clientY, Math.pow(1.0005, e.originalEvent.deltaY));
     }
     return false;
-}
+};
 
 cr.SeriesPlotContainer.prototype.touchstart = function(e) {
     var that = e.data;
@@ -261,7 +261,7 @@ cr.SeriesPlotContainer.prototype.touchstart = function(e) {
     }
 
     return false;
-}
+};
 
 cr.SeriesPlotContainer.prototype.touchmove = function(e) {
     var that = e.data;
@@ -287,13 +287,13 @@ cr.SeriesPlotContainer.prototype.touchmove = function(e) {
     // Some platforms reuse the touch list
     that.lastTouch = that.touchUtils.copyTouches(thisTouch);
     return false;
-}
+};
 
 cr.SeriesPlotContainer.prototype.touchend = function(e) {
     var that = e.data;
     that.lastTouch = null;
     return false;
-}
+};
 
 cr.SeriesPlotContainer.prototype.update = function() {
     if (!this.usewebgl) {
@@ -314,7 +314,7 @@ cr.SeriesPlotContainer.prototype.update = function() {
     }
     this.drawHighlightPoints();
     this.drawMouseoverHighlightPoint();
-}
+};
 
 cr.SeriesPlotContainer.prototype.drawHighlightWebgl = function() {
     var xAxis = this.getXAxis();
@@ -346,7 +346,7 @@ cr.SeriesPlotContainer.prototype.drawHighlightWebgl = function() {
 
     gl.drawArrays(gl.LINES, 0, 2);
 
-}
+};
 
 cr.SeriesPlotContainer.prototype.drawHighlightCanvas = function() {
     var xAxis = this.getXAxis();
@@ -359,7 +359,7 @@ cr.SeriesPlotContainer.prototype.drawHighlightCanvas = function() {
     this.ctx.lineTo(scale * (this.cursorX + translate), this.ctx.canvas.height);
     this.ctx.stroke();
 
-}
+};
 
 cr.SeriesPlotContainer.prototype.drawHighlight = function() {
     var xAxis = this.getXAxis();
@@ -376,7 +376,7 @@ cr.SeriesPlotContainer.prototype.drawHighlight = function() {
 
     }
 
-}
+};
 
 cr.SeriesPlotContainer.prototype.setHighlightPoints = function() {
         this.highlightedPoints = [];
@@ -388,7 +388,7 @@ cr.SeriesPlotContainer.prototype.setHighlightPoints = function() {
                 this.highlightedPoints.push({point: point, key: plot});
             }
         }
-}
+};
 
 cr.SeriesPlotContainer.prototype.drawHighlightPointsWebgl = function() {
     var xAxis = this.getXAxis();
@@ -427,7 +427,7 @@ cr.SeriesPlotContainer.prototype.drawHighlightPointsWebgl = function() {
 
       gl.drawArrays(gl.POINTS, 0, points.length/2);
 
-}
+};
 
 cr.SeriesPlotContainer.prototype.drawHighlightPointsCanvas = function() {
     var xAxis = this.getXAxis();
@@ -456,7 +456,7 @@ cr.SeriesPlotContainer.prototype.drawHighlightPointsCanvas = function() {
     }
 
 
-}
+};
 cr.SeriesPlotContainer.prototype.drawHighlightPoints = function() {
     var xAxis = this.getXAxis();
     if (xAxis.cursorX) {
@@ -466,7 +466,7 @@ cr.SeriesPlotContainer.prototype.drawHighlightPoints = function() {
             this.drawHighlightPointsCanvas();
         }
     }
-}
+};
 
 
 cr.SeriesPlotContainer.prototype.drawMouseoverHighlightPointWebgl = function() {
@@ -506,13 +506,13 @@ cr.SeriesPlotContainer.prototype.drawMouseoverHighlightPointWebgl = function() {
 
     }
 
-}
+};
 
 cr.SeriesPlotContainer.prototype.drawMouseoverHighlightPointCanvas = function() {
     console.log("drawMouseoverHighlightPointCanvas");
     console.log("TODO...");
 
-}
+};
 cr.SeriesPlotContainer.prototype.drawMouseoverHighlightPoint = function() {
     var xAxis = this.getXAxis();
     if (this.usewebgl) {
@@ -520,7 +520,7 @@ cr.SeriesPlotContainer.prototype.drawMouseoverHighlightPoint = function() {
     } else {
         this.drawMouseoverHighlightPointCanvas();
     }
-}
+};
 
 
 cr.SeriesPlotContainer.prototype.resize = function() {
@@ -541,7 +541,7 @@ cr.SeriesPlotContainer.prototype.resize = function() {
     if (this.usewebgl) {
         this.gl.viewport(0, 0, this.canvas3d.width, this.canvas3d.height);
     }
-}
+};
 
 cr.SeriesPlotContainer.prototype._resize = function() {
     var canvasWidth = this.div.clientWidth * this._resolutionScale;
@@ -552,21 +552,21 @@ cr.SeriesPlotContainer.prototype._resize = function() {
       this.canvas2d.height = this.canvas3d.height = canvasHeight;
     }
 
-}
+};
 
 cr.SeriesPlotContainer.prototype.addPlot = function(plot) {
     this._plots[plot.getId()] = plot;
     this._plots[plot.getId()].tlayer = new DataStoreTileLayer(plot.url, this.glb, this.ctx);
     this._plots[plot.getId()].tlayer.usewebgl = this.usewebgl;
-}
+};
 
 cr.SeriesPlotContainer.prototype.removePlot = function(plot) {
     delete(this._plots[plot.getId()]);
-}
+};
 
 cr.SeriesPlotContainer.prototype.setSize = function(width, height) {
     // Set the canvas2d && canvas3d width, height
     this.div.style["width"] = width +"px";
     this.div.style["height"] = height + "px";
     this.resize();
- }
+ };

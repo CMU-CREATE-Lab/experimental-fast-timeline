@@ -32,7 +32,7 @@ cr.Plot = function (url, xAxis, yAxis) {
 
     //this.tlayer = new DataStoreTileLayer(url, this.glb, this.ctx);
     //this._resize();
-}
+};
 
 cr.Plot.prototype.limitView = function() {
     if (this.view.xmax - vthis.iew.xmin > this.bounds.xmax - this.bounds.xmin) {
@@ -48,7 +48,7 @@ cr.Plot.prototype.limitView = function() {
       this.view.xmin -= this.view.xmax - this.bounds.xmax;
       this.view.xmax = this.bounds.xmax;
     }
-}
+};
 
 cr.Plot.prototype._resize = function() {
     var canvasWidth = this.div.clientWidth * this._resolutionScale;
@@ -60,7 +60,7 @@ cr.Plot.prototype._resize = function() {
       console.log('Resized canvas to ' + this.canvas2d.width + ' x ' + this.canvas2d.height);
     }
 
-}
+};
 
 cr.Plot.prototype.drawCursorAndHighlight = function(view) {
     var transform = {};
@@ -82,11 +82,11 @@ cr.Plot.prototype.drawCursorAndHighlight = function(view) {
     if (this.showHighlightMOPoint) {
         this.highlight.drawMOPoint(transform, view);
     }
-}
+};
 
 cr.Plot.prototype.getId = function() {
     return this.id;
-}
+};
 
 cr.Plot.prototype.getView = function() {
     return {
@@ -95,15 +95,15 @@ cr.Plot.prototype.getView = function() {
         ymin: this.yAxis._min,
         ymax: this.yAxis._max,
     }
-}
+};
 cr.Plot.prototype.update = function() {
     this.tlayer.draw(this.getView());
     this._needsUpdate = this.tlayer._needsUpdate;
-}
+};
 
 cr.Plot.prototype.addDataPointListener = function(listener) {
     this.dataPointListeners.push(listener);
-}
+};
 
 cr.Plot.prototype.removeDataPointListener = function(listener) {
     for (var i = 0; i < this.dataPointListeners.length; i++) {
@@ -112,7 +112,7 @@ cr.Plot.prototype.removeDataPointListener = function(listener) {
     if (i < this.dataPointListeners.length) {
         var removed = this.dataPointListeners.splice(i,1);
     }
-}
+};
 
 cr.Plot.prototype.getClosestDataPointToTimeWithinWindow = function(timeInSecs, numSecsBefore, numSecsAfter){
     var dataPoint = null;
@@ -130,4 +130,4 @@ cr.Plot.prototype.getClosestDataPointToTimeWithinWindow = function(timeInSecs, n
         }
     }
   return dataPoint;
-}
+};

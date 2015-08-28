@@ -191,4 +191,4 @@ cr.CenturySmallLabelFormatter.prototype.format = function(time) {
     var d = new Date(Math.round(time * 1000.0));
     var centuryStart = (d.getYear() + 1900) / 100 * 100;
     return centuryStart + 's';
-}
+};

@@ -46,10 +46,10 @@ CanvasTile.prototype._load = function() {
         var json = JSON.parse(this.responseText);
         var float32Array = that._parseJSON(json);
         that._setData(float32Array);
-      }
+      };
       xhr.send();
   }
-}
+};
 
 CanvasTile.prototype._parseJSON = function(json) {
     var data = [];
@@ -60,22 +60,22 @@ CanvasTile.prototype._parseJSON = function(json) {
     }
     //return new Float32Array(data);
     return data;
-}
+};
 
 CanvasTile.prototype._setData = function(arrayBuffer) {
   this._pointCount = arrayBuffer.length / 4;
   this._data = arrayBuffer;
   this._ready = true;
-}
+};
 
 
 CanvasTile.prototype.isReady = function() {
   return this._ready;
-}
+};
 
 CanvasTile.prototype.delete = function() {
   console.log('delete: ' + this._tileidx.toString());
-}
+};
 
 CanvasTile.prototype.draw = function(transform) {
   if (this._ready) {
@@ -102,11 +102,11 @@ CanvasTile.prototype.draw = function(transform) {
       }
 
   }
-}
+};
 
 // Update and draw tiles
 CanvasTile.update = function(tiles, transform) {
   for (var i = 0; i < tiles.length; i++) {
     tiles[i].draw(transform);
   }
-}
+};

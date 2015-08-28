@@ -36,9 +36,9 @@ DataStoreTile.prototype._load = function() {
     var json = JSON.parse(this.responseText);
     var float32Array = that._parseJSON(json);
     that._setData(float32Array);
-  }
+  };
   xhr.send();
-}
+};
 
 DataStoreTile.prototype._parseJSON = function(json) {
     var data = [];
@@ -56,7 +56,7 @@ DataStoreTile.prototype._parseJSON = function(json) {
 //        }
     }
     return new Float32Array(data);
-}
+};
 DataStoreTile.prototype._setData = function(arrayBuffer) {
   var gl = this.gl;
   this._pointCount = arrayBuffer.length / 4;
@@ -71,18 +71,18 @@ DataStoreTile.prototype._setData = function(arrayBuffer) {
   gl.vertexAttribPointer(attributeLoc, 2, gl.FLOAT, false, 16, 0);
 
   this._ready = true;
-}
+};
 
 
 DataStoreTile.prototype.
 isReady = function() {
   return this._ready;
-}
+};
 
 DataStoreTile.prototype.
 delete = function() {
   console.log('delete: ' + this._tileidx.toString());
-}
+};
 
 DataStoreTile.prototype.
 draw = function(transform) {
@@ -140,11 +140,11 @@ draw = function(transform) {
     gl.drawArrays(gl.POINTS, 0, this._pointCount);
 
   }
-}
+};
 
 // Update and draw tiles
 DataStoreTile.update = function(tiles, transform) {
   for (var i = 0; i < tiles.length; i++) {
     tiles[i].draw(transform);
   }
-}
+};

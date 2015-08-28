@@ -39,25 +39,25 @@ cr.TimeGraphAxis = function (div, min, max, basis, isXAxis) {
 
     this.showCursor = false;
     this.cursorX = null;
-}
+};
 
 cr.TimeGraphAxis.prototype = Object.create(cr.GraphAxis.prototype);
 
 cr.TimeGraphAxis.prototype._initDiv = function(div) {
     this._div = div;
-}
+};
 
 cr.TimeGraphAxis.prototype.paint = function() {
 	this._ctx.clearRect(0,0,this.width,this.height);
 
 	this._ctx.beginPath();
     var mt = this.project2D(this._min);
-    var lt = this.project2D(this._max)
+    var lt = this.project2D(this._max);
     this._ctx.moveTo(mt._x, mt._y);
     this._ctx.lineTo(lt._x, lt._y);
 
     var mt = this.project2D(this._min);
-    var lt = this.project2D(this._max)
+    var lt = this.project2D(this._max);
     this._ctx.moveTo(mt._x, mt._y/2);
     this._ctx.lineTo(lt._x, lt._y/2);
 
@@ -242,7 +242,7 @@ cr.TimeGraphAxis.prototype.paint = function() {
     //}
 
 
-}
+};
 
 cr.TimeGraphAxis.prototype.computeTimeTickSize = function(minPixels) {
     var minDelta = (this._max - this._min) * (minPixels / this._length);
@@ -258,7 +258,7 @@ cr.TimeGraphAxis.prototype.computeTimeTickSize = function(minPixels) {
     }
 
     return computeTickSize(minPixels, this._secondsInYear) * this._secondsInYear;
-}
+};
 
 
 cr.TimeGraphAxis.prototype.computeTimeMinorTickSize = function(minPixels, majorTickSize) {
@@ -282,7 +282,7 @@ cr.TimeGraphAxis.prototype.computeTimeMinorTickSize = function(minPixels, majorT
 			}
 		}
 		return this._computeTimeTickSize(minPixels);
-	}
+	};
 
 cr.TimeGraphAxis.prototype.renderTicks = function(offsetPixels, tickSize, tickGen, tickWidthPixels, formatter, abbreviatedFormatter) {
     if (tickGen == null) {
@@ -304,7 +304,7 @@ cr.TimeGraphAxis.prototype.renderTicks = function(offsetPixels, tickSize, tickGe
 			}
         tick = it.next();
     }
-}
+};
 
 cr.TimeGraphAxis.prototype.renderTickLabelWithFormatter = function (tick, labelOffsetPixels, formatter, abbreviatedFormatter) {
   var text = formatter.format(tick);
@@ -316,7 +316,7 @@ cr.TimeGraphAxis.prototype.renderTickLabelWithFormatter = function (tick, labelO
     }
   }
   this.renderTickLabel(tick, labelOffsetPixels, text);
-}
+};
 
 
 cr.TimeGraphAxis.prototype.renderTickLabel = function(y, labelOffsetPixels, label) {
@@ -325,12 +325,12 @@ cr.TimeGraphAxis.prototype.renderTickLabel = function(y, labelOffsetPixels, labe
     this._ctx.fillText(label, position._x, position._y);
     //debugger;
 
-}
+};
 
 
 cr.TimeGraphAxis.prototype.computeTickWidth = function(unitSize) {
 	return this.project2D(unitSize).distance(this.project2D(0));
-}
+};
 
 
 cr.TimeGraphAxis.prototype.createDateTickGenerator = function(tickSize) {
@@ -359,7 +359,7 @@ cr.TimeGraphAxis.prototype.createDateTickGenerator = function(tickSize) {
 
 		var nYears = Math.round(tickSize / this._secondsInYear);
 		return new cr.YearTickGenerator(nYears);
-	}
+	};
 
 var bar;
 cr.TimeGraphAxis.prototype.renderRangeLabelInline = function(offsetPixels, tickSize, tickGen, tickWidthPixels, formatter) {
@@ -394,7 +394,7 @@ cr.TimeGraphAxis.prototype.renderRangeLabelInline = function(offsetPixels, tickS
 		this.renderTickLabelWithinBounds((min + max) / 2.0, min, max, labelOffsetPixels, formatter);
 		tick = nextTick;
 	}
-}
+};
 
 
 cr.TimeGraphAxis.prototype.renderTickLabelWithinBounds = function(tick, min, max, labelOffsetPixels, formatter) {
@@ -437,7 +437,7 @@ cr.TimeGraphAxis.prototype.renderTickLabelWithinBounds = function(tick, min, max
 		this.renderTickLabel(tick, labelOffsetPixels, formatter(tick));
 	}
 
-}
+};
 var foo;
 var fooTickSize;
 cr.TimeGraphAxis.prototype.renderTicksRangeLabelInline = function(offsetPixels, tickSize, tickGen, tickWidthPixels, formatter) {
@@ -475,7 +475,7 @@ cr.TimeGraphAxis.prototype.renderTicksRangeLabelInline = function(offsetPixels, 
 			tick = nextTick;
 		}
 
-	}
+	};
 
 
 cr.TimeGraphAxis.prototype.renderLabels = function(offsetPixels, tickSize, tickGen, tickWidthPixels, formatter) {
@@ -494,15 +494,15 @@ cr.TimeGraphAxis.prototype.renderLabels = function(offsetPixels, tickSize, tickG
             tick = it.next();
         }
 
-	}
+	};
 
 cr.TimeGraphAxis.prototype.setCursorPosition = function(x) {
     if (x != this.cursorX) {
         this.cursorX = x;
     }
     this.publishAxisChangeEvent();
-}
+};
 
 cr.TimeGraphAxis.prototype.getCursorPosition = function() {
     return this.cursorX;
-}
+};

@@ -8,11 +8,11 @@ cr.IterableTickGenerator = function(gen, minValue, maxValue) {
 
     this._currTick = 0.0;
     this._nextTick = gen.nextTick(minValue);
-}
+};
 
 cr.IterableTickGenerator.prototype.hasNext = function() {
     return this._nextTick <= this._maxValue;
-}
+};
 
 cr.IterableTickGenerator.prototype.next = function() {
     if (!this.hasNext()) {
@@ -22,4 +22,4 @@ cr.IterableTickGenerator.prototype.next = function() {
     this._currTick = this._nextTick;
     this._nextTick = this._gen.nextTick();
     return this._currTick;
-}
+};

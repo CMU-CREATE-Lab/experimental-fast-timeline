@@ -34,7 +34,7 @@ DataStoreTileLayer.prototype.draw = function(view) {
         this.drawCanvas(view);
     }
     this._needsUpdate = this._tileView._needsUpdate;
-}
+};
 
 DataStoreTileLayer.prototype.drawWebgl = function(view) {
     //this.glb.gl.clear(this.glb.gl.COLOR_BUFFER_BIT);
@@ -56,7 +56,7 @@ DataStoreTileLayer.prototype.drawWebgl = function(view) {
     this._tileView.setView({min:view.xmin, max:view.xmax});
 //    this._tileView.update(pMatrix);
     this._tileView.update(view);
-}
+};
 
 
 DataStoreTileLayer.prototype.drawCanvas = function(view) {
@@ -72,7 +72,7 @@ DataStoreTileLayer.prototype.drawCanvas = function(view) {
     this._tileView.update(transform);
 
 
-}
+};
 
 DataStoreTileLayer.prototype.search = function(bbox) {
     var keys = Object.keys(this._tileView._tiles).sort();
@@ -94,7 +94,7 @@ DataStoreTileLayer.prototype.search = function(bbox) {
         }
     }
     return null;
-}
+};
 
 DataStoreTileLayer.prototype.searchByX = function(bbox) {
     var keys = Object.keys(this._tileView._tiles).sort();
@@ -111,4 +111,4 @@ DataStoreTileLayer.prototype.searchByX = function(bbox) {
         }
     }
     return null;
-}
+};

@@ -54,13 +54,13 @@ cr.GraphAxis = function (div, min, max, basis, isXAxis, grapher) {
     }
 
     this.axisChangeListeners = [];
-}
+};
 
 cr.GraphAxis.prototype.mousedown = function(e) {
     var that = e.data;
     that.lastMouse = e;
     return false;
-}
+};
 
 cr.GraphAxis.prototype.mousemove = function(e) {
   // If mouse button is up, we probably missed the up event when the mouse was outside
@@ -80,7 +80,7 @@ cr.GraphAxis.prototype.mousemove = function(e) {
                     xmax: that.project1D(that.cursorX) + 10,
                     ymin: Math.floor(that._div.clientHeight/2),
                     ymax: that._div.clientHeight
-                }
+                };
                 if (bbox.xmin <= e.offsetX && bbox.xmax >= e.offsetX && bbox.ymin <= e.offsetY && bbox.ymax >= e.offsetY) {
                         var xScale = that._canvas.width / that._resolutionScale / (that._max - that._min);
                     var x = that.cursorX + (e.clientX - that.lastMouse.clientX) / xScale;
@@ -98,13 +98,13 @@ cr.GraphAxis.prototype.mousemove = function(e) {
         that.lastMouse = e;
       }
     return false;
-}
+};
 
 cr.GraphAxis.prototype.mouseup = function(e) {
     var that = e.data;
     that.lastMouse = null;
     that.publishAxisChangeEvent();
-}
+};
 
 cr.GraphAxis.prototype.mousewheel = function(e) {
     var that = e.data;
@@ -114,13 +114,13 @@ cr.GraphAxis.prototype.mousewheel = function(e) {
         that.zoomAboutY(e.clientY, Math.pow(1.0005, e.originalEvent.deltaY));
     }
     return false;
-}
+};
 
 cr.GraphAxis.prototype.touchstart = function(e) {
     var that = e.data;
     that.lastTouch = e.originalEvent.touches;
     return false;
-}
+};
 
 cr.GraphAxis.prototype.touchmove = function(e) {
     var that = e.data;
@@ -146,13 +146,13 @@ cr.GraphAxis.prototype.touchmove = function(e) {
     // Some platforms reuse the touch list
     that.lastTouch = that.touchUtils.copyTouches(thisTouch);
     return false;
-}
+};
 
 cr.GraphAxis.prototype.touchend = function(e) {
     var that = e.data;
     that.lastTouch = null;
     return false;
-}
+};
 
 
 cr.GraphAxis.prototype.translatePixels = function (delta) {
@@ -167,7 +167,7 @@ cr.GraphAxis.prototype.translatePixels = function (delta) {
     }
 
     this.limitView();
-}
+};
 
 cr.GraphAxis.prototype._initDiv = function(div) {
     this._div = div;
@@ -186,7 +186,7 @@ cr.GraphAxis.prototype._initDiv = function(div) {
     this._div.style["borderRight"] = "1px solid black";
     this._div.style["borderBottom"] = "1px solid black";
     */
-}
+};
 
 cr.GraphAxis.prototype._initCanvas = function() {
     this._canvas = document.createElement("canvas");
@@ -199,7 +199,7 @@ cr.GraphAxis.prototype._initCanvas = function() {
     this._canvas.style["position"] = "absolute";
     this._div.appendChild(this._canvas);
     this._ctx = this._canvas.getContext('2d');
-}
+};
 
 cr.GraphAxis.prototype.resize = function() {
     this.height = this._div.clientHeight;
@@ -212,7 +212,7 @@ cr.GraphAxis.prototype.resize = function() {
     this._ctx.scale(this._resolutionScale,this._resolutionScale);
 
     this.layout();
-}
+};
 
 cr.GraphAxis.prototype.layout = function() {
 	var axisLength;
@@ -225,12 +225,12 @@ cr.GraphAxis.prototype.layout = function() {
     this._begin = new cr.Vector2(0,this.height);
     this._length = axisLength;
     this.rescale();
-}
+};
 
 cr.GraphAxis.prototype.uncheckedTranslate = function(motion) {
     this._min += motion;
     this._max += motion;
-}
+};
 
 cr.GraphAxis.prototype.clampToRange = function() {
     this.uncheckedTranslate(Math.max(0, this.minRange - this._min));
@@ -248,17 +248,17 @@ cr.GraphAxis.prototype.clampToRange = function() {
 	if (this.hasMaxRange) {
 		this._max = Math.min(this._max, this.maxRange);
 	}
-}
+};
 
 cr.GraphAxis.prototype.rescale = function() {
     this._scale = this._length / (this._max - this._min);
-}
+};
 
 cr.GraphAxis.prototype.paint = function() {
 	this._ctx.clearRect(0,0,this._canvas.width,this.height);
 	this._ctx.beginPath();
     var mt = this.project2D(this._min);
-    var lt = this.project2D(this._max)
+    var lt = this.project2D(this._max);
     this._ctx.moveTo(mt._x, mt._y);
     this._ctx.lineTo(lt._x, lt._y);
 
@@ -267,15 +267,15 @@ cr.GraphAxis.prototype.paint = function() {
     var minorTickSize = this.computeTickSize(this.minorTickMinSpacingPixels, 1);
     this.renderTicks(0, minorTickSize, this.minorTickWidthPixels);
     this._ctx.stroke();
-}
+};
 
 cr.GraphAxis.prototype.project1D = function(value) {
     return (value - this._min) * this._scale;
-}
+};
 
 cr.GraphAxis.prototype.project2D = function(value) {
     return this._begin.add(this._basis.y.scale(this.project1D(value)));
-}
+};
 
 cr.GraphAxis.prototype.computeTickSize = function(minPixels, unitSize) {
     unitSize = unitSize||1;
@@ -294,7 +294,7 @@ cr.GraphAxis.prototype.computeTickSize = function(minPixels, unitSize) {
     }
 
     return minDelta * (actualDeltaMantissa / minDeltaMantissa);
-}
+};
 
 cr.GraphAxis.prototype.renderTicks = function(offsetPixels, tickSize, tickWidthPixels, drawLabels) {
     var labelOffsetPixels = this.setupText() + offsetPixels + tickWidthPixels;
@@ -311,7 +311,7 @@ cr.GraphAxis.prototype.renderTicks = function(offsetPixels, tickSize, tickWidthP
        }
        tick = it.next();
     }
-}
+};
 
 cr.GraphAxis.prototype.renderTick = function(tick, tickWidthPixels) {
     var fromPosition;
@@ -320,7 +320,7 @@ cr.GraphAxis.prototype.renderTick = function(tick, tickWidthPixels) {
     toPosition = fromPosition.add(this._basis.x.scale(tickWidthPixels));
     this._ctx.moveTo(fromPosition._x, fromPosition._y);
     this._ctx.lineTo(toPosition._x, toPosition._y);
-}
+};
 
 
 cr.GraphAxis.prototype.renderTickLabel = function(value, labelOffsetPixels) {
@@ -354,7 +354,7 @@ cr.GraphAxis.prototype.renderTickLabel = function(value, labelOffsetPixels) {
     var position = this.project2D(positionalValue).add(this._basis.x.scale(labelOffsetPixels));
     this._ctx.fillText(valueStr, position._x, position._y);
 
-}
+};
 
 cr.GraphAxis.prototype.zoomAboutY = function(pixelY, scale) {
   // Limit scale to not zoom out past "width"
@@ -373,7 +373,7 @@ cr.GraphAxis.prototype.zoomAboutY = function(pixelY, scale) {
   this._max += y;
 
   this.limitView();
-}
+};
 
 
 cr.GraphAxis.prototype.zoomAboutX = function(pixelX, scale) {
@@ -393,7 +393,7 @@ cr.GraphAxis.prototype.zoomAboutX = function(pixelX, scale) {
   this._max += x;
 
   this.limitView();
-}
+};
 
 cr.GraphAxis.prototype.limitView = function() {
     if (this._max - this._min > this.maxRange - this.minRange) {
@@ -411,26 +411,26 @@ cr.GraphAxis.prototype.limitView = function() {
     }
     this.publishAxisChangeEvent();
     this.grapher.scheduleUpdate();
-}
+};
 
 cr.GraphAxis.prototype.pixelToX = function(px) {
   var xOffset = -this._min;
   var xScale = this._canvas.width / this._resolutionScale / (this._max - this._min);
   return px / xScale - xOffset;
-}
+};
 
 cr.GraphAxis.prototype.xToPixel = function(x) {
   var xOffset = -this._min;
   var xScale = this._canvas.width / this._resolutionScale / (this._max - this._min);
   return x *  (xScale - xOffset);
-}
+};
 
 
 cr.GraphAxis.prototype.pixelToY = function(px) {
   var yOffset = -this._max;
   var yScale = this._canvas.height / this._resolutionScale / (this._min - this._max);
   return px / yScale - yOffset;
-}
+};
 
 
 cr.GraphAxis.prototype.setupText = function() {
@@ -447,14 +447,14 @@ cr.GraphAxis.prototype.setupText = function() {
         labelOffsetPixels = 3;
     }
     return labelOffsetPixels;
-}
+};
 
 cr.GraphAxis.prototype.setRange = function(min, max) {
     if (min < max) {
         this._min = min;
         this._max = max;
     }
-}
+};
 
 cr.GraphAxis.prototype.setBounds = function(view) {
     if (this.isXAxis) {
@@ -462,7 +462,7 @@ cr.GraphAxis.prototype.setBounds = function(view) {
     } else {
         this.setRange(view.ymin, view.ymax);
     }
-}
+};
 
 cr.GraphAxis.prototype.update = function(view) {
     if (view) {
@@ -471,7 +471,7 @@ cr.GraphAxis.prototype.update = function(view) {
     this.clampToRange();
     this.rescale();
     this.paint();
-}
+};
 
 cr.GraphAxis.prototype.setSize = function(width, height) {
     this._div.style["width"] = width + "px";
@@ -479,7 +479,7 @@ cr.GraphAxis.prototype.setSize = function(width, height) {
     this.resize();
     this.grapher.resize();
     this.publishAxisChangeEvent();
-}
+};
 
 cr.GraphAxis.prototype.setMaxRange = function(min, max) {
     this.minRange = min;
@@ -487,15 +487,15 @@ cr.GraphAxis.prototype.setMaxRange = function(min, max) {
     this.hasMinRange = this.hasMaxRange = true;
     this.publishAxisChangeEvent();
     this.update();
-}
+};
 
 cr.GraphAxis.prototype.getId = function() {
     return this._div.id;
-}
+};
 
 cr.GraphAxis.prototype.addAxisChangeListener = function(listener) {
     this.axisChangeListeners.push(listener);
-}
+};
 
 cr.GraphAxis.prototype.removeAxisChangeListener = function(listener) {
     for (var i = 0; i < this.axisChangeListeners.length; i++) {
@@ -504,7 +504,7 @@ cr.GraphAxis.prototype.removeAxisChangeListener = function(listener) {
     if (i < this.axisChangeListeners.length) {
         var removed = this.axisChangeListeners.splice(i,1);
     }
-}
+};
 
 cr.GraphAxis.prototype.publishAxisChangeEvent = function() {
     for (var i = 0; i < this.axisChangeListeners.length; i++) {
@@ -517,7 +517,7 @@ cr.GraphAxis.prototype.publishAxisChangeEvent = function() {
 			cursorPosition: this.cursorX,
 			cursorPositionString: d.format(this.cursorX) + ", " + t.format(this.cursorX),
 			eventId: -1 // deprecated
-		}
+		};
         this.axisChangeListeners[i](ret);
     }
-}
+};

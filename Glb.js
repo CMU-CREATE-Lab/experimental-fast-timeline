@@ -4,7 +4,7 @@ function Glb(gl) {
   this.gl = gl;
   this._shaderCache = {};
   this._programCache = {};
-};
+}
 
 // Return compiled shader for type and source.
 // If same type and source has already been compiled, return
@@ -26,7 +26,7 @@ _shaderFromSource = function(type, source) {
     }
   }
   return shader;
-}
+};
 
 // Return compiled and linked program for vertex and fragment shader sources.
 // If identical program has already been compiled and linked, return it.
@@ -53,7 +53,7 @@ programFromSources = function(vertexSource, fragmentSource) {
   this._addAttribsAndUniformsToProgram(program);
 
   return program;
-}
+};
 
 Glb.prototype.
 _addAttribsAndUniformsToProgram = function(program) {
@@ -73,7 +73,7 @@ _addAttribsAndUniformsToProgram = function(program) {
     var name = this.gl.getActiveUniform(program, i).name;
     program[name] = this.gl.getUniformLocation(program, name);
   }
-}
+};
 
 Glb.prototype.
 createBuffer = function(array) {
@@ -81,4 +81,4 @@ createBuffer = function(array) {
   this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer);
   this.gl.bufferData(this.gl.ARRAY_BUFFER, array, this.gl.STATIC_DRAW);
   return buffer;
-}
+};

@@ -14,7 +14,7 @@ cr.TickGenerator = function(tickSize, offset) {
     this._tickSize = tickSize;
     this._offset = offset;
     this._currentTick = 0.0;
-}
+};
 
 cr.TickGenerator.prototype.nextTick = function(min) {
     if (min) {
@@ -27,7 +27,7 @@ cr.TickGenerator.prototype.nextTick = function(min) {
         this.advanceTick();
     }
     return this._currentTick;
-}
+};
 
 
 var foocount = 0;
@@ -43,11 +43,11 @@ cr.TickGenerator.prototype.advanceTick = function() {
           var tickAdvance = Math.max(Math.abs(this._prevTick) / Math.pow(2, 50), Number.MIN_VALUE);
           this._currentTick = this._prevTick + tickAdvance;
     }
-}
+};
 
 cr.TickGenerator.prototype.closestTick = function(val) {
 	return Math.round((val - this._offset) / this._tickSize) * this._tickSize + this._offset;
-}
+};
 
 cr.TickGenerator.closestDay = function(time) {
     var timeDate = new Date(time * 1000);
@@ -68,22 +68,22 @@ cr.TickGenerator.closestDay = function(time) {
 	// Return time in seconds, truncating fractional second
 	var ret = Math.floor(timeDate.getTime() / 1000 + epsilon);
 	return ret;
-}
+};
 
 
 cr.DayTickGenerator = function(tickSize, offset) {
     cr.TickGenerator.call(this, tickSize, offset);
-}
+};
 cr.DayTickGenerator.prototype = Object.create( cr.TickGenerator.prototype );
 
 cr.DayTickGenerator.prototype.closestTick = function(time) {
     return cr.TickGenerator.closestDay(time);
-}
+};
 
 cr.MonthTickGenerator = function(tickSize, offset) {
     cr.TickGenerator.call(this, secondsInMonth*tickSize, offset);
     this._tickSizeMonths = tickSize;
-}
+};
 cr.MonthTickGenerator.prototype = Object.create( cr.TickGenerator.prototype );
 
 cr.MonthTickGenerator.prototype.closestTick = function(time) {
@@ -97,18 +97,18 @@ cr.MonthTickGenerator.prototype.closestTick = function(time) {
 	var tickDate = new Date(tickYear+1900, tickMonth, 1);
     var ret =  Math.round(tickDate.getTime() / 1000);
 	return ret;
-}
+};
 
 
 cr.YearTickGenerator = function(tickSize, offset) {
     cr.MonthTickGenerator.call(this, tickSize*12, offset);
-}
+};
 cr.YearTickGenerator.prototype = Object.create( cr.MonthTickGenerator.prototype );
 
 cr.HourTickGenerator = function(tickSize) {
     cr.TickGenerator.call(this, secondsInHour*tickSize, 0);
     this._tickSizeHours = tickSize;
-}
+};
 cr.HourTickGenerator.prototype = Object.create( cr.TickGenerator.prototype );
 
 cr.HourTickGenerator.prototype.closestTick = function(time) {
@@ -130,4 +130,4 @@ cr.HourTickGenerator.prototype.closestTick = function(time) {
 			var epsilon = 1e-10;
 			// Return time in seconds, truncating fractional second
 			return Math.floor(timeDate.getTime() / 1000 + epsilon);
-	}
+	};
