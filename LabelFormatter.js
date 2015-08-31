@@ -152,7 +152,7 @@ cr.YearSmallLabelFormatter.prototype.format = function(time) {
     if (year < 0) {
         year += 100;
     }
-    return (year < 10 ? '0' : '') + year;
+    return (year < 10 ? "'0" : "'") + year;
 };
 
 cr.DecadeLabelFormatter = function() {
@@ -160,7 +160,7 @@ cr.DecadeLabelFormatter = function() {
 
 cr.DecadeLabelFormatter.prototype.format = function(time) {
     var d = new Date(Math.round(time * 1000.0));
-    var decadeStart = (d.getYear() + 1900) / 10 * 10;
+    var decadeStart = Math.floor((d.getYear() + 1900) / 10) * 10;
     var decadeEnd = decadeStart + 9;
     return decadeStart + ' - ' + decadeEnd;
 };
@@ -174,8 +174,8 @@ cr.DecadeSmallLabelFormatter.prototype.format = function(time) {
     if (decadeStart < 0) {
         decadeStart += 100;
     }
-    decadeStart = decadeStart / 10 * 10;
-    return (decadeStart == 0 ? '0' : '') + decadeStart + 's';
+    decadeStart = Math.floor(decadeStart / 10) * 10;
+    return (decadeStart == 0 ? "'0" : "'") + decadeStart + 's';
 };
 
 cr.CenturyLabelFormatter = function() {
@@ -183,7 +183,7 @@ cr.CenturyLabelFormatter = function() {
 
 cr.CenturyLabelFormatter.prototype.format = function(time) {
     var d = new Date(Math.round(time * 1000.0));
-    var centuryStart = (d.getYear() + 1900) / 100 * 100;
+    var centuryStart = Math.floor((d.getYear() + 1900) / 100) * 100;
     var centuryEnd = centuryStart + 99;
     return centuryStart + ' - ' + centuryEnd;
 };
@@ -193,6 +193,6 @@ cr.CenturySmallLabelFormatter = function() {
 
 cr.CenturySmallLabelFormatter.prototype.format = function(time) {
     var d = new Date(Math.round(time * 1000.0));
-    var centuryStart = (d.getYear() + 1900) / 100 * 100;
+    var centuryStart = Math.floor((d.getYear() + 1900) / 100) * 100;
     return centuryStart + 's';
 };
