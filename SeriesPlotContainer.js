@@ -518,7 +518,6 @@ cr.SeriesPlotContainer.prototype.drawMouseoverHighlightPointCanvas = function() 
 
 };
 cr.SeriesPlotContainer.prototype.drawMouseoverHighlightPoint = function() {
-    var xAxis = this.getXAxis();
     if (this.usewebgl) {
         this.drawMouseoverHighlightPointWebgl();
     }
