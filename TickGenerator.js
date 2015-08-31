@@ -79,6 +79,31 @@ cr.DayTickGenerator.prototype.closestTick = function(time) {
     return cr.TickGenerator.closestDay(time);
 };
 
+cr.WeekTickGenerator = function(tickSize, offset) {
+
+};
+cr.WeekTickGenerator.prototype = Object.create(cr.TickGenerator.prototype);
+
+cr.WeekTickGenerator.prototype.closestTick = function(time) {
+    var timeDate = new Date(time * 1000);
+
+    var day = ((60 * (60 * timeDate.getSeconds()) + timeDate.getMinutes()) + timeDate.getHours()) / 24.;
+    var daysSinceMonday = timeDate.getDay() - 1;
+
+    if (daysSinceMonday < 0) {
+        daysSinceMonday += 7;
+    }
+
+    day += daysSinceMonday;
+
+    if (day >= 3.5) {
+        return cr.TickGenerator.closestDay(time + secondsInDay * (7 - day));
+    }
+    else {
+        return cr.TickGenerator.closestDay(time - secondsInDay * day);
+    }
+};
+
 cr.MonthTickGenerator = function(tickSize, offset) {
     cr.TickGenerator.call(this, secondsInMonth * tickSize, offset);
     this._tickSizeMonths = tickSize;
@@ -94,8 +119,7 @@ cr.MonthTickGenerator.prototype.closestTick = function(time) {
     var tickYear = Math.floor(tickMonthsSince1900 / 12);
     var tickMonth = tickMonthsSince1900 - tickYear * 12;
     var tickDate = new Date(tickYear + 1900, tickMonth, 1);
-    var ret = Math.round(tickDate.getTime() / 1000);
-    return ret;
+    return Math.round(tickDate.getTime() / 1000);
 };
 
 cr.YearTickGenerator = function(tickSize, offset) {

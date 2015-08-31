@@ -343,7 +343,7 @@ cr.TimeGraphAxis.prototype.createDateTickGenerator = function(tickSize) {
 
     var nWeeks = Math.round(tickSize / this._secondsInWeek);
     if (nWeeks == 1) {
-        return new cr.WeekTickGenerator();
+        return new cr.WeekTickGenerator(this._secondsInWeek, 0);
     }
 
     var nMonths = Math.round(tickSize / this._secondsInMonth);
