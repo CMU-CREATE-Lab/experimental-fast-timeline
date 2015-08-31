@@ -112,10 +112,10 @@ cr.GraphAxis.prototype.mouseup = function(e) {
 cr.GraphAxis.prototype.mousewheel = function(e) {
     var that = e.data;
     if (that.isXAxis) {
-        that.zoomAboutX(e.clientX, Math.pow(1.0005, e.originalEvent.deltaY));
+        that.zoomAboutX(e.clientX, Math.pow(1.0005, -e.originalEvent.deltaY));
     }
     else {
-        that.zoomAboutY(e.clientY, Math.pow(1.0005, e.originalEvent.deltaY));
+        that.zoomAboutY(e.clientY, Math.pow(1.0005, -e.originalEvent.deltaY));
     }
     return false;
 };
@@ -372,14 +372,7 @@ cr.GraphAxis.prototype.renderTickLabel = function(value, labelOffsetPixels) {
 };
 
 cr.GraphAxis.prototype.zoomAboutY = function(pixelY, scale) {
-    // Limit scale to not zoom out past "width"
-    var maxWidth = function() {
-    };
-    var height = this._max - this._min;
-    if (height / scale > maxWidth()) {
-        scale = height / maxWidth();
-    }
-    // Zoom about pixelX
+    // Zoom about pixelY
     var y = this.pixelToY(pixelY);
     this._min -= y;
     this._max -= y;
@@ -392,13 +385,6 @@ cr.GraphAxis.prototype.zoomAboutY = function(pixelY, scale) {
 };
 
 cr.GraphAxis.prototype.zoomAboutX = function(pixelX, scale) {
-    // Limit scale to not zoom out past "width"
-    var maxWidth = function() {
-    };
-    var width = this._max - this._min;
-    if (width / scale > maxWidth()) {
-        scale = width / maxWidth();
-    }
     // Zoom about pixelX
     var x = this.pixelToX(pixelX);
     this._min -= x;

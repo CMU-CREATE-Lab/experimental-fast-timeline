@@ -225,8 +225,8 @@ cr.SeriesPlotContainer.prototype.mousewheel = function(e) {
     for (var i = 0; i < keys.length; i++) {
         var key = keys[i];
         var plot = that._plots[key];
-        plot.xAxis.zoomAboutX(e.clientX, Math.pow(1.0005, e.originalEvent.deltaY));
-        plot.yAxis.zoomAboutY(e.clientY, Math.pow(1.0005, e.originalEvent.deltaY));
+        plot.xAxis.zoomAboutX(e.clientX, Math.pow(1.0005, -e.originalEvent.deltaY));
+        plot.yAxis.zoomAboutY(e.clientY, Math.pow(1.0005, -e.originalEvent.deltaY));
     }
     return false;
 };
