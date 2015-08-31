@@ -77,9 +77,8 @@ cr.DateLabelFormatter = function() {
 };
 
 cr.DateLabelFormatter.prototype.format = function(time) {
-    var ret = this.dayFormatter.format(time) +
-              ' ' + this.monthFormatter.format(time);
-    return ret;
+    return this.dayFormatter.format(time) +
+           ' ' + this.monthFormatter.format(time);
 };
 
 cr.DateNumberLabelFormatter = function() {
@@ -87,8 +86,7 @@ cr.DateNumberLabelFormatter = function() {
 
 cr.DateNumberLabelFormatter.prototype.format = function(time) {
     var d = new Date(Math.round(time * 1000.));
-    var ret = d.getDate();
-    return ret;
+    return d.getDate();
 };
 
 cr.DayLabelFormatter = function() {
@@ -97,9 +95,8 @@ cr.DayLabelFormatter = function() {
 
 cr.DayLabelFormatter.prototype.format = function(time) {
     var d = new Date(Math.round(time * 1000.));
-    var ret = cr.LabelFormatter.DAYS[d.getDay()] +
-              ' ' + this.dateNumberFormatter.format(time);
-    return ret;
+    return cr.LabelFormatter.DAYS[d.getDay()] +
+           ' ' + this.dateNumberFormatter.format(time);
 };
 
 cr.VerboseDayLabelFormatter = function() {
@@ -107,8 +104,7 @@ cr.VerboseDayLabelFormatter = function() {
 
 cr.VerboseDayLabelFormatter.prototype.format = function(time) {
     var d = new Date(Math.round(time * 1000.));
-    var ret = cr.LabelFormatter.VERBOSE_DAYS[d.getDay()] + ' ' + d.getDate();
-    return ret;
+    return cr.LabelFormatter.VERBOSE_DAYS[d.getDay()] + ' ' + d.getDate();
 };
 
 cr.MonthLabelFormatter = function(includeYear) {
@@ -118,9 +114,8 @@ cr.MonthLabelFormatter = function(includeYear) {
 
 cr.MonthLabelFormatter.prototype.format = function(time) {
     var d = new Date(Math.round(time * 1000.0));
-    var ret = cr.LabelFormatter.MONTHS[d.getMonth()] +
-              (this.includeYear ? ' ' + this.YearLabelFormatter.format(time) : '');
-    return ret;
+    return cr.LabelFormatter.MONTHS[d.getMonth()] +
+           (this.includeYear ? ' ' + this.YearLabelFormatter.format(time) : '');
 };
 
 cr.VerboseMonthLabelFormatter = function(includeYear) {
@@ -130,9 +125,8 @@ cr.VerboseMonthLabelFormatter = function(includeYear) {
 
 cr.VerboseMonthLabelFormatter.prototype.format = function(time) {
     var d = new Date(Math.round(time * 1000.0));
-    var ret = cr.LabelFormatter.VERBOSE_MONTHS[d.getMonth()] +
-              (this.includeYear ? ' ' + this.YearLabelFormatter.format(time) : '');
-    return ret;
+    return cr.LabelFormatter.VERBOSE_MONTHS[d.getMonth()] +
+           (this.includeYear ? ' ' + this.YearLabelFormatter.format(time) : '');
 };
 
 cr.YearLabelFormatter = function() {
