@@ -355,7 +355,6 @@ cr.TimeGraphAxis.prototype.createDateTickGenerator = function(tickSize) {
     return new cr.YearTickGenerator(nYears);
 };
 
-var bar;
 cr.TimeGraphAxis.prototype.renderRangeLabelInline = function(offsetPixels, tickSize, tickGen, tickWidthPixels, formatter) {
 	if (formatter == null) {
 		return;
@@ -364,10 +363,6 @@ cr.TimeGraphAxis.prototype.renderRangeLabelInline = function(offsetPixels, tickS
     if (tickGen == null) {
         tickGen = new cr.TickGenerator(tickSize, 0);
     }
-
-	if (typeof bar == "undefined") {
-		bar = tickGen;
-	}
 
     var labelOffsetPixels = this.setupText() + offsetPixels;
     var tick = tickGen.nextTick(this._min);
