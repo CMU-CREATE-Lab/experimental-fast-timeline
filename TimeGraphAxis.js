@@ -166,7 +166,7 @@ cr.TimeGraphAxis.prototype.paint = function() {
         console.log('decadeMajorTickWidth >= 150');
         this.renderTicks(0, yearMajorTickSize,
                          this.createDateTickGenerator(yearMajorTickSize),
-                         majorTickWidthPixels, null, null);
+                         this.majorTickWidthPixels, null, null);
 
         var yearFormatter = null;
 
@@ -253,7 +253,7 @@ cr.TimeGraphAxis.prototype.computeTimeTickSize = function(minPixels) {
         }
     }
 
-    return computeTickSize(minPixels, this._secondsInYear) * this._secondsInYear;
+    return this.computeTickSize(minPixels, this._secondsInYear) * this._secondsInYear;
 };
 
 cr.TimeGraphAxis.prototype.computeTimeMinorTickSize = function(minPixels, majorTickSize) {
@@ -417,12 +417,12 @@ cr.TimeGraphAxis.prototype.renderTickLabelWithinBounds = function(tick, min, max
             drawMax += width / 2;
             if (drawMin <= boundsMin) {
                 this._ctx.textAlign = "left";
-                renderTickLabel(min, labelOffsetPixels, text);
+                this.renderTickLabel(min, labelOffsetPixels, text);
                 this._ctx.textAlign = "center";
             }
             else if (drawMax >= boundsMax) {
                 this._ctx.textAlign = "right";
-                renderTickLabel(max, labelOffsetPixels, text);
+                this.renderTickLabel(max, labelOffsetPixels, text);
                 this._ctx.textAlign = "center";
             }
             else {
