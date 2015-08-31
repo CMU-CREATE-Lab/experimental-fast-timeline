@@ -279,7 +279,7 @@ cr.TimeGraphAxis.prototype.computeTimeMinorTickSize = function(minPixels, majorT
             }
         }
     }
-    return this._computeTimeTickSize(minPixels);
+    return this.computeTimeTickSize(minPixels);
 };
 
 cr.TimeGraphAxis.prototype.renderTicks = function(offsetPixels, tickSize, tickGen, tickWidthPixels, formatter, abbreviatedFormatter) {
