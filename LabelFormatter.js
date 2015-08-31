@@ -66,9 +66,8 @@ cr.VerboseDateLabelFormatter = function() {
 };
 
 cr.VerboseDateLabelFormatter.prototype.format = function(time) {
-    var ret = this.dayFormatter.format(time) +
-              ' ' + this.monthFormatter.format(time);
-    return ret;
+    return this.dayFormatter.format(time) +
+           ' ' + this.monthFormatter.format(time);
 };
 
 cr.DateLabelFormatter = function() {
