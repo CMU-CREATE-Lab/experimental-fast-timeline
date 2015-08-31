@@ -28,6 +28,7 @@ cr.Plot = function(url, xAxis, yAxis) {
     };
 
     this.dataPointListeners = [];
+    this._publishedPoint = null;
     this._resolutionScale = window.devicePixelRatio || 1;
 
     //this.tlayer = new DataStoreTileLayer(url, this.glb, this.ctx);
@@ -134,4 +135,37 @@ cr.Plot.prototype.getClosestDataPointToTimeWithinWindow = function(timeInSecs, n
         }
     }
     return dataPoint;
+};
+
+// Publishes the given point, but only if it's different than the previously published point
+cr.Plot.prototype.publishDataPoint = function(point) {
+    if (point) {
+        if (this._publishedPoint == null ||
+            point.x != this._publishedPoint.x ||
+            point.y != this._publishedPoint.y) {
+
+            var d = new cr.DateLabelFormatter();
+            var t = new cr.TimeLabelFormatter();
+
+            this._publishedPoint = {
+                x : point.x,
+                y : point.y,
+                dateString : d.format(point.x) + ", " + t.format(point.x),
+                valueString : point.y.toFixed(1),
+                comment : null
+            };
+
+            for (var j = 0; j < this.dataPointListeners.length; j++) {
+                this.dataPointListeners[j](this._publishedPoint);
+            }
+        }
+    }
+    else {
+        if (this._publishedPoint != null) {
+            this._publishedPoint = null;
+            for (var k = 0; k < this.dataPointListeners.length; k++) {
+                this.dataPointListeners[k](this._publishedPoint);
+            }
+        }
+    }
 };

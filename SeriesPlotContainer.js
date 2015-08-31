@@ -10,6 +10,7 @@ cr.SeriesPlotContainer = function(elementId, ignoreClickEvents, plots) {
     this.cursorX = null;
     this._resolutionScale = window.devicePixelRatio || 1;
     this._plots = {};
+
     if (plots) {
         for (var i = 0; i < plots.length; i++) {
             this.addPlot(plots[i]);
@@ -177,22 +178,14 @@ cr.SeriesPlotContainer.prototype.mousemove = function(e) {
             if (point) {
                 that.mouseoverHighlightPoint = { point : point, key : key };
                 that.grapher.scheduleUpdate();
-                for (var i = 0; i < plot.dataPointListeners.length; i++) {
-                    var d = new cr.DateLabelFormatter();
-                    var t = new cr.TimeLabelFormatter();
 
-                    var dataPoint = {
-                        date : point.x,
-                        value : point.y,
-                        dateString : d.format(point.x) + ", " + t.format(point.x),
-                        valueString : point.y.toFixed(1),
-                        comment : null
-                    };
-                    plot.dataPointListeners[i](dataPoint);
-                }
-                break;
+                // publish the point
+                plot.publishDataPoint(point);
             }
             else {
+                // publish the point
+                plot.publishDataPoint(null);
+
                 if (that.mouseoverHighlightPoint) {
                     that.mouseoverHighlightPoint = null;
                     that.grapher.scheduleUpdate();
