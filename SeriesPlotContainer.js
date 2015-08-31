@@ -41,15 +41,17 @@ cr.SeriesPlotContainer = function(elementId, ignoreClickEvents, plots) {
 
     this.touchUtils = new cr.TouchUtils();
 
-    $('#' + this.canvas2d.id).bind('touchstart', this, this.touchstart);
-    $('#' + this.canvas2d.id).bind('touchmove', this, this.touchmove);
-    $('#' + this.canvas2d.id).bind('touchend', this, this.touchend);
-    $('#' + this.canvas2d.id).bind('touchcancel', this, this.touchend);
+    var canvas2dElement = $('#' + this.canvas2d.id);
+    canvas2dElement.bind('touchstart', this, this.touchstart);
+    canvas2dElement.bind('touchmove', this, this.touchmove);
+    canvas2dElement.bind('touchend', this, this.touchend);
+    canvas2dElement.bind('touchcancel', this, this.touchend);
 
-    $('#' + this.canvas3d.id).bind('touchstart', this, this.touchstart);
-    $('#' + this.canvas3d.id).bind('touchmove', this, this.touchmove);
-    $('#' + this.canvas3d.id).bind('touchend', this, this.touchend);
-    $('#' + this.canvas3d.id).bind('touchcancel', this, this.touchend);
+    var canvas3dElement = $('#' + this.canvas3d.id);
+    canvas3dElement.bind('touchstart', this, this.touchstart);
+    canvas3dElement.bind('touchmove', this, this.touchmove);
+    canvas3dElement.bind('touchend', this, this.touchend);
+    canvas3dElement.bind('touchcancel', this, this.touchend);
 
     this.resize();
 
@@ -102,15 +104,17 @@ cr.SeriesPlotContainer.prototype._initCanvases = function() {
 
     this.ctx = this.canvas2d.getContext('2d');
 
-    $('#' + this.canvas2d.id).mousedown(this, this.mousedown);
-    $('#' + this.canvas2d.id).mousemove(this, this.mousemove);
-    $('#' + this.canvas2d.id).mouseup(this, this.mouseup);
-    $('#' + this.canvas2d.id).on("mousewheel", this, this.mousewheel);
+    var canvas2dElement = $('#' + this.canvas2d.id);
+    canvas2dElement.mousedown(this, this.mousedown);
+    canvas2dElement.mousemove(this, this.mousemove);
+    canvas2dElement.mouseup(this, this.mouseup);
+    canvas2dElement.on("mousewheel", this, this.mousewheel);
 
-    $('#' + this.canvas3d.id).mousedown(this, this.mousedown);
-    $('#' + this.canvas3d.id).mousemove(this, this.mousemove);
-    $('#' + this.canvas3d.id).mouseup(this, this.mouseup);
-    $('#' + this.canvas3d.id).on("mousewheel", this, this.mousewheel);
+    var canvas3dElement = $('#' + this.canvas3d.id);
+    canvas3dElement.mousedown(this, this.mousedown);
+    canvas3dElement.mousemove(this, this.mousemove);
+    canvas3dElement.mouseup(this, this.mouseup);
+    canvas3dElement.on("mousewheel", this, this.mousewheel);
 
     this.lastMouse = null;
 
