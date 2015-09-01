@@ -219,3 +219,38 @@ cr.DateTimeFormatter.format = function(dateTime) {
     }
     return null;
 };
+
+cr.ValueFormatter = function() {
+};
+
+/**
+ * Returns a string representation of the given <code>value</code>, or <code>null</code> if it is not a
+ * number.  Returns <code>null</code> if the given value is undefined or <code>null</code>.  Returns the string "NaN"
+ * if the value cannot be parsed as a number.  Otherwise, it returns a string representation.  Uses exponential notation
+ * for numbers smaller than 1e-3 and larger than 1e+7.
+ *
+ * @param {number|string} value - the number to be formatted.
+ * @return {null|string} a string representation of the <code>value</code>, or <code>null</code> if not a number.
+ */
+cr.ValueFormatter.format = function(value) {
+    if (typeof value !== 'undefined' && value != null) {
+        var val = parseFloat(value);
+        if (isFinite(val) && !isNaN(val)) {
+            var absValue = Math.abs(val);
+
+            if (absValue == 0.0) {
+                return "0.0";
+            }
+
+            if (absValue < 1e-3 || absValue > 1e7) {
+                return val.toExponential();
+            }
+
+            return val.toPrecision();
+        }
+
+        return val.toString();
+    }
+
+    return null;
+};
