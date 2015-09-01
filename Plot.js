@@ -122,7 +122,10 @@ cr.Plot.prototype.removeDataPointListener = function(listener) {
 cr.Plot.prototype.getClosestDataPointToTimeWithinWindow = function(timeInSecs, numSecsBefore, numSecsAfter) {
     var dataPoint = null;
     var point = this.tlayer.searchByX({ xmin : timeInSecs - numSecsBefore, xmax : timeInSecs + numSecsAfter });
-    if (point) {
+
+    // point.y can be -Infinity at (I think) tile boundaries, so filter
+    // those out. I threw in the isNaN check just in case.
+    if (point && point.y != null && isFinite(point.y) && !isNaN(point.y)) {
         var d = new cr.DateLabelFormatter();
         var t = new cr.TimeLabelFormatter();
 
