@@ -129,7 +129,7 @@ cr.Plot.prototype.getClosestDataPointToTimeWithinWindow = function(timeInSecs, n
         dataPoint = {
             date : point.x,
             value : point.y,
-            dateString : cr.DateTimeFormatter.format(point.x),
+            dateString : cr.DateTimeFormatter.format(point.x * 1000),    // multiply by 1000 to get millis
             valueString : point.y.toFixed(1),
             comment : null
         }
@@ -147,7 +147,7 @@ cr.Plot.prototype.publishDataPoint = function(point) {
             this._publishedPoint = {
                 x : point.x,
                 y : point.y,
-                dateString : cr.DateTimeFormatter.format(point.x),
+                dateString : cr.DateTimeFormatter.format(point.x * 1000),    // multiply by 1000 to get millis
                 valueString : point.y.toFixed(1),
                 comment : null
             };

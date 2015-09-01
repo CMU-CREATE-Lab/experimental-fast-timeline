@@ -517,7 +517,7 @@ cr.GraphAxis.prototype.publishAxisChangeEvent = function() {
         min : this._min,
         max : this._max,
         cursorPosition : this.cursorX,
-        cursorPositionString : cr.DateTimeFormatter.format(this.cursorX),
+        cursorPositionString : cr.DateTimeFormatter.format(this.cursorX * 1000),    // multiply by 1000 to get millis
         eventId : -1 // deprecated
     };
 

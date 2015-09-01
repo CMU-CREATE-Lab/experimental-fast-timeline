@@ -194,10 +194,10 @@ cr.DateTimeFormatter = function() {
 };
 
 /**
- * Returns a string representation of the given <code>dateTime</code>, or <code>null</code> if it is not a valid date.
- * The string will have the following format:
+ * Returns a date and time string representation of the given <code>dateTime</code>, or <code>null</code> if it is not a
+ * valid date. The string will be formatted as in this example: <code>Sat Aug 29 2015, 04:30:00 GMT-0400 (EDT)</code>
  *
- * @param {Date | number} dateTime
+ * @param {Date | number | string} dateTime - a Date object, the time in millis, or a string representation of a date.
  * @return {null|string} a string representation of the <code>dateTime</code>, or <code>null</code> if not a valid date.
  */
 cr.DateTimeFormatter.format = function(dateTime) {
