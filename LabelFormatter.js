@@ -189,3 +189,33 @@ cr.CenturySmallLabelFormatter.prototype.format = function(time) {
     var centuryStart = Math.floor((d.getYear() + 1900) / 100) * 100;
     return centuryStart + 's';
 };
+
+cr.DateTimeFormatter = function() {
+};
+
+/**
+ * Returns a string representation of the given <code>dateTime</code>, or <code>null</code> if it is not a valid date.
+ * The string will have the following format:
+ *
+ * @param {Date | number} dateTime
+ * @return {null|string} a string representation of the <code>dateTime</code>, or <code>null</code> if not a valid date.
+ */
+cr.DateTimeFormatter.format = function(dateTime) {
+    if (typeof dateTime !== 'undefined' && dateTime != null) {
+
+        // see if we were given a Date (got this from http://stackoverflow.com/a/643827/703200)
+        var d;
+        if (Object.prototype.toString.call(dateTime) === '[object Date]') {
+            d = dateTime;
+        }
+        else {
+            d = new Date(dateTime);
+        }
+
+        // make sure it's not an "Invalid Date" (see http://stackoverflow.com/a/1353711/703200)
+        if (!isNaN(d.getTime())) {
+            return d.toDateString() + ", " + d.toTimeString();
+        }
+    }
+    return null;
+};

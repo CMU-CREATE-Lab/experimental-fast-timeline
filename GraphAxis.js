@@ -513,17 +513,15 @@ cr.GraphAxis.prototype.removeAxisChangeListener = function(listener) {
 };
 
 cr.GraphAxis.prototype.publishAxisChangeEvent = function() {
-    for (var i = 0; i < this.axisChangeListeners.length; i++) {
-        var d = new cr.DateLabelFormatter();
-        var t = new cr.TimeLabelFormatter();
+    var event = {
+        min : this._min,
+        max : this._max,
+        cursorPosition : this.cursorX,
+        cursorPositionString : cr.DateTimeFormatter.format(this.cursorX),
+        eventId : -1 // deprecated
+    };
 
-        var ret = {
-            min : this._min,
-            max : this._max,
-            cursorPosition : this.cursorX,
-            cursorPositionString : d.format(this.cursorX) + ", " + t.format(this.cursorX),
-            eventId : -1 // deprecated
-        };
-        this.axisChangeListeners[i](ret);
+    for (var i = 0; i < this.axisChangeListeners.length; i++) {
+        this.axisChangeListeners[i](event);
     }
 };

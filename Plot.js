@@ -126,13 +126,10 @@ cr.Plot.prototype.getClosestDataPointToTimeWithinWindow = function(timeInSecs, n
     // point.y can be -Infinity at (I think) tile boundaries, so filter
     // those out. I threw in the isNaN check just in case.
     if (point && point.y != null && isFinite(point.y) && !isNaN(point.y)) {
-        var d = new cr.DateLabelFormatter();
-        var t = new cr.TimeLabelFormatter();
-
         dataPoint = {
             date : point.x,
             value : point.y,
-            dateString : d.format(point.x) + ", " + t.format(point.x),
+            dateString : cr.DateTimeFormatter.format(point.x),
             valueString : point.y.toFixed(1),
             comment : null
         }
@@ -147,13 +144,10 @@ cr.Plot.prototype.publishDataPoint = function(point) {
             point.x != this._publishedPoint.x ||
             point.y != this._publishedPoint.y) {
 
-            var d = new cr.DateLabelFormatter();
-            var t = new cr.TimeLabelFormatter();
-
             this._publishedPoint = {
                 x : point.x,
                 y : point.y,
-                dateString : d.format(point.x) + ", " + t.format(point.x),
+                dateString : cr.DateTimeFormatter.format(point.x),
                 valueString : point.y.toFixed(1),
                 comment : null
             };
