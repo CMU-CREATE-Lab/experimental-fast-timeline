@@ -2,7 +2,7 @@
 
 var cr = cr || {};
 
-cr.SeriesPlotContainer = function(elementId, ignoreClickEvents, plots) {
+cr.SeriesPlotContainer = function(elementId, plots) {
     this.div = document.getElementById(elementId);
     this.div.style["border"] = "1px solid black";
     this.highlight = {};
@@ -506,10 +506,9 @@ cr.SeriesPlotContainer.prototype.drawMouseoverHighlightPointWebgl = function() {
 };
 
 cr.SeriesPlotContainer.prototype.drawMouseoverHighlightPointCanvas = function() {
-    console.log("drawMouseoverHighlightPointCanvas");
-    console.log("TODO...");
-
+    // TODO
 };
+
 cr.SeriesPlotContainer.prototype.drawMouseoverHighlightPoint = function() {
     if (this.usewebgl) {
         this.drawMouseoverHighlightPointWebgl();
@@ -552,7 +551,7 @@ cr.SeriesPlotContainer.prototype._resize = function() {
 
 cr.SeriesPlotContainer.prototype.addPlot = function(plot) {
     this._plots[plot.getId()] = plot;
-    this._plots[plot.getId()].tlayer = new DataStoreTileLayer(plot.url, this.glb, this.ctx);
+    this._plots[plot.getId()].tlayer = new DataStoreTileLayer(plot.datasource, this.glb, this.ctx);
     this._plots[plot.getId()].tlayer.usewebgl = this.usewebgl;
 };
 

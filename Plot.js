@@ -1,8 +1,18 @@
 "use strict";
 
+/** @namespace */
 var cr = cr || {};
 
-cr.Plot = function(url, xAxis, yAxis) {
+/**
+ *
+ * @class
+ * @constructor
+ * @param {datasourceFunction} datasource - function with signature <code>function(level, offset, successCallback)</code> resposible for returning tile JSON for the given <code>level</code> and <code>offset</code>
+ * @param {cr.TimeGraphAxis} xAxis - the date axis
+ * @param {cr.GraphAxis} yAxis - the y axis
+ * @param {object} [options] - additional options, currently unused
+ */
+cr.Plot = function(datasource, xAxis, yAxis, options) {
     //    this.highlight = new cr.Highlight(plotDiv);
 
     //    this.cursor = new cr.Cursor(plotDiv);
@@ -11,7 +21,7 @@ cr.Plot = function(url, xAxis, yAxis) {
 
     this.xAxis = xAxis;
     this.yAxis = yAxis;
-    this.url = url;
+    this.datasource = datasource;
     this.view = {};
     this.bounds = {
         xmin : Number.MAX_VALUE,
@@ -31,7 +41,7 @@ cr.Plot = function(url, xAxis, yAxis) {
     this._publishedPoint = null;
     this._resolutionScale = window.devicePixelRatio || 1;
 
-    //this.tlayer = new DataStoreTileLayer(url, this.glb, this.ctx);
+    //this.tlayer = new DataStoreTileLayer(datasource, this.glb, this.ctx);
     //this._resize();
 };
 

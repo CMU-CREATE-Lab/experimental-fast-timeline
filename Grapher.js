@@ -1,5 +1,6 @@
 "use strict";
 
+/** @namespace */
 var cr = cr || {};
 
 cr.Grapher = function() {
@@ -142,14 +143,57 @@ cr.Grapher.prototype.update = function() {
 
 var __grapher__ = new cr.Grapher();
 
-var DateAxis = function(divName, orientation) {
-    return new cr.TimeGraphAxis(document.getElementById(divName), null,
-                                null, cr.Basis.XAxisBasis, true);
+/**
+ * The min and max values for an axis's range.
+ *
+ * @typedef {Object} AxisRange
+ * @property {number} min - the range min
+ * @property {number} max - the range max
+ */
+
+/**
+ * The function which the datasource function will call upon success, giving it the tile JSON.
+ *
+ * @callback datasourceSuccessCallbackFunction
+ * @param {object|string} json - the tile JSON, as either an object or a string
+ */
+
+/**
+ * Datasource function with signature <code>function(level, offset, successCallback)</code> resposible for
+ * returning tile JSON for the given <code>level</code> and <code>offset</code>.
+ *
+ * @callback datasourceFunction
+ * @param {number} level - the tile's level
+ * @param {number} offset - the tile's offset
+ * @param {datasourceSuccessCallbackFunction} successCallback - success callback function which expects to be given the tile JSON
+ */
+
+/**
+ * Creates a <code>DateAxis</code>.
+ *
+ * @class
+ * @constructor
+ * @param {string} elementId - the DOM element ID for the container div holding the date axis
+ * @param [orientation] currently ignored, will always be horizontal
+ * @return {cr.TimeGraphAxis}
+ */
+var DateAxis = function(elementId, orientation) {
+    return new cr.TimeGraphAxis(document.getElementById(elementId), null, null, cr.Basis.XAxisBasis, true);
 };
 
-var NumberAxis = function(id, orientation, range) {
+/**
+ * Creates a <code>NumberAxis</code>.
+ *
+ * @class
+ * @constructor
+ * @param {string} elementId - the DOM element ID for the container div holding the axis
+ * @param {string} orientation - string specifying whether the axis is horizontal or vertical. Will be vertical if orientation <code>vertical</code>, otherwise will be horizontal.
+ * @param {AxisRange} [range] - optional range, defaults to [<code>-Number.MAX_VALUE</code>, <code>Number.MAX_VALUE</code>]
+ * @return {cr.GraphAxis}
+ */
+var NumberAxis = function(elementId, orientation, range) {
     var basis, isXAxis;
-    var range = range || { min : Number.MIN_VALUE, max : Number.MAX_VALUE };
+    range = range || { min : -1 * Number.MAX_VALUE, max : Number.MAX_VALUE };
     if (orientation == "vertical") {
         basis = cr.Basis.YAxisBasis;
         isXAxis = false;
@@ -158,15 +202,36 @@ var NumberAxis = function(id, orientation, range) {
         basis = cr.Basis.XAxisBasis;
         isXAxis = true;
     }
-    return new cr.GraphAxis(document.getElementById(id), range.min, range.max, basis, isXAxis);
+    return new cr.GraphAxis(document.getElementById(elementId), range.min, range.max, basis, isXAxis);
 };
 
-var DataSeriesPlot = function(datasource, horizontalAxis, verticalAxis, optionalParams) {
-    return new cr.Plot(datasource, horizontalAxis, verticalAxis);
+/**
+ * Creates a <code>DataSeriesPlot</code>.
+ *
+ * @class
+ * @constructor
+ * @param {datasourceFunction} datasource - function with signature <code>function(level, offset, successCallback)</code> resposible for returning tile JSON for the given <code>level</code> and <code>offset</code>
+ * @param {cr.TimeGraphAxis} horizontalAxis - the date axis
+ * @param {cr.GraphAxis} verticalAxis - the y axis
+ * @param {object} [options] - additional options, currently unused
+ * @return {cr.Plot}
+ */
+var DataSeriesPlot = function(datasource, horizontalAxis, verticalAxis, options) {
+    return new cr.Plot(datasource, horizontalAxis, verticalAxis, options);
 };
 
-var PlotContainer = function(placeholder, ignoreClickEvents, plots) {
-    return new cr.SeriesPlotContainer(placeholder, ignoreClickEvents, plots)
+/**
+ * Creates a <code>PlotContainer</code>.
+ *
+ * @class
+ * @constructor
+ * @param {string} elementId - the DOM element ID for the container div holding this plot container
+ * @param {boolean} ignoreClickEvents - whether to ignore click events, currently ignored
+ * @param {cr.Plot[]} plots - array of plots to be added to the plot container
+ * @return {cr.SeriesPlotContainer}
+ */
+var PlotContainer = function(elementId, ignoreClickEvents, plots) {
+    return new cr.SeriesPlotContainer(elementId, plots)
 };
 
 var SequenceNumber = function() {

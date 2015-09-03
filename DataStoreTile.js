@@ -13,50 +13,42 @@
 // Or maybe compress the range and go with say 1.6 to 2.1?  That lets us better use
 // the flexibility of being able to capture the video across a range of times
 
-function DataStoreTile(glb, tileidx, url) {
+function DataStoreTile(glb, tileidx, datasource) {
     this.glb = glb;
     this.gl = glb.gl;
     this._tileidx = tileidx;
-    this._url = url;
     this._ready = false;
     this.program = glb.programFromSources(cr.Shaders.TileVertexShader, cr.Shaders.TileFragmentShader);
     this.pointProgram = glb.programFromSources(cr.Shaders.PointVertexShader, cr.Shaders.PointFragmentShader);
     this.offset = 0;
     this._resolutionScale = window.devicePixelRatio || 1;
 
-    this._load();
+    var self = this;
+    var tileLoader = new cr.TileLoader(datasource);
+    tileLoader.load(tileidx, function(err, json) {
+        if (err) {
+            console.log(err);
+        }
+        else {
+            var data = [];
+            var offset = 0;
 
+            if (json.data.length > 0) {
+                offset = json.data[0][0];
+                for (var i = 0; i < json.data.length; i++) {
+                    data.push(json.data[i][0] - offset);
+                    data.push(json.data[i][1]);
+                    data.push(json.data[i][2]);
+                    data.push(json.data[i][3]);
+                }
+            }
+
+            self.offset = offset;
+            self._setData(new Float32Array(data))
+        }
+    });
 }
 
-DataStoreTile.prototype._load = function() {
-    var that = this;
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', that._url);
-    xhr.onload = function() {
-        var json = JSON.parse(this.responseText);
-        var float32Array = that._parseJSON(json);
-        that._setData(float32Array);
-    };
-    xhr.send();
-};
-
-DataStoreTile.prototype._parseJSON = function(json) {
-    var data = [];
-    if (json.data.data.length > 0) {
-        this.offset = json.data.data[0][0];
-    }
-    for (var i = 0; i < json.data.data.length; i++) {
-        data.push(json.data.data[i][0] - this.offset);
-        data.push(json.data.data[i][1]);
-        data.push(json.data.data[i][2]);
-        data.push(json.data.data[i][3]);
-
-        //        for (var j = 0; j < json.data.data[i].length; j++) {
-        //            data.push(json.data.data[i][j]);
-        //        }
-    }
-    return new Float32Array(data);
-};
 DataStoreTile.prototype._setData = function(arrayBuffer) {
     var gl = this.gl;
     this._pointCount = arrayBuffer.length / 4;
@@ -73,18 +65,16 @@ DataStoreTile.prototype._setData = function(arrayBuffer) {
     this._ready = true;
 };
 
-DataStoreTile.prototype.
-    isReady = function() {
+DataStoreTile.prototype.isReady = function() {
     return this._ready;
 };
 
-DataStoreTile.prototype.
-    delete = function() {
+DataStoreTile.prototype.delete = function() {
+    // TODO
     console.log('delete: ' + this._tileidx.toString());
 };
 
-DataStoreTile.prototype.
-    draw = function(transform) {
+DataStoreTile.prototype.draw = function(transform) {
     var gl = this.gl;
     if (this._ready) {
         gl.lineWidth(1);
@@ -137,7 +127,6 @@ DataStoreTile.prototype.
         gl.uniform1f(sizeLoc, 4 * this._resolutionScale);
 
         gl.drawArrays(gl.POINTS, 0, this._pointCount);
-
     }
 };
 

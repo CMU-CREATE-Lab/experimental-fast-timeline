@@ -1,18 +1,16 @@
 "use strict";
 
-function DataStoreTileLayer(rootUrl, glb, ctx) {
+function DataStoreTileLayer(datasource, glb, ctx) {
     this.glb = glb;
     this.ctx = ctx;
-    this._rootUrl = rootUrl;
     var that = this;
 
     function createTile(ti, bounds) {
-        var url = rootUrl + '/' + ti.l + '.' + ti.o;
         if (that.glb && that.usewebgl) {
-            return new DataStoreTile(glb, ti, url);
+            return new DataStoreTile(glb, ti, datasource);
         }
         else {
-            return new CanvasTile(ctx, ti, url);
+            return new CanvasTile(ctx, ti, datasource);
         }
     }
 
