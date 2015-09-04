@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: Grapher.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: Grapher.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>"use strict";
+
+/** @namespace */
+var cr = cr || {};
+
+cr.Grapher = function() {
+    this._isAdded = true; // should maybe be false
+    this._isAnimated = false;
+    this._updateHandler = null;
+    this._requestAnimationFrameId = null;
+    this.timeGraphAxis = null;
+    this.plotContainer = null;
+    this.plotContainers = {};
+
+    function simpleBindShim(thisArg, func) {
+        return function() {
+            func.apply(thisArg);
+        };
+    }
+
+    this._requestUpdateFunction = simpleBindShim(this, this._update);
+
+    this.bounds = {
+        xmin : Number.MAX_VALUE,
+        xmax : -Number.MAX_VALUE,
+        ymin : Number.MAX_VALUE,
+        ymax : -Number.MAX_VALUE
+    };
+    this.view = {
+        xmin : this.bounds.xmin,
+        xmax : this.bounds.xmax,
+        ymin : this.bounds.ymin,
+        ymax : this.bounds.ymax
+    };
+    this.lastMouse;
+    this.lastTouch;
+};
+
+cr.Grapher.prototype.addPlotContainer = function(plotContainer) {
+    this.plotContainer = plotContainer;
+    this.plotContainers[plotContainer.div.id] = plotContainer;
+};
+
+cr.Grapher.prototype._requestAnimFrame =
+    window.requestAnimationFrame ||
+    window.webkitRequestAnimationFrame ||
+    window.mozRequestAnimationFrame ||
+    window.oRequestAnimationFrame ||
+    window.msRequestAnimationFrame ||
+    function(callback) {
+        return window.setTimeout(callback, 1000 / 60);
+    };
+
+cr.Grapher.prototype._cancelAnimFrame =
+    window.cancelAnimationFrame ||
+    window.webkitCancelAnimationFrame ||
+    window.mozCancelAnimationFrame ||
+    window.oCancelAnimationFrame ||
+    window.msCancelAnimationFrame ||
+    function(requestId) {
+    };
+
+cr.Grapher.prototype.setAnimate = function(animate) {
+    this._isAnimated = !!animate;
+
+    if (this._isAnimated) {
+        console.log('scheduling update');
+        this.scheduleUpdate();
+    }
+};
+
+cr.Grapher.prototype.isAnimated = function() {
+    return this._isAnimated;
+};
+
+cr.Grapher.prototype._update = function() {
+    this._requestAnimationFrameId = null;
+
+    if (!this._isAdded) {
+        return;
+    }
+
+    if (this._isAnimated) {
+        this.scheduleUpdate();
+    }
+
+    if (this._needsResize &amp;&amp; this._resizeHandler) {
+        this._needsResize = false;
+        this._resizeHandler();
+    }
+
+    if (this.timeGraphAxis) {
+        this.timeGraphAxis.update();
+    }
+
+    if (this.plotContainers) {
+        var keys = Object.keys(this.plotContainers);
+        for (var i = 0; i &lt; keys.length; i++) {
+            var key = keys[i];
+            var plotContainer = this.plotContainers[key];
+            plotContainer.update();
+            if (this.plotContainer._needsUpdate) {
+                this.scheduleUpdate();
+            }
+        }
+    }
+
+    if (this._updateHandler) {
+        this._updateHandler();
+    }
+};
+
+cr.Grapher.prototype.scheduleUpdate = function() {
+    if (this._isAdded &amp;&amp; !this._requestAnimationFrameId) {
+        this._requestAnimationFrameId =
+            this._requestAnimFrame.call(window, this._requestUpdateFunction);
+    }
+};
+
+cr.Grapher.prototype.resize = function() {
+    console.log('resize');
+    if (this.timeGraphAxis) {
+        this.timeGraphAxis.resize();
+    }
+    if (this.plotContainer) {
+        this.plotContainer.resize();
+    }
+    if (this.plotContainers) {
+        var keys = Object.keys(this.plotContainers);
+        for (var i = 0; i &lt; keys.length; i++) {
+            var key = keys[i];
+            var plotContainer = this.plotContainers[key];
+            plotContainer.resize();
+        }
+    }
+
+    this.scheduleUpdate();
+};
+
+cr.Grapher.prototype.update = function() {
+    this._update();
+};
+
+var __grapher__ = new cr.Grapher();
+
+/**
+ * The min and max values for an axis's range.
+ *
+ * @typedef {Object} AxisRange
+ * @property {number} min - the range min
+ * @property {number} max - the range max
+ */
+
+/**
+ * The function which the datasource function will call upon success, giving it the tile JSON.
+ *
+ * @callback datasourceSuccessCallbackFunction
+ * @param {object|string} json - the tile JSON, as either an object or a string
+ */
+
+/**
+ * Datasource function with signature &lt;code>function(level, offset, successCallback)&lt;/code> resposible for
+ * returning tile JSON for the given &lt;code>level&lt;/code> and &lt;code>offset&lt;/code>.
+ *
+ * @callback datasourceFunction
+ * @param {number} level - the tile's level
+ * @param {number} offset - the tile's offset
+ * @param {datasourceSuccessCallbackFunction} successCallback - success callback function which expects to be given the tile JSON
+ */
+
+/**
+ * Creates a &lt;code>DateAxis&lt;/code>.
+ *
+ * @class
+ * @constructor
+ * @param {string} elementId - the DOM element ID for the container div holding the date axis
+ * @param [orientation] currently ignored, will always be horizontal
+ * @return {cr.TimeGraphAxis}
+ */
+var DateAxis = function(elementId, orientation) {
+    return new cr.TimeGraphAxis(document.getElementById(elementId), null, null, cr.Basis.XAxisBasis, true);
+};
+
+/**
+ * Creates a &lt;code>NumberAxis&lt;/code>.
+ *
+ * @class
+ * @constructor
+ * @param {string} elementId - the DOM element ID for the container div holding the axis
+ * @param {string} orientation - string specifying whether the axis is horizontal or vertical. Will be vertical if orientation &lt;code>vertical&lt;/code>, otherwise will be horizontal.
+ * @param {AxisRange} [range] - optional range, defaults to [&lt;code>-Number.MAX_VALUE&lt;/code>, &lt;code>Number.MAX_VALUE&lt;/code>]
+ * @return {cr.GraphAxis}
+ */
+var NumberAxis = function(elementId, orientation, range) {
+    var basis, isXAxis;
+    range = range || { min : -1 * Number.MAX_VALUE, max : Number.MAX_VALUE };
+    if (orientation == "vertical") {
+        basis = cr.Basis.YAxisBasis;
+        isXAxis = false;
+    }
+    else {
+        basis = cr.Basis.XAxisBasis;
+        isXAxis = true;
+    }
+    return new cr.GraphAxis(document.getElementById(elementId), range.min, range.max, basis, isXAxis);
+};
+
+/**
+ * Creates a &lt;code>DataSeriesPlot&lt;/code>.
+ *
+ * @class
+ * @constructor
+ * @param {datasourceFunction} datasource - function with signature &lt;code>function(level, offset, successCallback)&lt;/code> resposible for returning tile JSON for the given &lt;code>level&lt;/code> and &lt;code>offset&lt;/code>
+ * @param {cr.TimeGraphAxis} horizontalAxis - the date axis
+ * @param {cr.GraphAxis} verticalAxis - the y axis
+ * @param {object} [options] - additional options, currently unused
+ * @return {cr.Plot}
+ */
+var DataSeriesPlot = function(datasource, horizontalAxis, verticalAxis, options) {
+    return new cr.Plot(datasource, horizontalAxis, verticalAxis, options);
+};
+
+/**
+ * Creates a &lt;code>PlotContainer&lt;/code>.
+ *
+ * @class
+ * @constructor
+ * @param {string} elementId - the DOM element ID for the container div holding this plot container
+ * @param {boolean} ignoreClickEvents - whether to ignore click events, currently ignored
+ * @param {cr.Plot[]} plots - array of plots to be added to the plot container
+ * @return {cr.SeriesPlotContainer}
+ */
+var PlotContainer = function(elementId, ignoreClickEvents, plots) {
+    return new cr.SeriesPlotContainer(elementId, plots)
+};
+
+var SequenceNumber = function() {
+};
+SequenceNumber.getNext = function() {
+    console.log("SequenceNumber is deprecated");
+    return 1;
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    var wnd = wnd || window.parent;
+    wnd.grapherLoad &amp;&amp; wnd.grapherLoad();
+}, false);
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="cr.Basis.html">Basis</a></li><li><a href="cr.Plot.html">Plot</a></li><li><a href="cr.Vector2.html">Vector2</a></li><li><a href="DataSeriesPlot.html">DataSeriesPlot</a></li><li><a href="DateAxis.html">DateAxis</a></li><li><a href="NumberAxis.html">NumberAxis</a></li><li><a href="PlotContainer.html">PlotContainer</a></li></ul><h3>Namespaces</h3><ul><li><a href="cr.html">cr</a></li></ul><h3><a href="global.html">Global</a></h3>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Fri Sep 04 2015 11:29:19 GMT-0400 (EDT)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
