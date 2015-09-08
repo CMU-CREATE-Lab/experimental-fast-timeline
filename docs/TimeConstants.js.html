@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Home</title>
+    <title>JSDoc: Source: TimeConstants.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,32 +17,81 @@
 
 <div id="main">
 
-    <h1 class="page-title">Home</h1>
+    <h1 class="page-title">Source: TimeConstants.js</h1>
 
     
 
 
 
     
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>"use strict";
 
+var cr = cr || {};
 
-    <h3> </h3>
+/**
+ * Utility class for time-related constants.  All fields are static, so there's no need to create an instance.
+ *
+ * @constructor
+ * @private
+ */
+cr.TimeConstants = function() {
+};
 
+/**
+ * The number of seconds in one hour.
+ *
+ * @type {int}
+ */
+cr.TimeConstants.SECONDS_IN_HOUR = 3600;
 
+/**
+ * The number of seconds in one day.
+ *
+ * @type {int}
+ */
+cr.TimeConstants.SECONDS_IN_DAY = cr.TimeConstants.SECONDS_IN_HOUR * 24;
 
+/**
+ * The number of seconds in one week.
+ *
+ * @type {int}
+ */
+cr.TimeConstants.SECONDS_IN_WEEK = cr.TimeConstants.SECONDS_IN_DAY * 7;
 
+/**
+ * The number of seconds in one year.
+ *
+ * @type {int}
+ */
+cr.TimeConstants.SECONDS_IN_YEAR = 31556926;
 
+/**
+ * The number of seconds in one decade.
+ *
+ * @type {int}
+ */
+cr.TimeConstants.SECONDS_IN_DECADE = cr.TimeConstants.SECONDS_IN_YEAR * 10;
 
+/**
+ * The number of seconds in one centiry.
+ *
+ * @type {int}
+ */
+cr.TimeConstants.SECONDS_IN_CENTURY = cr.TimeConstants.SECONDS_IN_DECADE * 10;
 
+/**
+ * The number of seconds in one month (on average).
+ *
+ * @type {int}
+ */
+cr.TimeConstants.SECONDS_IN_MONTH = Math.round(cr.TimeConstants.SECONDS_IN_YEAR / 12.);
 
-
-
-    
-
-
-
-
-
+// make the fields in this class constants
+Object.freeze(cr.TimeConstants);</code></pre>
+        </article>
+    </section>
 
 
 

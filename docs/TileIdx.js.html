@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Home</title>
+    <title>JSDoc: Source: TileIdx.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,32 +17,70 @@
 
 <div id="main">
 
-    <h1 class="page-title">Home</h1>
+    <h1 class="page-title">Source: TileIdx.js</h1>
 
     
 
 
 
     
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>"use strict";
 
+/** @namespace */
+var cr = cr || {};
 
-    <h3> </h3>
+/**
+ * An index for a tile.
+ *
+ * @class
+ * @constructor
+ * @param {int} l - the tile's level
+ * @param {int} o - the tile's offset
+ */
+cr.TileIdx = function(l, o) {
+    this.l = l;
+    this.o = o;
+    var level, offset;
 
+    if (l &lt; 0) {
+        level = "-" + ('00' + (l).toString().split("-")[1]).substr(-3);
+    }
+    else {
+        level = ('00' + l).substr(-3);
+    }
 
+    if (o &lt; 0) {
+        offset = "-" + ('00000000000000000000' + (o).toString().split("-")[1]).substr(-19);
+    }
+    else {
+        offset = ('00000000000000000000' + o).substr(-19);
+    }
 
+    this.key = level + offset;
+};
 
+/**
+ * Creates and returns a new &lt;code>TileIdx&lt;/code> for this tile's parent.
+ *
+ * @return {cr.TileIdx}
+ */
+cr.TileIdx.prototype.parent = function() {
+    return new cr.TileIdx(this.l + 1, this.o >> 1);
+};
 
-
-
-
-
-
-    
-
-
-
-
-
+/**
+ * Returns a string representation of this tile.
+ *
+ * @return {string}
+ */
+cr.TileIdx.prototype.toString = function() {
+    return this.l + '.' + this.o;
+};
+</code></pre>
+        </article>
+    </section>
 
 
 

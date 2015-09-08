@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: DataSeriesPlot</title>
+    <title>JSDoc: Class: TimeGraphAxis</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: DataSeriesPlot</h1>
+    <h1 class="page-title">Class: TimeGraphAxis</h1>
 
     
 
@@ -29,7 +29,9 @@
 <header>
     
         <h2>
-        DataSeriesPlot
+            <span class="ancestors"><a href="cr.html">cr</a>.</span>
+        
+        TimeGraphAxis
         </h2>
         
     
@@ -42,14 +44,14 @@
 
     
 
-    <h4 class="name" id="DataSeriesPlot"><span class="type-signature"></span>new DataSeriesPlot<span class="signature">(datasource, horizontalAxis, verticalAxis, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {<a href="cr.Plot.html">cr.Plot</a>}</span></h4>
+    <h4 class="name" id="TimeGraphAxis"><span class="type-signature"></span>new TimeGraphAxis<span class="signature">(domElement, min, max, basis, isXAxis)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    Creates a <code>DataSeriesPlot</code>.
+    Creates a <code>TimeGraphAxis</code> to be rendered within the given <code>domElement</code>.
 </div>
 
 
@@ -73,8 +75,6 @@
         <th>Type</th>
 
         
-        <th>Attributes</th>
-        
 
         
 
@@ -87,100 +87,7 @@
 
         <tr>
             
-                <td class="name"><code>datasource</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="global.html#datasourceFunction">datasourceFunction</a></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">function with signature <code>function(level, offset, successCallback)</code> resposible for returning tile JSON for the given <code>level</code> and <code>offset</code></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>horizontalAxis</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="cr.TimeGraphAxis.html">cr.TimeGraphAxis</a></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">the date axis</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>verticalAxis</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type"><a href="cr.GraphAxis.html">cr.GraphAxis</a></span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last">the y axis</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>options</code></td>
+                <td class="name"><code>domElement</code></td>
             
 
             <td class="type">
@@ -193,20 +100,102 @@
             </td>
 
             
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
 
-                
+            
 
+            <td class="description last">the DOM element holding this plot container</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>min</code></td>
+            
+
+            <td class="type">
+            
                 
-                </td>
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
             
 
             
 
-            <td class="description last">additional options, currently unused</td>
+            <td class="description last">the range min</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>max</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the range max</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>basis</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="cr.Basis.html">cr.Basis</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>isXAxis</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">whether this is an X axis</td>
         </tr>
 
     
@@ -247,7 +236,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Grapher.js.html">Grapher.js</a>, <a href="Grapher.js.html#line223">line 223</a>
+        <a href="TimeGraphAxis.js.html">TimeGraphAxis.js</a>, <a href="TimeGraphAxis.js.html#line17">line 17</a>
     </li></ul></dd>
     
 
@@ -270,24 +259,6 @@
 
 
 
-<h5>Returns:</h5>
-
-        
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type"><a href="cr.Plot.html">cr.Plot</a></span>
-
-
-    </dd>
-</dl>
-
-    
 
 
 
@@ -327,7 +298,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Tue Sep 08 2015 15:48:59 GMT-0400 (EDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Tue Sep 08 2015 15:48:58 GMT-0400 (EDT)
 </footer>
 
 <script> prettyPrint(); </script>

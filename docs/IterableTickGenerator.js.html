@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Home</title>
+    <title>JSDoc: Source: IterableTickGenerator.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,32 +17,55 @@
 
 <div id="main">
 
-    <h1 class="page-title">Home</h1>
+    <h1 class="page-title">Source: IterableTickGenerator.js</h1>
 
     
 
 
 
     
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>"use strict";
 
+/** @namespace */
+var cr = cr || {};
 
-    <h3> </h3>
+/**
+ * Class for iterating over ticks.
+ *
+ * @class
+ * @constructor
+ * @private
+ * @param {cr.TickGenerator} gen - a TickGenerator instance
+ * @param {number} minValue - the min value
+ * @param {number} maxValue - the max value
+ */
+cr.IterableTickGenerator = function(gen, minValue, maxValue) {
+    this._gen = gen;
+    this._maxValue = maxValue;
+    this._minValue = minValue;
 
+    this._currTick = 0.0;
+    this._nextTick = gen.nextTick(minValue);
+};
 
+cr.IterableTickGenerator.prototype.hasNext = function() {
+    return this._nextTick &lt;= this._maxValue;
+};
 
+cr.IterableTickGenerator.prototype.next = function() {
+    if (!this.hasNext()) {
+        return false;
+    }
 
-
-
-
-
-
-
-    
-
-
-
-
-
+    this._currTick = this._nextTick;
+    this._nextTick = this._gen.nextTick();
+    return this._currTick;
+};
+</code></pre>
+        </article>
+    </section>
 
 
 

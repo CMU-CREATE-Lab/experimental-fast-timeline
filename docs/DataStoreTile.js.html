@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: DataStoreTile.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: DataStoreTile.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>'use strict';
+
+/** @namespace */
+var cr = cr || {};
+
+/**
+ * Creates a &lt;code>DataStoreTile&lt;/code>.
+ *
+ * @class
+ * @constructor
+ * @private
+ * @param glb
+ * @param {cr.TileIdx} tileidx - the tile index
+ * @param {datasourceFunction} datasource - function with signature &lt;code>function(level, offset, successCallback)&lt;/code> resposible for returning tile JSON for the given &lt;code>level&lt;/code> and &lt;code>offset&lt;/code>
+ */
+cr.DataStoreTile = function(glb, tileidx, datasource) {
+    this.glb = glb;
+    this.gl = glb.gl;
+    this._tileidx = tileidx;
+    this._ready = false;
+    this.program = glb.programFromSources(cr.Shaders.TileVertexShader, cr.Shaders.TileFragmentShader);
+    this.pointProgram = glb.programFromSources(cr.Shaders.PointVertexShader, cr.Shaders.PointFragmentShader);
+    this.offset = 0;
+    this._resolutionScale = window.devicePixelRatio || 1;
+
+    var self = this;
+    var tileLoader = new cr.TileLoader(datasource);
+    tileLoader.load(tileidx, function(err, json) {
+        if (err) {
+            console.log(err);
+        }
+        else {
+            var data = [];
+            var offset = 0;
+
+            if (json.data.length > 0) {
+                offset = json.data[0][0];
+                for (var i = 0; i &lt; json.data.length; i++) {
+                    data.push(json.data[i][0] - offset);
+                    data.push(json.data[i][1]);
+                    data.push(json.data[i][2]);
+                    data.push(json.data[i][3]);
+                }
+            }
+
+            self.offset = offset;
+            self._setData(new Float32Array(data))
+        }
+    });
+};
+
+cr.DataStoreTile.prototype._setData = function(arrayBuffer) {
+    var gl = this.gl;
+    this._pointCount = arrayBuffer.length / 4;
+
+    this._data = arrayBuffer;
+    this._arrayBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, this._arrayBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, this._data, gl.STATIC_DRAW);
+
+    var attributeLoc = gl.getAttribLocation(this.program, 'a_position');
+    gl.enableVertexAttribArray(attributeLoc);
+    gl.vertexAttribPointer(attributeLoc, 2, gl.FLOAT, false, 16, 0);
+
+    this._ready = true;
+};
+
+/**
+ * Returns wether the tile is ready.
+ *
+ * @return {boolean}
+ */
+cr.DataStoreTile.prototype.isReady = function() {
+    return this._ready;
+};
+
+cr.DataStoreTile.prototype.delete = function() {
+    // TODO
+    console.log('delete: ' + this._tileidx.toString());
+};
+
+cr.DataStoreTile.prototype.draw = function(transform) {
+    var gl = this.gl;
+    if (this._ready) {
+        gl.lineWidth(1);
+        gl.useProgram(this.program);
+        var pMatrix = new Float32Array([1, 0, 0, 0,
+                                        0, 1, 0, 0,
+                                        0, 0, 1, 0,
+                                        0, 0, 0, 1]);
+
+        var xscale = 2 / (transform.xmax - transform.xmin);
+        var xtranslate = (-transform.xmin + this.offset) * xscale - 1;
+        var yscale = 2 / (transform.ymax - transform.ymin);
+        var ytranslate = -transform.ymin * yscale - 1;
+        pMatrix[0] = xscale;
+        pMatrix[12] = xtranslate;
+        pMatrix[5] = yscale;
+        pMatrix[13] = ytranslate;
+
+        var matrixLoc = gl.getUniformLocation(this.program, 'u_pMatrix');
+        //    gl.uniformMatrix4fv(matrixLoc, false, transform);
+        gl.uniformMatrix4fv(matrixLoc, false, pMatrix);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, this._arrayBuffer);
+
+        var attributeLoc = gl.getAttribLocation(this.program, 'a_position');
+        gl.enableVertexAttribArray(attributeLoc);
+        gl.vertexAttribPointer(attributeLoc, 2, gl.FLOAT, false, 16, 0);
+
+        var colorLoc = gl.getUniformLocation(this.program, 'u_color');
+        gl.uniform4f(colorLoc, 0, 0, 0, 1);
+
+        gl.drawArrays(gl.LINE_STRIP, 0, this._pointCount);
+
+        gl.useProgram(this.pointProgram);
+
+        var matrixLoc = gl.getUniformLocation(this.pointProgram, 'u_pMatrix');
+        //gl.uniformMatrix4fv(matrixLoc, false, transform);
+        gl.uniformMatrix4fv(matrixLoc, false, pMatrix);
+
+        gl.bindBuffer(gl.ARRAY_BUFFER, this._arrayBuffer);
+
+        var attributeLoc = gl.getAttribLocation(this.pointProgram, 'a_position');
+        gl.enableVertexAttribArray(attributeLoc);
+        gl.vertexAttribPointer(attributeLoc, 2, gl.FLOAT, false, 16, 0);
+
+        var colorLoc = gl.getUniformLocation(this.pointProgram, 'u_color');
+        gl.uniform4f(colorLoc, 0, 0, 0, 1);
+
+        var sizeLoc = gl.getUniformLocation(this.pointProgram, 'u_size');
+        gl.uniform1f(sizeLoc, 4 * this._resolutionScale);
+
+        gl.drawArrays(gl.POINTS, 0, this._pointCount);
+    }
+};
+
+/**
+ * Update and draw tiles
+ *
+ * @param tiles
+ * @param transform
+ */
+cr.DataStoreTile.update = function(tiles, transform) {
+    for (var i = 0; i &lt; tiles.length; i++) {
+        tiles[i].draw(transform);
+    }
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="cr.Basis.html">Basis</a></li><li><a href="cr.GraphAxis.html">GraphAxis</a></li><li><a href="cr.Grapher.html">Grapher</a></li><li><a href="cr.Plot.html">Plot</a></li><li><a href="cr.SeriesPlotContainer.html">SeriesPlotContainer</a></li><li><a href="cr.TileIdx.html">TileIdx</a></li><li><a href="cr.TimeGraphAxis.html">TimeGraphAxis</a></li><li><a href="DataSeriesPlot.html">DataSeriesPlot</a></li><li><a href="DateAxis.html">DateAxis</a></li><li><a href="NumberAxis.html">NumberAxis</a></li><li><a href="PlotContainer.html">PlotContainer</a></li></ul><h3>Namespaces</h3><ul><li><a href="cr.html">cr</a></li></ul><h3><a href="global.html">Global</a></h3>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Tue Sep 08 2015 15:48:58 GMT-0400 (EDT)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

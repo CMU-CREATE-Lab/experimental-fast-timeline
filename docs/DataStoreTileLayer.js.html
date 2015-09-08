@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: DataStoreTileLayer.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: DataStoreTileLayer.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>"use strict";
+
+/** @namespace */
+var cr = cr || {};
+
+/**
+ * Creates a &lt;code>DataStoreTileLayer&lt;/code>.
+ *
+ * @class
+ * @constructor
+ * @private
+ * @param {datasourceFunction} datasource - function with signature &lt;code>function(level, offset, successCallback)&lt;/code> resposible for returning tile JSON for the given &lt;code>level&lt;/code> and &lt;code>offset&lt;/code>
+ * @param {cr.Glb} glb
+ * @param ctx - canvas 2D context
+ */
+cr.DataStoreTileLayer = function(datasource, glb, ctx) {
+    this.glb = glb;
+    this.ctx = ctx;
+    var that = this;
+
+    function createTile(ti, bounds) {
+        if (that.glb &amp;&amp; that.usewebgl) {
+            return new cr.DataStoreTile(glb, ti, datasource);
+        }
+        else {
+            return new cr.CanvasTile(ctx, ti, datasource);
+        }
+    }
+
+    this._tileView = new cr.TileView({
+        createTile : createTile,
+        deleteTile : function(tile) {
+        },
+        updateTile : (that.glb &amp;&amp; that.useWebgl) ? cr.DataStoreTile.update : cr.CanvasTile.update
+    });
+
+    this.destroy = function() {
+        this._tileView._destroy();
+    };
+};
+
+cr.DataStoreTileLayer.prototype.draw = function(view) {
+    if (this.glb &amp;&amp; this.usewebgl) {
+        this.drawWebgl(view);
+    }
+    else {
+        this.drawCanvas(view);
+    }
+    this._needsUpdate = this._tileView._needsUpdate;
+};
+
+cr.DataStoreTileLayer.prototype.drawWebgl = function(view) {
+    //this.glb.gl.clear(this.glb.gl.COLOR_BUFFER_BIT);
+
+    var pMatrix = new Float32Array([1, 0, 0, 0,
+                                    0, 1, 0, 0,
+                                    0, 0, 1, 0,
+                                    0, 0, 0, 1]);
+
+    var xscale = 2 / (view.xmax - view.xmin);
+    var xtranslate = -view.xmin * xscale - 1;
+    var yscale = 2 / (view.ymax - view.ymin);
+    var ytranslate = -view.ymin * yscale - 1;
+    pMatrix[0] = xscale;
+    pMatrix[12] = xtranslate;
+    pMatrix[5] = yscale;
+    pMatrix[13] = ytranslate;
+
+    this._tileView.setView({ min : view.xmin, max : view.xmax });
+    //    this._tileView.update(pMatrix);
+    this._tileView.update(view);
+};
+
+cr.DataStoreTileLayer.prototype.drawCanvas = function(view) {
+    //this.ctx.clearRect (0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+
+    var transform = {};
+    transform.xOffset = -view.xmin;
+    transform.xScale = this.ctx.canvas.width / (view.xmax - view.xmin);
+    transform.yOffset = -view.ymax;
+    transform.yScale = this.ctx.canvas.height / (view.ymin - view.ymax);
+
+    this._tileView.setView({ min : view.xmin, max : view.xmax });
+    this._tileView.update(transform);
+
+};
+
+cr.DataStoreTileLayer.prototype.search = function(bbox) {
+    var keys = Object.keys(this._tileView._tiles).sort();
+    var matches = [];
+    for (var i = 0; i &lt; keys.length; i++) {
+        var offset = this._tileView._tiles[keys[i]].offset || 0;
+        var data = this._tileView._tiles[keys[i]]._data;
+        if (data) {
+            for (var j = 0; j &lt; data.length; j += 4) {
+                if (bbox.xmin &lt;= data[j] + offset &amp;&amp; bbox.xmax >= data[j] + offset &amp;&amp;
+                    bbox.ymin &lt;= data[j + 1] &amp;&amp; bbox.ymax >= data[j + 1]) {
+                    return {
+                        x : data[j] + offset,
+                        y : data[j + 1],
+                        tile : this._tileView._tiles[keys[i]]
+                    };
+                }
+            }
+        }
+    }
+    return null;
+};
+
+cr.DataStoreTileLayer.prototype.searchByX = function(bbox) {
+    var keys = Object.keys(this._tileView._tiles).sort();
+    var matches = [];
+    for (var i = 0; i &lt; keys.length; i++) {
+        var offset = this._tileView._tiles[keys[i]].offset || 0;
+        var data = this._tileView._tiles[keys[i]]._data;
+        if (data) {
+            for (var j = 0; j &lt; data.length; j += 4) {
+                if (data[j] + offset >= bbox.xmin &amp;&amp; data[j] + offset &lt;= bbox.xmax) {
+                    return { x : data[j] + offset, y : data[j + 1] };
+                }
+            }
+        }
+    }
+    return null;
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="cr.Basis.html">Basis</a></li><li><a href="cr.GraphAxis.html">GraphAxis</a></li><li><a href="cr.Grapher.html">Grapher</a></li><li><a href="cr.Plot.html">Plot</a></li><li><a href="cr.SeriesPlotContainer.html">SeriesPlotContainer</a></li><li><a href="cr.TileIdx.html">TileIdx</a></li><li><a href="cr.TimeGraphAxis.html">TimeGraphAxis</a></li><li><a href="DataSeriesPlot.html">DataSeriesPlot</a></li><li><a href="DateAxis.html">DateAxis</a></li><li><a href="NumberAxis.html">NumberAxis</a></li><li><a href="PlotContainer.html">PlotContainer</a></li></ul><h3>Namespaces</h3><ul><li><a href="cr.html">cr</a></li></ul><h3><a href="global.html">Global</a></h3>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Tue Sep 08 2015 15:48:58 GMT-0400 (EDT)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: Basis</title>
+    <title>JSDoc: Class: SeriesPlotContainer</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: Basis</h1>
+    <h1 class="page-title">Class: SeriesPlotContainer</h1>
 
     
 
@@ -31,7 +31,7 @@
         <h2>
             <span class="ancestors"><a href="cr.html">cr</a>.</span>
         
-        Basis
+        SeriesPlotContainer
         </h2>
         
     
@@ -44,14 +44,14 @@
 
     
 
-    <h4 class="name" id="Basis"><span class="type-signature"></span>new Basis<span class="signature">(x, y)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="SeriesPlotContainer"><span class="type-signature"></span>new SeriesPlotContainer<span class="signature">(elementId, plots)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    Basis Class -- ported from Basis.java
+    Creates a <code>SeriesPlotContainer</code> to be rendered within the <code>div</code> with the given <code>elementId</code>.
 </div>
 
 
@@ -87,13 +87,13 @@
 
         <tr>
             
-                <td class="name"><code>x</code></td>
+                <td class="name"><code>elementId</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="cr.Vector2.html">cr.Vector2</a></span>
+<span class="param-type">string</span>
 
 
             
@@ -103,20 +103,20 @@
 
             
 
-            <td class="description last"></td>
+            <td class="description last">the DOM element ID for the container div holding this plot container</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>y</code></td>
+                <td class="name"><code>plots</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="cr.Vector2.html">cr.Vector2</a></span>
+<span class="param-type">Array.&lt;<a href="cr.Plot.html">cr.Plot</a>></span>
 
 
             
@@ -126,7 +126,7 @@
 
             
 
-            <td class="description last"></td>
+            <td class="description last">array of plots to be added to the plot container</td>
         </tr>
 
     
@@ -167,7 +167,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Basis.js.html">Basis.js</a>, <a href="Basis.js.html#line13">line 13</a>
+        <a href="SeriesPlotContainer.js.html">SeriesPlotContainer.js</a>, <a href="SeriesPlotContainer.js.html#line14">line 14</a>
     </li></ul></dd>
     
 
@@ -206,134 +206,6 @@
 
     
 
-    
-        <h3 class="subsection-title">Members</h3>
-
-        
-            
-<h4 class="name" id=".XAxisBasis"><span class="type-signature">(static) </span>XAxisBasis<span class="type-signature"></span></h4>
-
-
-
-
-<div class="description">
-    Basis for x axis
-</div>
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Basis.js.html">Basis.js</a>, <a href="Basis.js.html#line26">line 26</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
-            
-<h4 class="name" id=".YAxisBasis"><span class="type-signature">(static) </span>YAxisBasis<span class="type-signature"></span></h4>
-
-
-
-
-<div class="description">
-    Basis for y axis
-</div>
-
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Basis.js.html">Basis.js</a>, <a href="Basis.js.html#line21">line 21</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-        
     
 
     
