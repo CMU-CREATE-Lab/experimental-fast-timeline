@@ -1,15 +1,17 @@
 "use strict";
 
-var secondsInHour = 3600;
-var secondsInDay = secondsInHour * 24;
-var secondsInWeek = secondsInDay * 7;
-var secondsInYear = 31556926;
-var secondsInDecade = secondsInYear * 10;
-var secondsInCentury = secondsInDecade * 10;
-var secondsInMonth = Math.round(secondsInYear / 12.);
-
+/** @namespace */
 var cr = cr || {};
 
+/**
+ * Creates a <code>TickGenerator</code> with the given <code>tickSize</code> and <code>offset</code>.
+ *
+ * @class
+ * @constructor
+ * @private
+ * @param {number} tickSize
+ * @param {number} offset
+ */
 cr.TickGenerator = function(tickSize, offset) {
     this._tickSize = tickSize;
     this._offset = offset;
@@ -29,8 +31,6 @@ cr.TickGenerator.prototype.nextTick = function(min) {
     }
     return this._currentTick;
 };
-
-var foocount = 0;
 
 cr.TickGenerator.prototype.advanceTick = function() {
     this._prevTick = this._currentTick;
@@ -97,15 +97,15 @@ cr.WeekTickGenerator.prototype.closestTick = function(time) {
     day += daysSinceMonday;
 
     if (day >= 3.5) {
-        return cr.TickGenerator.closestDay(time + secondsInDay * (7 - day));
+        return cr.TickGenerator.closestDay(time + cr.TimeConstants.SECONDS_IN_DAY * (7 - day));
     }
     else {
-        return cr.TickGenerator.closestDay(time - secondsInDay * day);
+        return cr.TickGenerator.closestDay(time - cr.TimeConstants.SECONDS_IN_DAY * day);
     }
 };
 
 cr.MonthTickGenerator = function(tickSize, offset) {
-    cr.TickGenerator.call(this, secondsInMonth * tickSize, offset);
+    cr.TickGenerator.call(this, cr.TimeConstants.SECONDS_IN_MONTH * tickSize, offset);
     this._tickSizeMonths = tickSize;
 };
 cr.MonthTickGenerator.prototype = Object.create(cr.TickGenerator.prototype);
@@ -114,7 +114,7 @@ cr.MonthTickGenerator.prototype.closestTick = function(time) {
     var timeDate = new Date(time * 1000);
     var monthsSince1900 = timeDate.getYear() * 12
                           + timeDate.getMonth()
-                          + (timeDate.getDate() * secondsInDay / secondsInMonth);
+                          + (timeDate.getDate() * cr.TimeConstants.SECONDS_IN_DAY / cr.TimeConstants.SECONDS_IN_MONTH);
     var tickMonthsSince1900 = Math.round(monthsSince1900 / this._tickSizeMonths) * this._tickSizeMonths;
     var tickYear = Math.floor(tickMonthsSince1900 / 12);
     var tickMonth = tickMonthsSince1900 - tickYear * 12;
@@ -128,7 +128,7 @@ cr.YearTickGenerator = function(tickSize, offset) {
 cr.YearTickGenerator.prototype = Object.create(cr.MonthTickGenerator.prototype);
 
 cr.HourTickGenerator = function(tickSize) {
-    cr.TickGenerator.call(this, secondsInHour * tickSize, 0);
+    cr.TickGenerator.call(this, cr.TimeConstants.SECONDS_IN_HOUR * tickSize, 0);
     this._tickSizeHours = tickSize;
 };
 cr.HourTickGenerator.prototype = Object.create(cr.TickGenerator.prototype);
@@ -141,7 +141,7 @@ cr.HourTickGenerator.prototype.closestTick = function(time) {
     if (closestHour == 24) {
         // Midnight of next day.  Advance time and return closest
         // beginning of day
-        return cr.TickGenerator.closestDay(time + (24 - hour) * secondsInHour);
+        return cr.TickGenerator.closestDay(time + (24 - hour) * cr.TimeConstants.SECONDS_IN_HOUR);
     }
     else {
         timeDate.setHours(closestHour);

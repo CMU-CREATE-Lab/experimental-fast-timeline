@@ -1,16 +1,27 @@
-// A (hopefully) very thin layer of boilerplate and helpful utilities for WebGL
+"use strict";
 
-function Glb(gl) {
+/** @namespace */
+var cr = cr || {};
+
+/**
+ * A (hopefully) very thin layer of boilerplate and helpful utilities for WebGL.
+ *
+ * @class
+ * @constructor
+ * @private
+ * @param gl
+ */
+cr.Glb = function (gl) {
     this.gl = gl;
     this._shaderCache = {};
     this._programCache = {};
-}
+};
 
 // Return compiled shader for type and source.
 // If same type and source has already been compiled, return
 //
 // type should be gl.VERTEX_SHADER or gl.FRAGMENT_SHADER
-Glb.prototype.
+cr.Glb.prototype.
     _shaderFromSource = function(type, source) {
     var cache = this._shaderCache[source];
     if (!cache) {
@@ -30,7 +41,7 @@ Glb.prototype.
 
 // Return compiled and linked program for vertex and fragment shader sources.
 // If identical program has already been compiled and linked, return it.
-Glb.prototype.
+cr.Glb.prototype.
     programFromSources = function(vertexSource, fragmentSource) {
     var cache = this._programCache[vertexSource];
     if (!cache) {
@@ -55,7 +66,7 @@ Glb.prototype.
     return program;
 };
 
-Glb.prototype.
+cr.Glb.prototype.
     _addAttribsAndUniformsToProgram = function(program) {
     if (this.gl.getProgramParameter(program, this.gl.ACTIVE_ATTRIBUTES) == 0) {
         throw new Error('Program has no active attributes');
@@ -75,7 +86,7 @@ Glb.prototype.
     }
 };
 
-Glb.prototype.
+cr.Glb.prototype.
     createBuffer = function(array) {
     var buffer = this.gl.createBuffer();
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer);

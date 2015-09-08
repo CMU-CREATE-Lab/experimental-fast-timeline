@@ -1,8 +1,10 @@
-'use strict';
+"use strict";
+
+/** @namespace */
 var cr = cr || {};
 
 /**
- * Object for abbreviated and verobse day and month labels
+ * Object for abbreviated and verbose day and month labels
  * @type {Object}
  */
 cr.LabelFormatter = {};

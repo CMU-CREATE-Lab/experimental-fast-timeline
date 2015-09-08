@@ -1,6 +1,18 @@
 "use strict";
+
+/** @namespace */
 var cr = cr || {};
 
+/**
+ * Class for iterating over ticks.
+ *
+ * @class
+ * @constructor
+ * @private
+ * @param {cr.TickGenerator} gen - a TickGenerator instance
+ * @param {number} minValue - the min value
+ * @param {number} maxValue - the max value
+ */
 cr.IterableTickGenerator = function(gen, minValue, maxValue) {
     this._gen = gen;
     this._maxValue = maxValue;

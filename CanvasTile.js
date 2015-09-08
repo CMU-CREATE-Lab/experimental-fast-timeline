@@ -1,6 +1,19 @@
 "use strict";
 
-function CanvasTile(ctx, tileidx, datasource) {
+/** @namespace */
+var cr = cr || {};
+
+/**
+ * Creates a <code>CanvasTile</code>.
+ *
+ * @class
+ * @constructor
+ * @private
+ * @param ctx - graphics context
+ * @param {cr.TileIdx} tileidx - the tile index
+ * @param {datasourceFunction} datasource - function with signature <code>function(level, offset, successCallback)</code> resposible for returning tile JSON for the given <code>level</code> and <code>offset</code>
+ */
+cr.CanvasTile = function(ctx, tileidx, datasource) {
     this.ctx = ctx;
     this.canvas2d = ctx.canvas;
     this._tileidx = tileidx;
@@ -26,24 +39,29 @@ function CanvasTile(ctx, tileidx, datasource) {
             self._setData(data);
         }
     });
-}
+};
 
-CanvasTile.prototype._setData = function(arrayBuffer) {
+cr.CanvasTile.prototype._setData = function(arrayBuffer) {
     this._pointCount = arrayBuffer.length / 4;
     this._data = arrayBuffer;
     this._ready = true;
 };
 
-CanvasTile.prototype.isReady = function() {
+/**
+ * Returns wether the tile is ready.
+ *
+ * @return {boolean}
+ */
+cr.CanvasTile.prototype.isReady = function() {
     return this._ready;
 };
 
-CanvasTile.prototype.delete = function() {
+cr.CanvasTile.prototype.delete = function() {
     // TODO
     console.log('delete: ' + this._tileidx.toString());
 };
 
-CanvasTile.prototype.draw = function(transform) {
+cr.CanvasTile.prototype.draw = function(transform) {
     if (this._ready) {
 
         for (var i = 0; i <= this._pointCount * 4; i += 2) {
@@ -68,8 +86,13 @@ CanvasTile.prototype.draw = function(transform) {
     }
 };
 
-// Update and draw tiles
-CanvasTile.update = function(tiles, transform) {
+/**
+ * Update and draw tiles
+ *
+ * @param tiles
+ * @param transform
+ */
+cr.CanvasTile.update = function(tiles, transform) {
     for (var i = 0; i < tiles.length; i++) {
         tiles[i].draw(transform);
     }

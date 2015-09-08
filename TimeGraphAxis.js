@@ -1,25 +1,32 @@
 "use strict";
+
+/** @namespace */
 var cr = cr || {};
 
-cr.TimeGraphAxis = function(div, min, max, basis, isXAxis) {
-    cr.GraphAxis.call(this, div, min, max, basis, isXAxis);
-
-    this._secondsInHour = 3600;
-    this._secondsInDay = this._secondsInHour * 24;
-    this._secondsInWeek = this._secondsInDay * 7;
-    this._secondsInYear = 31556926;
-    this._secondsInDecade = this._secondsInYear * 10;
-    this._secondsInCentury = this._secondsInDecade * 10;
-    this._secondsInMonth = Math.round(this._secondsInYear / 12.);
+/**
+ * Creates a <code>TimeGraphAxis</code> to be rendered within the given <code>domElement</code>.
+ *
+ * @class
+ * @constructor
+ * @param {object} domElement - the DOM element holding this plot container
+ * @param {number} min - the range min
+ * @param {number} max - the range max
+ * @param {cr.Basis} basis
+ * @param {boolean} isXAxis - whether this is an X axis
+ */
+cr.TimeGraphAxis = function(domElement, min, max, basis, isXAxis) {
+    cr.GraphAxis.call(this, domElement, min, max, basis, isXAxis);
 
     this._timeTickSizes = [
-        [1, 5, 15, 30],                                            // 1, 5, 15, 30 seconds
-        [60 * 1, 60 * 5, 60 * 15, 60 * 30],                                // 1, 5, 15, 30 mins
-        [3600 * 1, 3600 * 3, 3600 * 6, 3600 * 12],                         // 1, 3, 6, 12 hours
-        [this._secondsInDay],                                            // 1 day
-        [this._secondsInWeek],                                           // 1 weeks
-        [this._secondsInMonth, this._secondsInMonth * 3, this._secondsInMonth * 6],  // 1, 3, 6 months
-        [this._secondsInYear]                                            // 1 year
+        [1, 5, 15, 30],                                             // 1, 5, 15, 30 seconds
+        [60 * 1, 60 * 5, 60 * 15, 60 * 30],                         // 1, 5, 15, 30 mins
+        [3600 * 1, 3600 * 3, 3600 * 6, 3600 * 12],                  // 1, 3, 6, 12 hours
+        [cr.TimeConstants.SECONDS_IN_DAY],                          // 1 day
+        [cr.TimeConstants.SECONDS_IN_WEEK],                         // 1 weeks
+        [cr.TimeConstants.SECONDS_IN_MONTH,
+         cr.TimeConstants.SECONDS_IN_MONTH * 3,
+         cr.TimeConstants.SECONDS_IN_MONTH * 6],                    // 1, 3, 6 months
+        [cr.TimeConstants.SECONDS_IN_YEAR]                          // 1 year
     ];
 
     this._minRange = -21474836400.0;
@@ -70,19 +77,19 @@ cr.TimeGraphAxis.prototype.paint = function() {
 
     var topLabelPixelOffset = this.height / 2;
 
-    var dayMajorTickSize = this._secondsInDay;
+    var dayMajorTickSize = cr.TimeConstants.SECONDS_IN_DAY;
     var dayMajorTickWidth = this.computeTickWidth(dayMajorTickSize);
 
-    var monthMajorTickSize = this._secondsInMonth;
+    var monthMajorTickSize = cr.TimeConstants.SECONDS_IN_MONTH;
     var monthMajorTickWidth = this.computeTickWidth(monthMajorTickSize);
 
-    var yearMajorTickSize = this._secondsInYear;
+    var yearMajorTickSize = cr.TimeConstants.SECONDS_IN_YEAR;
     var yearMajorTickWidth = this.computeTickWidth(yearMajorTickSize);
 
-    var decadeMajorTickSize = this._secondsInDecade;
+    var decadeMajorTickSize = cr.TimeConstants.SECONDS_IN_DECADE;
     var decadeMajorTickWidth = this.computeTickWidth(decadeMajorTickSize);
 
-    var centuryMajorTickSize = this._secondsInCentury;
+    var centuryMajorTickSize = cr.TimeConstants.SECONDS_IN_CENTURY;
     var centuryMajorTickWidth = this.computeTickWidth(centuryMajorTickSize);
 
     var formatter;
@@ -253,7 +260,7 @@ cr.TimeGraphAxis.prototype.computeTimeTickSize = function(minPixels) {
         }
     }
 
-    return this.computeTickSize(minPixels, this._secondsInYear) * this._secondsInYear;
+    return this.computeTickSize(minPixels, cr.TimeConstants.SECONDS_IN_YEAR) * cr.TimeConstants.SECONDS_IN_YEAR;
 };
 
 cr.TimeGraphAxis.prototype.computeTimeMinorTickSize = function(minPixels, majorTickSize) {
@@ -328,7 +335,7 @@ cr.TimeGraphAxis.prototype.computeTickWidth = function(unitSize) {
 };
 
 cr.TimeGraphAxis.prototype.createDateTickGenerator = function(tickSize) {
-    var nHours = Math.round(tickSize / this._secondsInHour);
+    var nHours = Math.round(tickSize / cr.TimeConstants.SECONDS_IN_HOUR);
     if (nHours <= 1) {
         return null;
     }
@@ -336,22 +343,22 @@ cr.TimeGraphAxis.prototype.createDateTickGenerator = function(tickSize) {
         return new cr.HourTickGenerator(nHours);
     }
 
-    var nDays = Math.round(tickSize / this._secondsInDay);
+    var nDays = Math.round(tickSize / cr.TimeConstants.SECONDS_IN_DAY);
     if (nDays == 1) {
-        return new cr.DayTickGenerator(this._secondsInDay, 0);
+        return new cr.DayTickGenerator(cr.TimeConstants.SECONDS_IN_DAY, 0);
     }
 
-    var nWeeks = Math.round(tickSize / this._secondsInWeek);
+    var nWeeks = Math.round(tickSize / cr.TimeConstants.SECONDS_IN_WEEK);
     if (nWeeks == 1) {
-        return new cr.WeekTickGenerator(this._secondsInWeek, 0);
+        return new cr.WeekTickGenerator(cr.TimeConstants.SECONDS_IN_WEEK, 0);
     }
 
-    var nMonths = Math.round(tickSize / this._secondsInMonth);
+    var nMonths = Math.round(tickSize / cr.TimeConstants.SECONDS_IN_MONTH);
     if (nMonths < 12) {
         return new cr.MonthTickGenerator(nMonths, 0);
     }
 
-    var nYears = Math.round(tickSize / this._secondsInYear);
+    var nYears = Math.round(tickSize / cr.TimeConstants.SECONDS_IN_YEAR);
     return new cr.YearTickGenerator(nYears);
 };
 
