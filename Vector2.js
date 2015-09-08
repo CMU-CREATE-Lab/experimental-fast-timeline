@@ -1,8 +1,14 @@
-'use strict';
+"use strict";
+
+/** @namespace */
 var cr = cr || {};
+
 /**
  * 2D Vector Class -- ported from Vector2.java
+ *
+ * @class
  * @constructor
+ * @private
  * @param {number} x
  * @param {number} y
  */

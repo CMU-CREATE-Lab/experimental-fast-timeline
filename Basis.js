@@ -1,8 +1,11 @@
 'use strict';
+
+/** @namespace */
 var cr = cr || {};
 
 /**
  * Basis Class -- ported from Basis.java
+ * @class
  * @constructor
  * @param {cr.Vector2} x
  * @param {cr.Vector2} y

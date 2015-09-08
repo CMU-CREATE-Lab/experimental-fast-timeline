@@ -1,33 +1,45 @@
 "use strict";
 
-function DataStoreTileLayer(datasource, glb, ctx) {
+/** @namespace */
+var cr = cr || {};
+
+/**
+ * Creates a <code>DataStoreTileLayer</code>.
+ *
+ * @class
+ * @constructor
+ * @private
+ * @param {datasourceFunction} datasource - function with signature <code>function(level, offset, successCallback)</code> resposible for returning tile JSON for the given <code>level</code> and <code>offset</code>
+ * @param {cr.Glb} glb
+ * @param ctx - canvas 2D context
+ */
+cr.DataStoreTileLayer = function(datasource, glb, ctx) {
     this.glb = glb;
     this.ctx = ctx;
     var that = this;
 
     function createTile(ti, bounds) {
         if (that.glb && that.usewebgl) {
-            return new DataStoreTile(glb, ti, datasource);
+            return new cr.DataStoreTile(glb, ti, datasource);
         }
         else {
-            return new CanvasTile(ctx, ti, datasource);
+            return new cr.CanvasTile(ctx, ti, datasource);
         }
     }
 
-    this._tileView = new TileView({
+    this._tileView = new cr.TileView({
         createTile : createTile,
         deleteTile : function(tile) {
         },
-        updateTile : (that.glb && that.useWebgl) ? DataStoreTile.update : CanvasTile.update
+        updateTile : (that.glb && that.useWebgl) ? cr.DataStoreTile.update : cr.CanvasTile.update
     });
 
     this.destroy = function() {
         this._tileView._destroy();
     };
+};
 
-}
-
-DataStoreTileLayer.prototype.draw = function(view) {
+cr.DataStoreTileLayer.prototype.draw = function(view) {
     if (this.glb && this.usewebgl) {
         this.drawWebgl(view);
     }
@@ -37,7 +49,7 @@ DataStoreTileLayer.prototype.draw = function(view) {
     this._needsUpdate = this._tileView._needsUpdate;
 };
 
-DataStoreTileLayer.prototype.drawWebgl = function(view) {
+cr.DataStoreTileLayer.prototype.drawWebgl = function(view) {
     //this.glb.gl.clear(this.glb.gl.COLOR_BUFFER_BIT);
 
     var pMatrix = new Float32Array([1, 0, 0, 0,
@@ -59,7 +71,7 @@ DataStoreTileLayer.prototype.drawWebgl = function(view) {
     this._tileView.update(view);
 };
 
-DataStoreTileLayer.prototype.drawCanvas = function(view) {
+cr.DataStoreTileLayer.prototype.drawCanvas = function(view) {
     //this.ctx.clearRect (0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
 
     var transform = {};
@@ -73,7 +85,7 @@ DataStoreTileLayer.prototype.drawCanvas = function(view) {
 
 };
 
-DataStoreTileLayer.prototype.search = function(bbox) {
+cr.DataStoreTileLayer.prototype.search = function(bbox) {
     var keys = Object.keys(this._tileView._tiles).sort();
     var matches = [];
     for (var i = 0; i < keys.length; i++) {
@@ -95,7 +107,7 @@ DataStoreTileLayer.prototype.search = function(bbox) {
     return null;
 };
 
-DataStoreTileLayer.prototype.searchByX = function(bbox) {
+cr.DataStoreTileLayer.prototype.searchByX = function(bbox) {
     var keys = Object.keys(this._tileView._tiles).sort();
     var matches = [];
     for (var i = 0; i < keys.length; i++) {

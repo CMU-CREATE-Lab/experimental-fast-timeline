@@ -1,19 +1,19 @@
-"use strict";
+'use strict';
 
-//
-// Want to quadruple-buffer
-// From time 1 to 1.999, display 1
-//                       already have 2 in the hopper, nominally
-//                       be capturing 3
-//                       have a fourth fallow buffer to let pipelined chrome keep drawing
+/** @namespace */
+var cr = cr || {};
 
-// Be capturing 3 means that at t=1, the first video just crossed 3.1,
-//                   and that at t=1.999, the last video just crossed 3.1
-// So we're aiming to run the videos at current display time plus 1.1 to 2.1
-// Or maybe compress the range and go with say 1.6 to 2.1?  That lets us better use
-// the flexibility of being able to capture the video across a range of times
-
-function DataStoreTile(glb, tileidx, datasource) {
+/**
+ * Creates a <code>DataStoreTile</code>.
+ *
+ * @class
+ * @constructor
+ * @private
+ * @param glb
+ * @param {cr.TileIdx} tileidx - the tile index
+ * @param {datasourceFunction} datasource - function with signature <code>function(level, offset, successCallback)</code> resposible for returning tile JSON for the given <code>level</code> and <code>offset</code>
+ */
+cr.DataStoreTile = function(glb, tileidx, datasource) {
     this.glb = glb;
     this.gl = glb.gl;
     this._tileidx = tileidx;
@@ -47,9 +47,9 @@ function DataStoreTile(glb, tileidx, datasource) {
             self._setData(new Float32Array(data))
         }
     });
-}
+};
 
-DataStoreTile.prototype._setData = function(arrayBuffer) {
+cr.DataStoreTile.prototype._setData = function(arrayBuffer) {
     var gl = this.gl;
     this._pointCount = arrayBuffer.length / 4;
 
@@ -65,16 +65,21 @@ DataStoreTile.prototype._setData = function(arrayBuffer) {
     this._ready = true;
 };
 
-DataStoreTile.prototype.isReady = function() {
+/**
+ * Returns wether the tile is ready.
+ *
+ * @return {boolean}
+ */
+cr.DataStoreTile.prototype.isReady = function() {
     return this._ready;
 };
 
-DataStoreTile.prototype.delete = function() {
+cr.DataStoreTile.prototype.delete = function() {
     // TODO
     console.log('delete: ' + this._tileidx.toString());
 };
 
-DataStoreTile.prototype.draw = function(transform) {
+cr.DataStoreTile.prototype.draw = function(transform) {
     var gl = this.gl;
     if (this._ready) {
         gl.lineWidth(1);
@@ -130,8 +135,13 @@ DataStoreTile.prototype.draw = function(transform) {
     }
 };
 
-// Update and draw tiles
-DataStoreTile.update = function(tiles, transform) {
+/**
+ * Update and draw tiles
+ *
+ * @param tiles
+ * @param transform
+ */
+cr.DataStoreTile.update = function(tiles, transform) {
     for (var i = 0; i < tiles.length; i++) {
         tiles[i].draw(transform);
     }

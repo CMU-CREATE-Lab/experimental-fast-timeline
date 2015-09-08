@@ -1,4 +1,6 @@
 "use strict";
+
+/** @namespace */
 var cr = cr || {};
 
 cr.Shaders = cr.Shaders || {};

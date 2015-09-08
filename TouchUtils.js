@@ -1,6 +1,13 @@
 "use strict";
+
+/** @namespace */
 var cr = cr || {};
 
+/**
+ * @class
+ * @constructor
+ * @private
+ */
 cr.TouchUtils = function() {
 };
 

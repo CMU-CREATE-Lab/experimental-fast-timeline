@@ -3,6 +3,10 @@
 /** @namespace */
 var cr = cr || {};
 
+/**
+ * @class
+ * @constructor
+ */
 cr.Grapher = function() {
     this._isAdded = true; // should maybe be false
     this._isAnimated = false;

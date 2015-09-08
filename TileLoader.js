@@ -1,7 +1,16 @@
 "use strict";
 
+/** @namespace */
 var cr = cr || {};
 
+/**
+ * Creates a tile loader for the given <code>datasource</code>.
+ *
+ * @class
+ * @constructor
+ * @private
+ * @param {datasourceFunction} datasource - function with signature <code>function(level, offset, successCallback)</code> resposible for returning tile JSON for the given <code>level</code> and <code>offset</code>
+ */
 cr.TileLoader = function(datasource) {
     if (typeof datasource !== 'function') {
         throw new Error("The datasource must be a function.");
@@ -9,6 +18,20 @@ cr.TileLoader = function(datasource) {
     this._datasource = datasource;
 };
 
+/**
+ * The function which the datasource function will call upon success, giving it the tile JSON.
+ *
+ * @callback tileLoaderSuccessCallbackFunction
+ * @param {object} err - an Error instance if an error occurred, otherwise <code>null</code>
+ * @param {object} json - the tile JSON
+ */
+
+/**
+ * Loads the tile specified by the given <code>tileIdx</code>.
+ *
+ * @param {cr.TileIdx} tileIdx - the tile index
+ * @param {tileLoaderSuccessCallbackFunction} callback - the callback function used to return the tile JSON, or to return the error if one occurred.
+ */
 cr.TileLoader.prototype.load = function(tileIdx, callback) {
     if (typeof callback !== 'function') {
         throw new Error("The callback must be a function.");

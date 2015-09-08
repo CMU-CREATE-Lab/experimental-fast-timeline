@@ -1,13 +1,27 @@
 "use strict";
+
+/** @namespace */
 var cr = cr || {};
 
-cr.GraphAxis = function(div, min, max, basis, isXAxis, grapher) {
+/**
+ * Creates a <code>TimeGraphAxis</code> to be rendered within the given <code>domElement</code>.
+ *
+ * @class
+ * @constructor
+ * @param {object} domElement - the DOM element holding this plot container
+ * @param {number} min - the range min
+ * @param {number} max - the range max
+ * @param {cr.Basis} basis
+ * @param {boolean} isXAxis - whether this is an X axis
+ * @param {cr.Grapher} [grapher] - the grapher
+ */
+cr.GraphAxis = function(domElement, min, max, basis, isXAxis, grapher) {
     this._min = min;
     this._max = max;
     this._basis = basis;
     this.isXAxis = isXAxis;
 
-    this._initDiv(div);
+    this._initDiv(domElement);
     this._initCanvas();
 
     this.majorTickMinSpacingPixels = 30;

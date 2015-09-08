@@ -1,7 +1,16 @@
 "use strict";
 
+/** @namespace */
 var cr = cr || {};
 
+/**
+ * Creates a <code>SeriesPlotContainer</code> to be rendered within the <code>div</code> with the given <code>elementId</code>.
+ *
+ * @class
+ * @constructor
+ * @param {string} elementId - the DOM element ID for the container div holding this plot container
+ * @param {cr.Plot[]} plots - array of plots to be added to the plot container
+ */
 cr.SeriesPlotContainer = function(elementId, plots) {
     this.div = document.getElementById(elementId);
     this.div.style["border"] = "1px solid black";
@@ -21,7 +30,7 @@ cr.SeriesPlotContainer = function(elementId, plots) {
     try {
         console.log("Using webgl...");
         this.gl = this.canvas3d.getContext('experimental-webgl');
-        this.glb = new Glb(this.gl);
+        this.glb = new cr.Glb(this.gl);
         this.pointProgram = this.glb.programFromSources(cr.Shaders.PointVertexShader, cr.Shaders.PointFragmentShader);
         this.lineProgram = this.glb.programFromSources(cr.Shaders.TileVertexShader, cr.Shaders.TileFragmentShader);
         this.usewebgl = true;
@@ -551,7 +560,7 @@ cr.SeriesPlotContainer.prototype._resize = function() {
 
 cr.SeriesPlotContainer.prototype.addPlot = function(plot) {
     this._plots[plot.getId()] = plot;
-    this._plots[plot.getId()].tlayer = new DataStoreTileLayer(plot.datasource, this.glb, this.ctx);
+    this._plots[plot.getId()].tlayer = new cr.DataStoreTileLayer(plot.datasource, this.glb, this.ctx);
     this._plots[plot.getId()].tlayer.usewebgl = this.usewebgl;
 };
 

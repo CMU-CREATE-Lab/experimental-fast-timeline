@@ -1,15 +1,17 @@
-//COPYPASTA
-///////////////////////////
-// Tile index
-//
+"use strict";
 
-// A tile has a level, row, and column
-// Level 0 has 1x1=1 tiles; level 1 has 2x2=4 tiles; level 2 has 4x4=16 tiles
-//
-// key is a string that encodes [level, row, column] with leading zeros to allow
-// lexicographic sorting to match sorting by [level, row, column]
+/** @namespace */
+var cr = cr || {};
 
-function TileIdx(l, o) {
+/**
+ * An index for a tile.
+ *
+ * @class
+ * @constructor
+ * @param {int} l - the tile's level
+ * @param {int} o - the tile's offset
+ */
+cr.TileIdx = function(l, o) {
     this.l = l;
     this.o = o;
     var level, offset;
@@ -29,12 +31,22 @@ function TileIdx(l, o) {
     }
 
     this.key = level + offset;
-}
-
-TileIdx.prototype.parent = function() {
-    return new TileIdx(this.l + 1, this.o >> 1);
 };
 
-TileIdx.prototype.toString = function() {
+/**
+ * Creates and returns a new <code>TileIdx</code> for this tile's parent.
+ *
+ * @return {cr.TileIdx}
+ */
+cr.TileIdx.prototype.parent = function() {
+    return new cr.TileIdx(this.l + 1, this.o >> 1);
+};
+
+/**
+ * Returns a string representation of this tile.
+ *
+ * @return {string}
+ */
+cr.TileIdx.prototype.toString = function() {
     return this.l + '.' + this.o;
 };

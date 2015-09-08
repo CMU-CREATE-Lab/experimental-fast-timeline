@@ -1,5 +1,8 @@
 "use strict";
 
+/** @namespace */
+var cr = cr || {};
+
 // Manage a zoomable pannable mosaic of level-of-detail tiles.
 
 // Usage:
@@ -20,7 +23,15 @@
 //
 // layer.getTilesToDraw();
 
-function TileView(settings) {
+/**
+ * Creates a <code>TileView</code> with the given settings.
+ *
+ * @class
+ * @constructor
+ * @private
+ * @param {object} settings
+ */
+cr.TileView = function(settings) {
     this._createTileCallback = settings.createTile;
     this._deleteTileCallback = settings.deleteTile;
     this._tiles = {};
@@ -31,14 +42,13 @@ function TileView(settings) {
     this._readyList = [];
 
     console.log(this.toString());
-}
-
-TileView.prototype.toString = function() {
-    var msg = 'TileView: ';
-    return msg;
 };
 
-TileView.prototype._computeLevel = function(view) {
+cr.TileView.prototype.toString = function() {
+    return 'TileView: ';
+};
+
+cr.TileView.prototype._computeLevel = function(view) {
     var width = view.max - view.min;
   if (width <= 0) {
     return Number.MIN_VALUE;
@@ -47,27 +57,27 @@ TileView.prototype._computeLevel = function(view) {
     return Math.floor(Math.log2(width / 512));
 };
 
-TileView.prototype._computeOffset = function(time, level) {
+cr.TileView.prototype._computeOffset = function(time, level) {
     var tileWidth = Math.pow(2, level) * 512;
     return Math.floor(time / tileWidth);
 };
 
-TileView.prototype._tileidxAt = function(level, offset) {
-    return new TileIdx(level, offset);
+cr.TileView.prototype._tileidxAt = function(level, offset) {
+    return new cr.TileIdx(level, offset);
 };
 
-TileView.prototype._computeVisibleTileRange = function(level, view) {
+cr.TileView.prototype._computeVisibleTileRange = function(level, view) {
     var tilemin = this._tileidxAt(level, this._computeOffset(view.min, level));
     var tilemax = this._tileidxAt(level, this._computeOffset(view.max, level));
     return { min : tilemin, max : tilemax }
 };
 
-TileView.prototype._isTileVisible = function(tileidx, view) {
+cr.TileView.prototype._isTileVisible = function(tileidx, view) {
     var visibleRange = this._computeVisibleTileRange(tileidx.l, view);
     return visibleRange.min.o <= tileidx.o && tileidx.o <= visibleRange.max.o;
 };
 
-TileView.prototype._addTileidx = function(tileidx) {
+cr.TileView.prototype._addTileidx = function(tileidx) {
     if (!this._tiles[tileidx.key]) {
         this._tiles[tileidx.key] =
             this._createTileCallback(tileidx);
@@ -76,14 +86,14 @@ TileView.prototype._addTileidx = function(tileidx) {
     return this._tiles[tileidx.key];
 };
 
-TileView.prototype._deleteTile = function(tile) {
+cr.TileView.prototype._deleteTile = function(tile) {
     if (this._tiles[tile.index.key]) {
         tile.delete();
         delete this._tiles[tile.index.key];
     }
 };
 
-TileView.prototype._destroy = function() {
+cr.TileView.prototype._destroy = function() {
     var keys = Object.keys(this._tiles);
     for (var i = 0; i < keys.length; i++) {
         var key = keys[i];
@@ -93,7 +103,7 @@ TileView.prototype._destroy = function() {
     }
 };
 
-TileView.prototype.tileInfo = function() {
+cr.TileView.prototype.tileInfo = function() {
     var ret = [];
     var tileidxs = Object.keys(this._tiles).sort();
     for (var i = 0; i < tileidxs.length; i++) {
@@ -103,7 +113,7 @@ TileView.prototype.tileInfo = function() {
 };
 
 // Find first ancestor of tileidx that's ready, and mark it as required, for now
-TileView.prototype._findReadyAncestor = function(tileidx) {
+cr.TileView.prototype._findReadyAncestor = function(tileidx) {
     var i = 0;
     while (i < 5) {
         tileidx = tileidx.parent();
@@ -118,7 +128,7 @@ TileView.prototype._findReadyAncestor = function(tileidx) {
 };
 
 // Find first ancestor in keys
-TileView.prototype._findFirstAncestorIn = function(tileidx, map) {
+cr.TileView.prototype._findFirstAncestorIn = function(tileidx, map) {
     while (true) {
         tileidx = tileidx.parent();
         if (tileidx == null) {
@@ -142,7 +152,7 @@ TileView.prototype._findFirstAncestorIn = function(tileidx, map) {
 // Ready x
 // Removed;  not ready -(x)  ready (x)
 
-TileView.prototype.setView = function(view) {
+cr.TileView.prototype.setView = function(view) {
 
     var required = {};
     var added = {};
@@ -152,7 +162,7 @@ TileView.prototype.setView = function(view) {
     var visibleRange = this._computeVisibleTileRange(level, view);
 
     for (var o = visibleRange.min.o; o <= visibleRange.max.o; o++) {
-        var ti = new TileIdx(level, o);
+        var ti = new cr.TileIdx(level, o);
         if (!(ti.key in this._tiles)) {
             this._tiles[ti.key] = this._addTileidx(ti);
             added[ti.key] = true;
@@ -240,7 +250,7 @@ TileView.prototype.setView = function(view) {
 
 // Return ordered list of tiles to draw, from low-res to high res.  Draw in that order
 // so that high-res can cover low-res, for opaque tiles.
-TileView.prototype.update = function(transform) {
+cr.TileView.prototype.update = function(transform) {
     var keys = Object.keys(this._tiles).sort();
     var tiles = [];
     for (var i = 0; i < keys.length; i++) {
