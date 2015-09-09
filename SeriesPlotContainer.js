@@ -24,6 +24,8 @@ cr.SeriesPlotContainer = function(elementId, plots, options) {
     this._isAutoscaleEnabled = !!options.isAutoScaleEnabled;
     this._isAutoscalePaddingEnabled = !!options.isAutoscalePaddingEnabled;
 
+    this.midnightLine = new cr.MidnightLine();
+
     if (plots) {
         for (var i = 0; i < plots.length; i++) {
             this.addPlot(plots[i]);
@@ -323,6 +325,7 @@ cr.SeriesPlotContainer.prototype.update = function() {
     if (!this.usewebgl) {
         this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
     }
+
     this.drawHighlight();
 
     // for each Y axis, we need to compute the min/max values for all plots associated with the Y axis.
@@ -385,6 +388,7 @@ cr.SeriesPlotContainer.prototype.update = function() {
             break;
         }
     }
+    this.drawMidnightLines();
     this.drawHighlightPoints();
     this.drawMouseoverHighlightPoint();
 };
@@ -449,6 +453,47 @@ cr.SeriesPlotContainer.prototype.drawHighlight = function() {
         }
 
     }
+
+};
+
+cr.SeriesPlotContainer.prototype.drawMidnightLines = function() {
+    var xAxis = this.getXAxis();
+    if (this.midnightLine.shouldDrawMidnightLines(xAxis)) {
+        if (this.usewebgl) {
+            this.drawMidnightLinesWebgl();
+        }
+        else {
+            this.drawMidnightLinesCanvas();
+        }
+    }
+};
+
+cr.SeriesPlotContainer.prototype.drawMidnightLinesWebgl = function() {
+    var xAxis = this.getXAxis();
+    var points = this.midnightLine.getLines(xAxis);
+    var gl = this.gl;
+    var pMatrix = new Float32Array([2*this._resolutionScale/gl.canvas.width, 0, 0, 0,
+                                    0, 1, 0, 0,
+                                    0, 0, 1, 0,
+                                    -1, 0, 0, 1]);
+
+    gl.lineWidth(1 * this._resolutionScale);
+    gl.useProgram(this.lineProgram);
+
+    var matrixLoc = gl.getUniformLocation(this.lineProgram, 'u_pMatrix');
+    gl.uniformMatrix4fv(matrixLoc, false, pMatrix);
+
+    var lineArrayBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, lineArrayBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(points), gl.STATIC_DRAW);
+    var attributeLoc = gl.getAttribLocation(this.lineProgram, 'a_position');
+    gl.enableVertexAttribArray(attributeLoc);
+    gl.vertexAttribPointer(attributeLoc, 2, gl.FLOAT, false, 0, 0);
+
+    var colorLoc = gl.getUniformLocation(this.lineProgram, 'u_color');
+    gl.uniform4f(colorLoc, .75, .75, .75, 1);
+
+    gl.drawArrays(gl.LINES, 0, points.length/2);
 
 };
 
