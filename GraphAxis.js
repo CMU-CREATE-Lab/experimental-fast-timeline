@@ -555,3 +555,11 @@ cr.GraphAxis.prototype.publishAxisChangeEvent = function() {
         this.axisChangeListeners[i](event);
     }
 };
+
+cr.GraphAxis.prototype.getMax = function() {
+    return this._max;
+};
+
+cr.GraphAxis.prototype.getMin = function() {
+    return this._min;
+};
