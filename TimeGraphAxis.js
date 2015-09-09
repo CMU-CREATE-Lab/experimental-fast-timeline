@@ -239,10 +239,8 @@ cr.TimeGraphAxis.prototype.paint = function() {
         this._ctx.lineTo(this.project1D(this.cursorX) - 10, Math.floor(this._div.clientHeight / 2));
         this._ctx.fill();
         this._ctx.fillStyle = "black";
-
     }
     //}
-
 };
 
 cr.TimeGraphAxis.prototype.computeTimeTickSize = function(minPixels) {
@@ -439,20 +437,13 @@ cr.TimeGraphAxis.prototype.renderTickLabelWithinBounds = function(tick, min, max
     else {//not parallel text
         this.renderTickLabel(tick, labelOffsetPixels, formatter(tick));
     }
-
 };
-var foo;
-var fooTickSize;
+
 cr.TimeGraphAxis.prototype.renderTicksRangeLabelInline = function(offsetPixels, tickSize, tickGen, tickWidthPixels, formatter) {
     if (tickGen == null) {
         tickGen = new cr.TickGenerator(tickSize, 0);
     }
-	if (typeof foo == "undefined") {
-		foo = tickGen;
-	}
-	if (typeof fooTickSize == "undefined") {
-		fooTickSize = tickSize;
-	}
+
     var labelOffsetPixels = this.setupText() + offsetPixels;
 
     var tick = tickGen.nextTick(this._min);
@@ -485,7 +476,6 @@ cr.TimeGraphAxis.prototype.renderTicksRangeLabelInline = function(offsetPixels, 
                                          labelOffsetPixels, formatter);
         tick = nextTick;
     }
-
 };
 
 cr.TimeGraphAxis.prototype.renderLabels = function(offsetPixels, tickSize, tickGen, tickWidthPixels, formatter) {
@@ -503,7 +493,6 @@ cr.TimeGraphAxis.prototype.renderLabels = function(offsetPixels, tickSize, tickG
         this.renderTickLabelWithFormatter(tick, labelOffsetPixels, formatter, null);
         tick = it.next();
     }
-
 };
 
 cr.TimeGraphAxis.prototype.setCursorPosition = function(x) {
