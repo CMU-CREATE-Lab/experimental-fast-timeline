@@ -85,19 +85,6 @@ cr.SeriesPlotContainer.prototype.getId = function() {
     return this.div.id;
 };
 cr.SeriesPlotContainer.prototype._initCanvases = function() {
-    /*
-     this.div.style.display = "block";
-     this.div.style.position = "absolute";
-     this.div.style.height = "auto";
-     this.div.style.top = "42px";
-     this.div.style.left = "0";
-     this.div.style.bottom = "0";
-     this.div.style.right = "0";
-     this.div.style.marginTop = "0px";
-     this.div.style.marginLeft = "0px";
-     this.div.style.marginBottom = "0px";
-     this.div.style.marginRight = "42px";
-     */
     this.canvas3d = document.createElement("canvas");
     this.canvas3d.setAttribute("id", this.div.id + "-canvas3d");
     this.canvas3d.style["width"] = this.div.style["width"];
@@ -107,8 +94,6 @@ cr.SeriesPlotContainer.prototype._initCanvases = function() {
 
     this.canvas2d = document.createElement("canvas");
     this.canvas2d.setAttribute("id", this.div.id + "-canvas2d");
-    //    this.canvas2d.style["width"] = "100%";
-    //    this.canvas2d.style["height"] = "100%";
     this.canvas2d.style["width"] = this.div.style["width"];
     this.canvas2d.style["height"] = this.div.style["height"];
 
