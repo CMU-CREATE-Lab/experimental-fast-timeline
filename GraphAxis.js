@@ -473,6 +473,21 @@ cr.GraphAxis.prototype.setRange = function(min, max) {
     }
 };
 
+cr.GraphAxis.prototype.getRange = function() {
+    return {
+       min : this._min,
+       max : this._max
+    };
+};
+
+cr.GraphAxis.prototype.getMin = function() {
+    return this._min;
+};
+
+cr.GraphAxis.prototype.getMax = function() {
+    return this._max;
+};
+
 cr.GraphAxis.prototype.setBounds = function(view) {
     if (this.isXAxis) {
         this.setRange(view.xmin, view.xmax);
