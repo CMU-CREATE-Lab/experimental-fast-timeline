@@ -83,7 +83,6 @@ cr.Plot.prototype._resize = function() {
         this.highlight._highlight.height = this.canvas2d.height = this.canvas3d.height = canvasHeight;
         console.log('Resized canvas to ' + this.canvas2d.width + ' x ' + this.canvas2d.height);
     }
-
 };
 
 cr.Plot.prototype.drawCursorAndHighlight = function(view) {
@@ -120,6 +119,7 @@ cr.Plot.prototype.getView = function() {
         ymax : this.yAxis._max,
     }
 };
+
 cr.Plot.prototype.update = function() {
     this.tlayer.draw(this.getView());
     this._needsUpdate = this.tlayer._needsUpdate;
