@@ -122,7 +122,6 @@ cr.Grapher.prototype.scheduleUpdate = function() {
 };
 
 cr.Grapher.prototype.resize = function() {
-    console.log('resize');
     if (this.timeGraphAxis) {
         this.timeGraphAxis.resize();
     }
@@ -241,8 +240,12 @@ var PlotContainer = function(elementId, ignoreClickEvents, plots, options) {
 
 var SequenceNumber = function() {
 };
+SequenceNumber._hasWarningBeenLogged = false;
 SequenceNumber.getNext = function() {
-    console.log("SequenceNumber is deprecated");
+    if (!SequenceNumber._hasWarningBeenLogged) {
+        console.log("SequenceNumber is deprecated and unnecessary for the CREATE Lab Grapher");
+        SequenceNumber._hasWarningBeenLogged = true;
+    }
     return 1;
 };
 

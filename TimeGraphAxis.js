@@ -170,7 +170,7 @@ cr.TimeGraphAxis.prototype.paint = function() {
 
     }
     else if (decadeMajorTickWidth >= 150) {
-        console.log('decadeMajorTickWidth >= 150');
+        //console.log('decadeMajorTickWidth >= 150');
         this.renderTicks(0, yearMajorTickSize,
                          this.createDateTickGenerator(yearMajorTickSize),
                          this.majorTickWidthPixels, null, null);
@@ -178,12 +178,12 @@ cr.TimeGraphAxis.prototype.paint = function() {
         var yearFormatter = null;
 
         if (yearMajorTickWidth >= 30) {
-            console.log('yearMajorTickWidth >= 30');
+            //console.log('yearMajorTickWidth >= 30');
             yearFormatter = new cr.YearLabelFormatter();
 
         }
         else if (yearMajorTickWidth >= 15) {
-            console.log('yearMajorTickWidth >= 15');
+            //console.log('yearMajorTickWidth >= 15');
             yearFormatter = new cr.YearSmallLabelFormatter();
 
         }
@@ -197,18 +197,17 @@ cr.TimeGraphAxis.prototype.paint = function() {
                                          this.height, new cr.DecadeLabelFormatter());
     }
     else {
-        console.log("else");
         this.renderTicks(0, decadeMajorTickSize,
                          this.createDateTickGenerator(decadeMajorTickSize),
                          this.majorTickWidthPixels, null, null);
 
         var decadeFormatter = null;
         if (decadeMajorTickWidth >= 65) {
-            console.log('decadeMajorTickWidth >= 65');
+            //console.log('decadeMajorTickWidth >= 65');
             decadeFormatter = new cr.DecadeLabelFormatter();
         }
         else if (decadeMajorTickWidth >= 25) {
-            console.log('decadeMajorTickWidth >= 25');
+            //console.log('decadeMajorTickWidth >= 25');
             decadeFormatter = new cr.DecadeSmallLabelFormatter();
         }
 
@@ -219,7 +218,7 @@ cr.TimeGraphAxis.prototype.paint = function() {
         var centuryFormatter = new cr.CenturySmallLabelFormatter();
 
         if (centuryMajorTickWidth >= 65) {
-            console.log('centuryMajorTickWidth >= 65');
+            //console.log('centuryMajorTickWidth >= 65');
             centuryFormatter = new cr.CenturyLabelFormatter();
         }
 
