@@ -123,3 +123,44 @@ cr.DataStoreTileLayer.prototype.searchByX = function(bbox) {
     }
     return null;
 };
+
+/**
+ * Returns an <code>AxisRange</code> instance containing the min and max data values for all samples within the given
+ * <code>timeRange</code>.  Returns <code>null</code> if there's no data within the range for the currently-loaded
+ * tiles.
+ *
+ * @param {AxisRange} timeRange
+ * @return {AxisRange}
+ */
+cr.DataStoreTileLayer.prototype.getMinMaxValue = function(timeRange) {
+    var keys = Object.keys(this._tileView._tiles).sort();
+
+    var minmax = null;
+    var foundData = false;
+    for (var i = 0; i < keys.length; i++) {
+        var offset = this._tileView._tiles[keys[i]].offset || 0;
+        var data = this._tileView._tiles[keys[i]]._data;
+        if (data) {
+            if (minmax == null) {
+                minmax = {
+                    min : Number.MAX_VALUE,
+                    max : -Number.MAX_VALUE
+                };
+            }
+            for (var j = 0; j < data.length; j += 4) {
+                var timestamp = data[j] + offset;
+                var value = data[j + 1];
+                if (isFinite(value) &&
+                    value > cr.TileConstants.TILE_BOUNDARY_SENTINAL_VALUE &&
+                    timestamp >= timeRange.min &&
+                    timestamp <= timeRange.max) {
+                    minmax.min = Math.min(minmax.min, value);
+                    minmax.max = Math.max(minmax.max, value);
+                    foundData = true;
+                }
+            }
+        }
+    }
+
+    return foundData ? minmax : null;
+};

@@ -10,8 +10,10 @@ var cr = cr || {};
  * @constructor
  * @param {string} elementId - the DOM element ID for the container div holding this plot container
  * @param {cr.Plot[]} plots - array of plots to be added to the plot container
+ * @param {object} [options] - additional optional options
  */
-cr.SeriesPlotContainer = function(elementId, plots) {
+cr.SeriesPlotContainer = function(elementId, plots, options) {
+    options = options || {};
     this.div = document.getElementById(elementId);
     this.div.style["border"] = "1px solid black";
     this.highlight = {};
@@ -19,6 +21,7 @@ cr.SeriesPlotContainer = function(elementId, plots) {
     this.cursorX = null;
     this._resolutionScale = window.devicePixelRatio || 1;
     this._plots = {};
+    this._isAutoscaleEnabled = !!options.isAutoScaleEnabled;
 
     if (plots) {
         for (var i = 0; i < plots.length; i++) {
@@ -306,10 +309,55 @@ cr.SeriesPlotContainer.prototype.update = function() {
     }
     this.drawHighlight();
 
-    for (var plot in this._plots) {
-        this._plots[plot].update();
-        this._plots[plot].yAxis.update();
+    // for each Y axis, we need to compute the min/max values for all plots associated with the Y axis.
+    if (this._isAutoscaleEnabled) {
+        var yAxisRanges = {};
+        var timeRange = this.getXAxis().getRange();
+
+        // For each plot, we'll compute its min/max values and also figure out which Y axis it's associated with. For
+        // each Y axis, we keep track of the absolute min/max for all plots
+        for (var plotKey in this._plots) {
+            var plot = this._plots[plotKey];
+            var yAxis = plot.yAxis;
+
+            // get the range for this Y axis (might be undefined if we haven't seen it before)
+            var yAxisRange = yAxisRanges[yAxis.id];
+
+            // compute the min/max value in the plot within the time range
+            var minMaxValue = plot.tlayer.getMinMaxValue(timeRange);
+            if (minMaxValue != null) {
+                // update the global min/max for this Y axis
+                if (typeof yAxisRange === 'undefined') {
+                    yAxisRange = minMaxValue;
+                    yAxisRanges[yAxis.id] = yAxisRange;
+                }
+                else {
+                    yAxisRange.min = Math.min(minMaxValue.min, yAxisRange.min);
+                    yAxisRange.max = Math.max(minMaxValue.max, yAxisRange.max);
+                }
+            }
+
+            // set the Y axis range
+            if (typeof yAxisRange !== 'undefined' && yAxisRange != null) {
+                yAxis.setRange(yAxisRange.min, yAxisRange.max);
+            }
+        }
     }
+
+    // update the plots and create a map of the yAxes so we can
+    // iterate over them later without updating each more than once
+    var yAxesById = {};
+    for (var plotKey in this._plots) {
+        var plot = this._plots[plotKey];
+        plot.update();
+        yAxesById[plot.yAxis.id] = plot.yAxis;
+    }
+
+    // update the Y axes
+    for (var yAxisId in yAxesById) {
+        yAxesById[yAxisId].update();
+    }
+
     this._needsUpdate = false;
     for (var plot in this._plots) {
         if (this._plots[plot]._needsUpdate) {
@@ -573,4 +621,13 @@ cr.SeriesPlotContainer.prototype.setSize = function(width, height) {
     this.div.style["width"] = width + "px";
     this.div.style["height"] = height + "px";
     this.resize();
+};
+
+cr.SeriesPlotContainer.prototype.setAutoScaleEnabled = function(isEnabled) {
+    this._isAutoscaleEnabled = isEnabled;
+
+    // if enabled, schedule an update
+    if (isEnabled) {
+        this.grapher.scheduleUpdate();
+    }
 };
