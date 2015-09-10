@@ -66,17 +66,6 @@ cr.Plot.prototype.limitView = function() {
     }
 };
 
-cr.Plot.prototype._resize = function() {
-    var canvasWidth = this.div.clientWidth * this._resolutionScale;
-    var canvasHeight = this.div.clientWidthHeight * this._resolutionScale;
-    if (this.canvas2d.width != canvasWidth ||
-        this.canvas2d.height != canvasHeight) {
-        this.highlight._highlight.width = this.canvas2d.width = this.canvas3d.width = canvasWidth;
-        this.highlight._highlight.height = this.canvas2d.height = this.canvas3d.height = canvasHeight;
-        console.log('Resized canvas to ' + this.canvas2d.width + ' x ' + this.canvas2d.height);
-    }
-};
-
 cr.Plot.prototype.drawCursorAndHighlight = function(view) {
     var transform = {};
     transform.xOffset = -view.xmin;
