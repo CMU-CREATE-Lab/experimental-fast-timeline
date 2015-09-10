@@ -22,6 +22,7 @@ cr.SeriesPlotContainer = function(elementId, plots, options) {
     this._resolutionScale = window.devicePixelRatio || 1;
     this._plots = {};
     this._isAutoscaleEnabled = !!options.isAutoScaleEnabled;
+    this._isAutoscalePaddingEnabled = !!options.isAutoscalePaddingEnabled;
 
     if (plots) {
         for (var i = 0; i < plots.length; i++) {
@@ -303,6 +304,36 @@ cr.SeriesPlotContainer.prototype.touchend = function(e) {
     return false;
 };
 
+/**
+ * Pads the given range by 5% and returns the new range.  The given range is not modified.
+ *
+ * @private
+ * @param {AxisRange} range
+ * @return {AxisRange}
+ */
+cr.SeriesPlotContainer.prototype._padRange = function(range) {
+    var paddedRange = {
+       min : range.min,
+       max : range.max
+    };
+
+    var yDiff = paddedRange.max - paddedRange.min;
+    if (isFinite(yDiff)) {
+       var padding;
+       if (yDiff < 1e-10) {
+          padding = 0.5;
+       }
+       else {
+          padding = 0.05 * yDiff;
+       }
+
+       paddedRange.min -= padding;
+       paddedRange.max += padding;
+    }
+
+    return paddedRange;
+};
+
 cr.SeriesPlotContainer.prototype.update = function() {
     if (!this.usewebgl) {
         this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
@@ -339,6 +370,10 @@ cr.SeriesPlotContainer.prototype.update = function() {
 
             // set the Y axis range
             if (typeof yAxisRange !== 'undefined' && yAxisRange != null) {
+                // pad the range, if desired
+                if (this._isAutoscalePaddingEnabled) {
+                    yAxisRange = this._padRange(yAxisRange);
+                }
                 yAxis.setRange(yAxisRange.min, yAxisRange.max);
             }
         }
@@ -623,8 +658,16 @@ cr.SeriesPlotContainer.prototype.setSize = function(width, height) {
     this.resize();
 };
 
-cr.SeriesPlotContainer.prototype.setAutoScaleEnabled = function(isEnabled) {
+/**
+ * Sets whether autoscaling and autoscale padding are enabled, if supported by the underlying grapher; otherwise does nothing.
+ *
+ * @param {boolean} isEnabled - whether autoscale should be enabled
+ * @param {boolean} [isPaddingEnabled] - whether padding of the autoscaled Y axis is enabled; ignored if
+ * <code>isEnabled</code> is <code>false</code>. Defaults to <code>false</code> if <code>undefined</code> or <code>null</code>.
+ */
+cr.SeriesPlotContainer.prototype.setAutoScaleEnabled = function(isEnabled, isPaddingEnabled) {
     this._isAutoscaleEnabled = isEnabled;
+    this._isAutoscalePaddingEnabled = !!isPaddingEnabled;
 
     // if enabled, schedule an update
     if (isEnabled) {
