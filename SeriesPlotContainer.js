@@ -126,11 +126,12 @@ cr.SeriesPlotContainer.prototype.mousedown = function(e) {
     that.lastMouse = e;
 
     var bbox = {
-        xmin : e.clientX - e.currentTarget.offsetParent.offsetLeft - 5,
-        xmax : e.clientX - e.currentTarget.offsetParent.offsetLeft + 5,
-        ymin : e.clientY - e.currentTarget.offsetParent.offsetTop + 5,
-        ymax : e.clientY - e.currentTarget.offsetParent.offsetTop - 5
+        xmin : e.offsetX - 5,
+        xmax : e.offsetX + 5,
+        ymin : e.offsetY + 5,
+        ymax : e.offsetY - 5
     };
+
     var keys = Object.keys(that._plots);
     for (var i = 0; i < keys.length; i++) {
         var key = keys[i];
@@ -160,10 +161,10 @@ cr.SeriesPlotContainer.prototype.mousemove = function(e) {
     var that = e.data;
     if (!e.which) {
         var bbox = {
-            xmin : e.clientX - e.currentTarget.offsetParent.offsetLeft - 5,
-            xmax : e.clientX - e.currentTarget.offsetParent.offsetLeft + 5,
-            ymin : e.clientY - e.currentTarget.offsetParent.offsetTop + 5,
-            ymax : e.clientY - e.currentTarget.offsetParent.offsetTop - 5
+            xmin : e.offsetX - 5,
+            xmax : e.offsetX + 5,
+            ymin : e.offsetY + 5,
+            ymax : e.offsetY - 5
         };
         var keys = Object.keys(that._plots);
         for (var i = 0; i < keys.length; i++) {
