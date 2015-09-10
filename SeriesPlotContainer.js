@@ -661,17 +661,6 @@ cr.SeriesPlotContainer.prototype.resize = function() {
     }
 };
 
-cr.SeriesPlotContainer.prototype._resize = function() {
-    var canvasWidth = this.div.clientWidth * this._resolutionScale;
-    var canvasHeight = this.div.clientHeight * this._resolutionScale;
-    if (this.canvas2d.width != canvasWidth ||
-        this.canvas2d.height != canvasHeight) {
-        this.canvas2d.width = this.canvas3d.width = canvasWidth;
-        this.canvas2d.height = this.canvas3d.height = canvasHeight;
-    }
-
-};
-
 cr.SeriesPlotContainer.prototype.addPlot = function(plot) {
     this._plots[plot.getId()] = plot;
     this._plots[plot.getId()].tlayer = new cr.DataStoreTileLayer(plot.datasource, this.glb, this.ctx);
