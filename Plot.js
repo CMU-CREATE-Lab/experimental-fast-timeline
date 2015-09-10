@@ -20,7 +20,7 @@ cr.Plot = function(datasource, xAxis, yAxis, options) {
 
     // Create a unique ID for this plot. Using a UUID instead of Date.now() because Safari (and
     // sometimes Chrome) is too fast and generates 2 plots within the same millisecond.  Crazy.
-    this.id = 'plot:' + xAxis.getId() + ':' + yAxis.getId() + ':' + cr.Plot.prototype.getUuid();
+    this.id = 'plot:' + xAxis.getId() + ':' + yAxis.getId() + ':' + cr.Uuid.getUuid();
 
     this.xAxis = xAxis;
     this.yAxis = yAxis;
@@ -46,14 +46,6 @@ cr.Plot = function(datasource, xAxis, yAxis, options) {
 
     //this.tlayer = new DataStoreTileLayer(datasource, this.glb, this.ctx);
     //this._resize();
-};
-
-// Generate a UUID so we can be sure (enough) that plot IDs are unique.  Found this badassery at http://stackoverflow.com/a/2117523/703200
-cr.Plot.prototype.getUuid = function() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-    });
 };
 
 cr.Plot.prototype.limitView = function() {

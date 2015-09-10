@@ -16,6 +16,7 @@ var cr = cr || {};
  * @param {cr.Grapher} [grapher] - the grapher
  */
 cr.GraphAxis = function(domElement, min, max, basis, isXAxis, grapher) {
+    this.id = cr.Uuid.getUuid();
     this._min = min;
     this._max = max;
     this._basis = basis;
