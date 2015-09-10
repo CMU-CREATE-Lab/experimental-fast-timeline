@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: IterableTickGenerator.js</title>
+    <title>JSDoc: Source: TileConstants.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: IterableTickGenerator.js</h1>
+    <h1 class="page-title">Source: TileConstants.js</h1>
 
     
 
@@ -28,42 +28,28 @@
         <article>
             <pre class="prettyprint source linenums"><code>"use strict";
 
-/** @namespace */
 var cr = cr || {};
 
 /**
- * Class for iterating over ticks.
+ * Utility class for tile-related constants.  All fields are static, so there's no need to create an instance.
  *
- * @class
  * @constructor
  * @private
- * @param {cr.TickGenerator} gen - a TickGenerator instance
- * @param {number} minValue - the min value
- * @param {number} maxValue - the max value
  */
-cr.IterableTickGenerator = function(gen, minValue, maxValue) {
-    this._gen = gen;
-    this._maxValue = maxValue;
-    this._minValue = minValue;
-
-    this._currTick = 0.0;
-    this._nextTick = gen.nextTick(minValue);
+cr.TileConstants = function() {
 };
 
-cr.IterableTickGenerator.prototype.hasNext = function() {
-    return this._nextTick &lt;= this._maxValue;
-};
+/**
+ * Values in the "mean" field of -1E+308 within tiles returned from the BodyTrack Datastore indicate a longer than usual
+ * break in the data. We use it in the grapher to know whether to connect points on either side of it with lines or not.
+ * Otherwise, they are typically ignored.
+ *
+ * @type {int}
+ */
+cr.TileConstants.TILE_BOUNDARY_SENTINAL_VALUE = -1E+308;
 
-cr.IterableTickGenerator.prototype.next = function() {
-    if (!this.hasNext()) {
-        return false;
-    }
-
-    this._currTick = this._nextTick;
-    this._nextTick = this._gen.nextTick();
-    return this._currTick;
-};
-</code></pre>
+// make the fields in this class constants
+Object.freeze(cr.TileConstants);</code></pre>
         </article>
     </section>
 
