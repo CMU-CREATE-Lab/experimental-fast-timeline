@@ -48,20 +48,21 @@ cr.GraphAxis = function(domElement, min, max, basis, isXAxis, grapher) {
 
     this.lastMouse = null;
 
-    $('#' + this._canvas.id).mousedown(this, this.mousedown);
-    $('#' + this._canvas.id).mousemove(this, this.mousemove);
-    $('#' + this._canvas.id).mouseup(this, this.mouseup);
-    //$('#'+this._canvas.id).mousewheel(this.mousewheel, this);
-    $('#' + this._canvas.id).on("mousewheel", this, this.mousewheel);
+    var canvasElement = $('#' + this._canvas.id);
+    canvasElement.mousedown(this, this.mousedown);
+    canvasElement.mousemove(this, this.mousemove);
+    canvasElement.mouseup(this, this.mouseup);
+    //canvasElement.mousewheel(this.mousewheel, this);
+    canvasElement.on("mousewheel", this, this.mousewheel);
 
     this.lastTouch = null;
 
     this.touchUtils = new cr.TouchUtils();
 
-    $('#' + this._canvas.id).bind('touchstart', this, this.touchstart);
-    $('#' + this._canvas.id).bind('touchmove', this, this.touchmove);
-    $('#' + this._canvas.id).bind('touchend', this, this.touchend);
-    $('#' + this._canvas.id).bind('touchcancel', this, this.touchend);
+    canvasElement.bind('touchstart', this, this.touchstart);
+    canvasElement.bind('touchmove', this, this.touchmove);
+    canvasElement.bind('touchend', this, this.touchend);
+    canvasElement.bind('touchcancel', this, this.touchend);
 
     if (grapher == null) {
         this.grapher = __grapher__;
@@ -396,7 +397,6 @@ cr.GraphAxis.prototype.renderTickLabel = function(value, labelOffsetPixels) {
     valueStr = valueStr.replace(re, '') + suffix;
     var position = this.project2D(positionalValue).add(this._basis.x.scale(labelOffsetPixels));
     this._ctx.fillText(valueStr, position._x, position._y);
-
 };
 
 cr.GraphAxis.prototype.zoomAboutY = function(pixelY, scale) {
