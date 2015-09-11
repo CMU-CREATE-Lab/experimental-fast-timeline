@@ -26,11 +26,10 @@ cr.GraphAxis = function(domElement, min, max, basis, isXAxis, grapher) {
     this._initCanvas();
 
     this.majorTickMinSpacingPixels = 30;
-    var dim = isXAxis ? this._canvas.height : this._canvas.width;
-    this.majorTickWidthPixels = Math.floor(dim / 5);//8;
+    this.majorTickWidthPixels = 8;
 
     this.minorTickMinSpacingPixels = 10;
-    this.minorTickWidthPixels = Math.floor(dim / 13.33);//3;
+    this.minorTickWidthPixels = 3;
 
     this.hasMinRange = false;
     this.minRange = -1e+100;
