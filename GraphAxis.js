@@ -540,7 +540,8 @@ cr.GraphAxis.prototype.setMaxRange = function(min, max) {
     if (isNumeric(min) && min >= cr.GraphAxis.Constants.DEFAULT_MIN_RANGE) {
         this.minRange = min;
         this.hasMinRange = true;
-    } else {
+    }
+    else {
         this.minRange = cr.GraphAxis.Constants.DEFAULT_MIN_RANGE;
         this.hasMinRange = false;
     }
@@ -548,7 +549,8 @@ cr.GraphAxis.prototype.setMaxRange = function(min, max) {
     if (isNumeric(max) && max <= cr.GraphAxis.Constants.DEFAULT_MAX_RANGE) {
         this.maxRange = max;
         this.hasMaxRange = true;
-    } else {
+    }
+    else {
         this.maxRange = cr.GraphAxis.Constants.DEFAULT_MAX_RANGE;
         this.hasMaxRange = false;
     }
