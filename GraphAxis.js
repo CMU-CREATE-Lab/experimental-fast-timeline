@@ -474,6 +474,8 @@ cr.GraphAxis.prototype.setRange = function(min, max) {
     if (min < max) {
         this._min = min;
         this._max = max;
+        this.publishAxisChangeEvent();
+        this.grapher.scheduleUpdate();
     }
 };
 
