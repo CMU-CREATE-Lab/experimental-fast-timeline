@@ -498,6 +498,10 @@ cr.SeriesPlotContainer.prototype.drawMidnightLinesWebgl = function() {
 
 };
 
+cr.SeriesPlotContainer.prototype.drawMidnightLinesCanvas = function() {
+    // TODO
+};
+
 cr.SeriesPlotContainer.prototype.setHighlightPoints = function() {
     this.highlightedPoints = [];
     var xAxis = this.getXAxis();
