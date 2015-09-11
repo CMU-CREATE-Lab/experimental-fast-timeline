@@ -212,10 +212,13 @@ cr.GraphAxis.prototype._initDiv = function(div) {
 cr.GraphAxis.prototype._initCanvas = function() {
     this._canvas = document.createElement("canvas");
     this._canvas.setAttribute("id", this.isXAxis ? this._div.id + "-x-axis-canvas" : this._div.id + "y-axis-canvas");
-    this._canvas.style["width"] = this._div.clientWidth + "px";
-    this._canvas.style["height"] = this._div.clientHeight + "px";
-    this._canvas.width = this._div.clientWidth;
-    this._canvas.height = this._div.clientHeight;
+
+    var desiredWidth = parseInt(this._div.style["width"]);
+    var desiredHeight = parseInt(this._div.style["height"]);
+    this._canvas.style["width"] = desiredWidth + "px";
+    this._canvas.style["height"] = desiredHeight + "px";
+    this._canvas.width = desiredWidth * this._resolutionScale;
+    this._canvas.height = desiredHeight * this._resolutionScale;
 
     this._canvas.style["position"] = "absolute";
     this._div.appendChild(this._canvas);
@@ -223,12 +226,12 @@ cr.GraphAxis.prototype._initCanvas = function() {
 };
 
 cr.GraphAxis.prototype.resize = function() {
-    this.height = this._div.clientHeight;
-    this.width = this._div.clientWidth;
-    this._canvas.style["width"] = this._div.clientWidth + "px";
-    this._canvas.style["height"] = this._div.clientHeight + "px";
-    this._canvas.height = this._div.clientHeight * this._resolutionScale;
-    this._canvas.width = this._div.clientWidth * this._resolutionScale;
+    this.width = parseInt(this._div.style["width"]);
+    this.height = parseInt(this._div.style["height"]);
+    this._canvas.style["width"] = this.width + "px";
+    this._canvas.style["height"] = this.height + "px";
+    this._canvas.width = this.width * this._resolutionScale;
+    this._canvas.height = this.height * this._resolutionScale;
     this._ctx.scale(1, 1);
     this._ctx.scale(this._resolutionScale, this._resolutionScale);
 
