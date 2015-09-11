@@ -74,12 +74,12 @@ cr.SeriesPlotContainer = function(elementId, plots, options) {
 };
 
 cr.SeriesPlotContainer.prototype.getXAxis = function() {
-    var keys = Object.keys(this._plots);
-    if (keys.length == 0) {
+    var plotKeys = Object.keys(this._plots);
+    if (plotKeys.length == 0) {
         return null;
     }
     else {
-        return this._plots[keys[0]].xAxis;
+        return this._plots[plotKeys[0]].xAxis;
     }
 };
 
@@ -132,10 +132,8 @@ cr.SeriesPlotContainer.prototype.mousedown = function(e) {
         ymax : e.offsetY - 5
     };
 
-    var keys = Object.keys(that._plots);
-    for (var i = 0; i < keys.length; i++) {
-        var key = keys[i];
-        var plot = that._plots[key];
+    Object.keys(that._plots).forEach(function(plotKey) {
+        var plot = that._plots[plotKey];
         var coords = {};
         coords.xmin = plot.xAxis.pixelToX(bbox.xmin);
         coords.xmax = plot.xAxis.pixelToX(bbox.xmax);
@@ -146,10 +144,10 @@ cr.SeriesPlotContainer.prototype.mousedown = function(e) {
             //plot.xAxis.showCursor = true;
             plot.xAxis.setCursorPosition(point.x);
             that.highlight.line = point;
-            that.highlight.plotKey = key;
+            that.highlight.plotKey = plotKey;
             that.grapher.scheduleUpdate();
         }
-    }
+    });
 
     return false;
 };
@@ -166,10 +164,9 @@ cr.SeriesPlotContainer.prototype.mousemove = function(e) {
             ymin : e.offsetY + 5,
             ymax : e.offsetY - 5
         };
-        var keys = Object.keys(that._plots);
-        for (var i = 0; i < keys.length; i++) {
-            var key = keys[i];
-            var plot = that._plots[key];
+
+        Object.keys(that._plots).forEach(function(plotKey) {
+            var plot = that._plots[plotKey];
             var coords = {};
             coords.xmin = plot.xAxis.pixelToX(bbox.xmin);
             coords.xmax = plot.xAxis.pixelToX(bbox.xmax);
@@ -177,7 +174,7 @@ cr.SeriesPlotContainer.prototype.mousemove = function(e) {
             coords.ymax = plot.yAxis.pixelToY(bbox.ymax);
             var point = plot.tlayer.search(coords);
             if (point) {
-                that.mouseoverHighlightPoint = { point : point, key : key };
+                that.mouseoverHighlightPoint = { point : point, plotKey : plotKey };
                 that.grapher.scheduleUpdate();
 
                 // publish the point
@@ -192,21 +189,18 @@ cr.SeriesPlotContainer.prototype.mousemove = function(e) {
                     that.grapher.scheduleUpdate();
                 }
             }
-
-        }
+        });
 
         that.mouseup(e);
         return;
     }
 
     if (that.lastMouse) {
-        var keys = Object.keys(that._plots);
-        for (var i = 0; i < keys.length; i++) {
-            var key = keys[i];
-            var plot = that._plots[key];
+        Object.keys(that._plots).forEach(function(plotKey) {
+            var plot = that._plots[plotKey];
             plot.xAxis.translatePixels(e.clientX - that.lastMouse.clientX);
             plot.yAxis.translatePixels(that.lastMouse.clientY - e.clientY);
-        }
+        });
         that.lastMouse = e;
     }
     return false;
@@ -219,13 +213,12 @@ cr.SeriesPlotContainer.prototype.mouseup = function(e) {
 
 cr.SeriesPlotContainer.prototype.mousewheel = function(e) {
     var that = e.data;
-    var keys = Object.keys(that._plots);
-    for (var i = 0; i < keys.length; i++) {
-        var key = keys[i];
-        var plot = that._plots[key];
+
+    Object.keys(that._plots).forEach(function(plotKey) {
+        var plot = that._plots[plotKey];
         plot.xAxis.zoomAboutX(e.clientX, Math.pow(1.0005, -e.originalEvent.deltaY));
         plot.yAxis.zoomAboutY(e.clientY, Math.pow(1.0005, -e.originalEvent.deltaY));
-    }
+    });
     return false;
 };
 
@@ -239,10 +232,8 @@ cr.SeriesPlotContainer.prototype.touchstart = function(e) {
         ymin : touch.clientY - e.currentTarget.offsetParent.offsetTop + 10,
         ymax : touch.clientY - e.currentTarget.offsetParent.offsetTop - 10
     };
-    var keys = Object.keys(that._plots);
-    for (var i = 0; i < keys.length; i++) {
-        var key = keys[i];
-        var plot = that._plots[key];
+    Object.keys(that._plots).forEach(function(plotKey) {
+        var plot = that._plots[plotKey];
         var coords = {};
         coords.xmin = plot.xAxis.pixelToX(bbox.xmin);
         coords.xmax = plot.xAxis.pixelToX(bbox.xmax);
@@ -252,10 +243,10 @@ cr.SeriesPlotContainer.prototype.touchstart = function(e) {
         if (point) {
             plot.xAxis.setCursorPosition(point.x);
             that.highlight.line = point;
-            that.highlight.plotKey = key;
+            that.highlight.plotKey = plotKey;
             that.grapher.scheduleUpdate();
         }
-    }
+    });
 
     return false;
 };
@@ -272,14 +263,13 @@ cr.SeriesPlotContainer.prototype.touchmove = function(e) {
             xAxis.zoomAboutX(that.touchUtils.centroid(thisTouch).clientX, that.touchUtils.xSpan(thisTouch) / that.touchUtils.xSpan(that.lastTouch));
         }
 
-        for (var key in that._plots) {
-            var plot = that._plots[key];
+        Object.keys(that._plots).forEach(function(plotKey) {
+            var plot = that._plots[plotKey];
             plot.yAxis.translatePixels(dy);
             if (that.touchUtils.isYPinch(thisTouch) && that.touchUtils.isYPinch(that.lastTouch)) {
                 plot.yAxis.zoomAboutY(that.touchUtils.centroid(thisTouch).clientY, that.touchUtils.ySpan(thisTouch) / that.touchUtils.ySpan(that.lastTouch));
             }
-
-        }
+        });
     }
     // Some platforms reuse the touch list
     that.lastTouch = that.touchUtils.copyTouches(thisTouch);
@@ -383,8 +373,8 @@ cr.SeriesPlotContainer.prototype.update = function() {
     }
 
     this._needsUpdate = false;
-    for (var plot in this._plots) {
-        if (this._plots[plot]._needsUpdate) {
+    for (var plotKey in this._plots) {
+        if (this._plots[plotKey]._needsUpdate) {
             this._needsUpdate = true;
             break;
         }
@@ -506,10 +496,10 @@ cr.SeriesPlotContainer.prototype.setHighlightPoints = function() {
     this.highlightedPoints = [];
     var xAxis = this.getXAxis();
     var offset = xAxis.pixelToX(2) - xAxis.pixelToX(0);
-    for (var plot in this._plots) {
-        var point = this._plots[plot].tlayer.searchByX({ xmin : this.cursorX - offset, xmax : this.cursorX + offset });
+    for (var plotKey in this._plots) {
+        var point = this._plots[plotKey].tlayer.searchByX({ xmin : this.cursorX - offset, xmax : this.cursorX + offset });
         if (point) {
-            this.highlightedPoints.push({ point : point, key : plot });
+            this.highlightedPoints.push({ point : point, plotKey : plotKey });
         }
     }
 };
@@ -522,7 +512,7 @@ cr.SeriesPlotContainer.prototype.drawHighlightPointsWebgl = function() {
 
     for (var i = 0; i < this.highlightedPoints.length; i++) {
         var point = this.highlightedPoints[i];
-        var view = this._plots[point.key].getView();
+        var view = this._plots[point.plotKey].getView();
         var yscale = 2 / (view.ymax - view.ymin);
         var ytranslate = -view.ymin * yscale - 1;
         points.push(point.point.x * xscale + xtranslate);
@@ -562,7 +552,7 @@ cr.SeriesPlotContainer.prototype.drawHighlightPointsCanvas = function() {
 
     for (var i = 0; i < this.highlightedPoints.length; i++) {
         var point = this.highlightedPoints[i];
-        var view = this._plots[point.key].getView();
+        var view = this._plots[point.plotKey].getView();
         var yOffset = -view.ymax;
         var yScale = this.ctx.canvas.height / (view.ymin - view.ymax);
         points.push({
@@ -598,7 +588,7 @@ cr.SeriesPlotContainer.prototype.drawMouseoverHighlightPointWebgl = function() {
     if (this.mouseoverHighlightPoint) {
         var points = [];
         var point = this.mouseoverHighlightPoint;
-        var view = this._plots[point.key].getView();
+        var view = this._plots[point.plotKey].getView();
         var xscale = 2 / (xAxis._max - xAxis._min);
         var xtranslate = -xAxis._min * xscale - 1;
         var yscale = 2 / (view.ymax - view.ymin);
