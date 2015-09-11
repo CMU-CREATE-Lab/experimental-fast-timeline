@@ -642,8 +642,8 @@ cr.SeriesPlotContainer.prototype.drawMouseoverHighlightPoint = function() {
 };
 
 cr.SeriesPlotContainer.prototype.resize = function() {
-    var canvasWidth = this.div.clientWidth * this._resolutionScale;
-    var canvasHeight = this.div.clientHeight * this._resolutionScale;
+    var canvasWidth = parseInt(this.div.style["width"]) * this._resolutionScale;
+    var canvasHeight = parseInt(this.div.style["height"]) * this._resolutionScale;
     if (this.canvas2d.width != canvasWidth ||
         this.canvas2d.height != canvasHeight) {
         this.canvas2d.width = this.canvas3d.width = canvasWidth;
