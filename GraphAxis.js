@@ -25,17 +25,17 @@ cr.GraphAxis = function(domElement, min, max, basis, isXAxis, grapher) {
     this._initDiv(domElement);
     this._initCanvas();
 
-    this.majorTickMinSpacingPixels = 30;
-    this.majorTickWidthPixels = 8;
+    this.majorTickMinSpacingPixels = cr.GraphAxis.Constants.DEFAULT_MAJOR_TICK_MIN_SPACING_PIXELS;
+    this.majorTickWidthPixels = cr.GraphAxis.Constants.DEFAULT_MAJOR_TICK_WIDTH_PIXELS;
 
-    this.minorTickMinSpacingPixels = 10;
-    this.minorTickWidthPixels = 3;
+    this.minorTickMinSpacingPixels = cr.GraphAxis.Constants.DEFAULT_MINOR_TICK_MIN_SPACING_PIXELS;
+    this.minorTickWidthPixels = cr.GraphAxis.Constants.DEFAULT_MINOR_TICK_WIDTH_PIXELS;
 
     this.hasMinRange = false;
-    this.minRange = -1e+100;
+    this.minRange = cr.GraphAxis.Constants.DEFAULT_MIN_RANGE;
 
     this.hasMaxRange = false;
-    this.maxRange = 1e+100;
+    this.maxRange = cr.GraphAxis.Constants.DEFAULT_MAX_RANGE;
 
     this._begin;
     this._length;
@@ -69,6 +69,17 @@ cr.GraphAxis = function(domElement, min, max, basis, isXAxis, grapher) {
 
     this.axisChangeListeners = [];
 };
+
+cr.GraphAxis.Constants = {
+    DEFAULT_MAJOR_TICK_MIN_SPACING_PIXELS : 30,
+    DEFAULT_MAJOR_TICK_WIDTH_PIXELS : 8,
+    DEFAULT_MINOR_TICK_MIN_SPACING_PIXELS : 10,
+    DEFAULT_MINOR_TICK_WIDTH_PIXELS : 3,
+    DEFAULT_MIN_RANGE : -1e+100,
+    DEFAULT_MAX_RANGE : 1e+100
+};
+// make these fields constants
+Object.freeze(cr.GraphAxis.Constants);
 
 cr.GraphAxis.prototype.mousedown = function(e) {
     var that = e.data;
@@ -480,8 +491,8 @@ cr.GraphAxis.prototype.setRange = function(min, max) {
 
 cr.GraphAxis.prototype.getRange = function() {
     return {
-       min : this._min,
-       max : this._max
+        min : this._min,
+        max : this._max
     };
 };
 
@@ -520,11 +531,30 @@ cr.GraphAxis.prototype.setSize = function(width, height) {
 };
 
 cr.GraphAxis.prototype.setMaxRange = function(min, max) {
-    this.minRange = min;
-    this.maxRange = max;
-    this.hasMinRange = this.hasMaxRange = true;
-    this.publishAxisChangeEvent();
+
+    // Got this from http://stackoverflow.com/a/9716488/703200
+    var isNumeric = function(n) {
+        return !isNaN(parseFloat(n)) && isFinite(n);
+    };
+
+    if (isNumeric(min) && min >= cr.GraphAxis.Constants.DEFAULT_MIN_RANGE) {
+        this.minRange = min;
+        this.hasMinRange = true;
+    } else {
+        this.minRange = cr.GraphAxis.Constants.DEFAULT_MIN_RANGE;
+        this.hasMinRange = false;
+    }
+
+    if (isNumeric(max) && max <= cr.GraphAxis.Constants.DEFAULT_MAX_RANGE) {
+        this.maxRange = max;
+        this.hasMaxRange = true;
+    } else {
+        this.maxRange = cr.GraphAxis.Constants.DEFAULT_MAX_RANGE;
+        this.hasMaxRange = false;
+    }
+
     this.update();
+    this.publishAxisChangeEvent();
 };
 
 cr.GraphAxis.prototype.getId = function() {
