@@ -662,7 +662,15 @@ cr.SeriesPlotContainer.prototype.addPlot = function(plot) {
 };
 
 cr.SeriesPlotContainer.prototype.removePlot = function(plot) {
-    delete(this._plots[plot.getId()]);
+    var plotKey = plot.getId();
+
+    // update the collection of highlighted points so we no longer hang on to points belonging to the removed plot
+    this.highlightedPoints = this.highlightedPoints.filter(function(point){
+        return point && point.plotKey != plotKey;
+    });
+
+    // remove the plot
+    delete(this._plots[plotKey]);
 };
 
 cr.SeriesPlotContainer.prototype.setSize = function(width, height) {
