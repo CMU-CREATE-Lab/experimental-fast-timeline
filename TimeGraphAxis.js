@@ -51,6 +51,9 @@ cr.TimeGraphAxis.prototype = Object.create(cr.GraphAxis.prototype);
 
 cr.TimeGraphAxis.prototype._initDiv = function(div) {
     this._div = div;
+    if (isNaN(parseInt(this._div.style["height"]))) {
+        this._div.style["height"] = div.clientHeight + "px";
+    }
 };
 
 cr.TimeGraphAxis.prototype.paint = function() {

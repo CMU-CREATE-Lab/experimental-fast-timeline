@@ -203,21 +203,9 @@ cr.GraphAxis.prototype.translatePixels = function(delta) {
 
 cr.GraphAxis.prototype._initDiv = function(div) {
     this._div = div;
-    /*    this._div.style["display"] = "block";
-     this._div.style["position"] = "absolute";
-     this._div.style["height"] = "auto";
-     this._div.style["width"] = "42px";
-     this._div.style["top"] = "0px";
-     this._div.style["bottom"] = "0px";
-     this._div.style["right"] = "0px";
-     this._div.style["marginTop"] = "42px";
-     this._div.style["marginLeft"] = "0px";
-     this._div.style["marginBottom"] = "0px";
-     this._div.style["marginRight"] = "0px";
-     this._div.style["borderTop"] = "1px solid black";
-     this._div.style["borderRight"] = "1px solid black";
-     this._div.style["borderBottom"] = "1px solid black";
-     */
+    if (isNaN(parseInt(this._div.style["width"]))) {
+        this._div.style["width"] = div.clientWidth + "px";
+    }
 };
 
 cr.GraphAxis.prototype._initCanvas = function() {
