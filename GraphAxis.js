@@ -203,8 +203,20 @@ cr.GraphAxis.prototype.translatePixels = function(delta) {
 
 cr.GraphAxis.prototype._initDiv = function(div) {
     this._div = div;
-    if (isNaN(parseInt(this._div.style["width"]))) {
-        this._div.style["width"] = div.clientWidth + "px";
+    this._div.style["position"] = "relative";
+    if (this.isXAxis) {
+        if (div.clientHeight &&
+            div.clientHeight > 0 &&
+            isNaN(parseInt(this._div.style["height"]))) {
+            this._div.style["height"] = div.clientHeight + "px";
+        }
+    }
+    else {
+        if (div.clientWidth &&
+            div.clientWidth > 0 &&
+            isNaN(parseInt(this._div.style["width"]))) {
+            this._div.style["width"] = div.clientWidth + "px";
+        }
     }
 };
 
