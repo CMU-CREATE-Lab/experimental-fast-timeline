@@ -480,7 +480,7 @@ cr.SeriesPlotContainer.prototype.drawMidnightLinesWebgl = function() {
     gl.vertexAttribPointer(attributeLoc, 2, gl.FLOAT, false, 0, 0);
 
     var colorLoc = gl.getUniformLocation(this.lineProgram, 'u_color');
-    gl.uniform4f(colorLoc, .75, .75, .75, 1);
+    gl.uniform4f(colorLoc, .5, .5, .5, .7);
 
     gl.drawArrays(gl.LINES, 0, points.length / 2);
 };
