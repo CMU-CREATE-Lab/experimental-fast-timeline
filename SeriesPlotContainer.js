@@ -378,6 +378,8 @@ cr.SeriesPlotContainer.prototype.update = function() {
             break;
         }
     }
+
+    this.drawHighlight();
     this.drawMidnightLines();
     this.drawHighlightPoints();
     this.drawMouseoverHighlightPoint();
