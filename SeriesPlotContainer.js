@@ -663,6 +663,11 @@ cr.SeriesPlotContainer.prototype.removePlot = function(plot) {
         return point && point.plotKey != plotKey;
     });
 
+    // update the mouseover highlight point in case it, too, is for the plot being removed
+    if (this.mouseoverHighlightPoint && this.mouseoverHighlightPoint.plotKey == plotKey) {
+        this.mouseoverHighlightPoint = null;
+    }
+
     // remove the plot
     delete(this._plots[plotKey]);
 };
