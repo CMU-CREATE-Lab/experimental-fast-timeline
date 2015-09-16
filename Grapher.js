@@ -36,8 +36,6 @@ cr.Grapher = function() {
         ymin : this.bounds.ymin,
         ymax : this.bounds.ymax
     };
-    this.lastMouse;
-    this.lastTouch;
 };
 
 cr.Grapher.prototype.addPlotContainer = function(plotContainer) {
