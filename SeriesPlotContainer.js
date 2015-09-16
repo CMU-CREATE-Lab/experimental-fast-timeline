@@ -53,7 +53,7 @@ cr.SeriesPlotContainer = function(elementId, plots, options) {
     }
     this.grapher.addPlotContainer(this);
 
-    this.lastTouch = null;
+    this.previousTouches = null;
 
     this.touchUtils = new cr.TouchUtils();
 
@@ -215,21 +215,21 @@ cr.SeriesPlotContainer.prototype.mousewheel = function(e) {
 
     Object.keys(that._plots).forEach(function(plotKey) {
         var plot = that._plots[plotKey];
-        plot.xAxis.zoomAboutX(e.clientX, Math.pow(1.0005, -e.originalEvent.deltaY));
-        plot.yAxis.zoomAboutY(e.clientY, Math.pow(1.0005, -e.originalEvent.deltaY));
+        plot.xAxis.zoomAboutX(e.offsetX, Math.pow(1.0005, -e.originalEvent.deltaY));
+        plot.yAxis.zoomAboutY(e.offsetY, Math.pow(1.0005, -e.originalEvent.deltaY));
     });
     return false;
 };
 
 cr.SeriesPlotContainer.prototype.touchstart = function(e) {
     var that = e.data;
-    that.lastTouch = e.originalEvent.touches;
-    var touch = that.touchUtils.centroid(that.lastTouch);
+    that.previousTouches = e.originalEvent.touches;
+    var touch = that.touchUtils.centroid(that.previousTouches);
     var bbox = {
-        xmin : touch.clientX - e.currentTarget.offsetParent.offsetLeft - 15,
-        xmax : touch.clientX - e.currentTarget.offsetParent.offsetLeft + 15,
-        ymin : touch.clientY - e.currentTarget.offsetParent.offsetTop + 10,
-        ymax : touch.clientY - e.currentTarget.offsetParent.offsetTop - 10
+        xmin : touch.x - e.currentTarget.offsetParent.offsetLeft - 15,
+        xmax : touch.x - e.currentTarget.offsetParent.offsetLeft + 15,
+        ymin : touch.y - e.currentTarget.offsetParent.offsetTop + 10,
+        ymax : touch.y - e.currentTarget.offsetParent.offsetTop - 10
     };
     Object.keys(that._plots).forEach(function(plotKey) {
         var plot = that._plots[plotKey];
@@ -252,32 +252,32 @@ cr.SeriesPlotContainer.prototype.touchstart = function(e) {
 
 cr.SeriesPlotContainer.prototype.touchmove = function(e) {
     var that = e.data;
-    var thisTouch = e.originalEvent.touches;
-    if (that.lastTouch && thisTouch.length == that.lastTouch.length) {
-        var dx = that.touchUtils.centroid(thisTouch).clientX - that.touchUtils.centroid(that.lastTouch).clientX;
-        var dy = that.touchUtils.centroid(that.lastTouch).clientY - that.touchUtils.centroid(thisTouch).clientY;
+    var touches = e.originalEvent.touches;
+    if (that.previousTouches && touches.length == that.previousTouches.length) {
+        var dx = that.touchUtils.centroid(touches).x - that.touchUtils.centroid(that.previousTouches).x;
+        var dy = that.touchUtils.centroid(that.previousTouches).y - that.touchUtils.centroid(touches).y;
         var xAxis = that.getXAxis();
         xAxis.translatePixels(dx);
-        if (that.touchUtils.isXPinch(thisTouch) && that.touchUtils.isXPinch(that.lastTouch)) {
-            xAxis.zoomAboutX(that.touchUtils.centroid(thisTouch).clientX, that.touchUtils.xSpan(thisTouch) / that.touchUtils.xSpan(that.lastTouch));
+        if (that.touchUtils.isXPinch(touches) && that.touchUtils.isXPinch(that.previousTouches)) {
+            xAxis.zoomAboutX(that.touchUtils.centroid(touches).x, that.touchUtils.xSpan(touches) / that.touchUtils.xSpan(that.previousTouches));
         }
 
         Object.keys(that._plots).forEach(function(plotKey) {
             var plot = that._plots[plotKey];
             plot.yAxis.translatePixels(dy);
-            if (that.touchUtils.isYPinch(thisTouch) && that.touchUtils.isYPinch(that.lastTouch)) {
-                plot.yAxis.zoomAboutY(that.touchUtils.centroid(thisTouch).clientY, that.touchUtils.ySpan(thisTouch) / that.touchUtils.ySpan(that.lastTouch));
+            if (that.touchUtils.isYPinch(touches) && that.touchUtils.isYPinch(that.previousTouches)) {
+                plot.yAxis.zoomAboutY(that.touchUtils.centroid(touches).y, that.touchUtils.ySpan(touches) / that.touchUtils.ySpan(that.previousTouches));
             }
         });
     }
     // Some platforms reuse the touch list
-    that.lastTouch = that.touchUtils.copyTouches(thisTouch);
+    that.previousTouches = that.touchUtils.copyTouches(touches);
     return false;
 };
 
 cr.SeriesPlotContainer.prototype.touchend = function(e) {
     var that = e.data;
-    that.lastTouch = null;
+    that.previousTouches = null;
     return false;
 };
 

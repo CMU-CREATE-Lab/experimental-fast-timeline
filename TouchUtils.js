@@ -11,31 +11,52 @@ var cr = cr || {};
 cr.TouchUtils = function() {
 };
 
+cr.TouchUtils.prototype._getX = function(touch) {
+    // if this is an actual touch event, we need to subtract away the parent's offset
+    if (typeof touch.target !== 'undefined') {
+        return touch.pageX - touch.target.offsetParent.offsetLeft;
+    }
+
+    return touch.x;
+};
+
+cr.TouchUtils.prototype._getY = function(touch) {
+    // if this is an actual touch event, we need to subtract away the parent's offset
+    if (typeof touch.target !== 'undefined') {
+        return touch.pageY - touch.target.offsetParent.offsetTop;
+    }
+
+    return touch.y;
+};
+
 cr.TouchUtils.prototype.copyTouches = function(touches) {
     var ret = [];
     for (var i = 0; i < touches.length; i++) {
-        ret.push({ clientX : touches[i].clientX, clientY : touches[i].clientY });
+        ret.push({ x : this._getX(touches[i]), y : this._getY(touches[i]) });
     }
     return ret;
 };
 
 cr.TouchUtils.prototype.centroid = function(touches) {
-    var ret = { clientX : 0, clientY : 0 };
+    var ret = { x : 0, y : 0 };
     for (var i = 0; i < touches.length; i++) {
-        ret.clientX += touches[i].clientX;
-        ret.clientY += touches[i].clientY;
+        var x = this._getX(touches[i]);
+        var y = this._getY(touches[i]);
+        console.log("(" + x + "," + y + ")");
+        ret.x += x;
+        ret.y += y;
     }
-    ret.clientX /= touches.length;
-    ret.clientY /= touches.length;
+    ret.x /= touches.length;
+    ret.y /= touches.length;
     return ret;
 };
 
 cr.TouchUtils.prototype.xSpan = function(touches) {
-    return Math.abs(touches[0].clientX - touches[1].clientX);
+    return Math.abs(this._getX(touches[0]) - this._getX(touches[1]));
 };
 
 cr.TouchUtils.prototype.ySpan = function(touches) {
-    return Math.abs(touches[0].clientY - touches[1].clientY);
+    return Math.abs(this._getY(touches[0]) - this._getY(touches[1]));
 };
 
 cr.TouchUtils.prototype.isXPinch = function(touches) {
