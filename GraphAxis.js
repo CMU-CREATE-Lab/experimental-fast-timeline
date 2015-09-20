@@ -17,6 +17,9 @@ var cr = cr || {};
  */
 cr.GraphAxis = function(domElement, min, max, basis, isXAxis, grapher) {
     this.id = cr.Uuid.getUuid();
+    this._div = null;
+    this._canvas = null;
+    this._touchTargetPagePosition = null;
     this._min = min;
     this._max = max;
     this._basis = basis;
@@ -55,7 +58,7 @@ cr.GraphAxis = function(domElement, min, max, basis, isXAxis, grapher) {
     //canvasElement.mousewheel(this.mousewheel, this);
     canvasElement.on("mousewheel", this, this.mousewheel);
 
-    this.previousTouches = null;
+    this._previousTouches = null;
 
     this.touchUtils = new cr.TouchUtils();
 
@@ -148,57 +151,84 @@ cr.GraphAxis.prototype.mousewheel = function(e) {
 
 cr.GraphAxis.prototype.touchstart = function(e) {
     var that = e.data;
-    that.previousTouches = e.originalEvent.touches;
+
+    // we only care about touches on *this* element, so filter out any others, but only keep the first two since we
+    // don't have any defined gestures for more than 2 touches
+    that._previousTouches = cr.TouchUtils.filterTouchesForElement(e.originalEvent.touches, that._canvas.id).slice(0, 2);
+
+    // if there are at least 2 touches on this element, compute and cache the element's page position for use later
+    // because it's probably a pinch event
+    if (that._previousTouches.length >= 2) {
+        that._touchTargetPagePosition = cr.TouchUtils.getElementPagePosition(that._canvas);
+    }
+
     return false;
 };
 
 cr.GraphAxis.prototype.touchmove = function(e) {
     var that = e.data;
-    var touches = e.originalEvent.touches;
-    if (that.previousTouches && touches.length == that.previousTouches.length) {
-        var dx = that.touchUtils.centroid(touches).x - that.touchUtils.centroid(that.previousTouches).x;
-        var dy = that.touchUtils.centroid(that.previousTouches).y - that.touchUtils.centroid(touches).y;
+
+    // we only care about touches on *this* element, so filter out any others, but only keep the first two since we
+    // don't have any defined gestures for more than 2 touches
+    var touches = cr.TouchUtils.filterTouchesForElement(e.originalEvent.touches, that._canvas.id).slice(0, 2);
+
+    if (that._previousTouches && touches.length == that._previousTouches.length) {
+
+        var touchesCentroid = that.touchUtils.centroid(touches);
+        var previousTouchesCentroid = that.touchUtils.centroid(that._previousTouches);
+
         if (that.isXAxis) {
+            // handle translation
+            var dx = touchesCentroid.x - previousTouchesCentroid.x;
             that.translatePixels(dx);
-        }
-        else {
-            that.translatePixels(dy);
-        }
-        if (that.isXAxis) {
-            if (that.touchUtils.isXPinch(touches) && that.touchUtils.isXPinch(that.previousTouches)) {
-                that.zoomAboutX(that.touchUtils.centroid(touches).x, that.touchUtils.xSpan(touches) / that.touchUtils.xSpan(that.previousTouches));
+
+            // handle zoom
+            if (that.touchUtils.isXPinch(touches) && that.touchUtils.isXPinch(that._previousTouches)) {
+                var x = touchesCentroid.x - that._touchTargetPagePosition.x;
+                var xZoomScale = that.touchUtils.xSpan(touches) / that.touchUtils.xSpan(that._previousTouches);
+                that.zoomAboutX(x, xZoomScale);
             }
         }
         else {
-            if (that.touchUtils.isYPinch(touches) && that.touchUtils.isYPinch(that.previousTouches)) {
-                that.zoomAboutY(that.touchUtils.centroid(touches).y, that.touchUtils.ySpan(touches) / that.touchUtils.ySpan(that.previousTouches));
+            // handle translation
+            var dy = previousTouchesCentroid.y - touchesCentroid.y;
+            that.translatePixels(dy);
+
+            // handle zoom
+            if (that.touchUtils.isYPinch(touches) && that.touchUtils.isYPinch(that._previousTouches)) {
+                var y = touchesCentroid.y - that._touchTargetPagePosition.y;
+                var yZoomScale = that.touchUtils.ySpan(touches) / that.touchUtils.ySpan(that._previousTouches);
+                that.zoomAboutY(y, yZoomScale);
             }
         }
     }
-    // Some platforms reuse the touch list
-    that.previousTouches = that.touchUtils.copyTouches(touches);
+
+    // remember the previous touches
+    that._previousTouches = that.touchUtils.copyTouches(touches);
     return false;
 };
 
 cr.GraphAxis.prototype.touchend = function(e) {
     var that = e.data;
-    that.previousTouches = null;
+    that._previousTouches = null;
     return false;
 };
 
 cr.GraphAxis.prototype.translatePixels = function(delta) {
-    if (this.isXAxis) {
-        var xScale = this._canvas.width / this._resolutionScale / (this._max - this._min);
-        this._min -= delta / xScale;
-        this._max -= delta / xScale;
-    }
-    else {
-        var yScale = this._canvas.height / this._resolutionScale / (this._max - this._min);
-        this._min -= delta / yScale;
-        this._max -= delta / yScale;
-    }
+    if (delta != 0) {
+        if (this.isXAxis) {
+            var xScale = this._canvas.width / this._resolutionScale / (this._max - this._min);
+            this._min -= delta / xScale;
+            this._max -= delta / xScale;
+        }
+        else {
+            var yScale = this._canvas.height / this._resolutionScale / (this._max - this._min);
+            this._min -= delta / yScale;
+            this._max -= delta / yScale;
+        }
 
-    this.limitView();
+        this.limitView();
+    }
 };
 
 cr.GraphAxis.prototype._initDiv = function(div) {
