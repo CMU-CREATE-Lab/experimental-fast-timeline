@@ -16,13 +16,13 @@ cr.SeriesPlotContainer = function(elementId, plots, options) {
     options = options || {};
     this.div = document.getElementById(elementId);
     this.div.style["border"] = "1px solid black";
-    this.highlight = {};
     this.highlightedPoints = [];
     this.cursorX = null;
     this._resolutionScale = window.devicePixelRatio || 1;
     this._plots = {};
     this._isAutoscaleEnabled = !!options.isAutoScaleEnabled;
     this._isAutoscalePaddingEnabled = !!options.isAutoscalePaddingEnabled;
+    this._touchTargetPagePosition = null;
 
     this.midnightLine = new cr.MidnightLine();
 
@@ -53,21 +53,22 @@ cr.SeriesPlotContainer = function(elementId, plots, options) {
     }
     this.grapher.addPlotContainer(this);
 
-    this.previousTouches = null;
+    this._previousTouches = null;
 
     this.touchUtils = new cr.TouchUtils();
 
-    var canvas2dElement = $('#' + this.canvas2d.id);
-    canvas2dElement.bind('touchstart', this, this.touchstart);
-    canvas2dElement.bind('touchmove', this, this.touchmove);
-    canvas2dElement.bind('touchend', this, this.touchend);
-    canvas2dElement.bind('touchcancel', this, this.touchend);
-
-    var canvas3dElement = $('#' + this.canvas3d.id);
-    canvas3dElement.bind('touchstart', this, this.touchstart);
-    canvas3dElement.bind('touchmove', this, this.touchmove);
-    canvas3dElement.bind('touchend', this, this.touchend);
-    canvas3dElement.bind('touchcancel', this, this.touchend);
+    this._canvas = null;
+    if (this.usewebgl) {
+        this._canvas = this.canvas2d;
+    }
+    else {
+        this._canvas = this.canvas3d;
+    }
+    var canvasElement = $('#' + this._canvas.id);
+    canvasElement.bind('touchstart', this, this.touchstart);
+    canvasElement.bind('touchmove', this, this.touchmove);
+    canvasElement.bind('touchend', this, this.touchend);
+    canvasElement.bind('touchcancel', this, this.touchend);
 
     this.resize();
 };
@@ -140,10 +141,7 @@ cr.SeriesPlotContainer.prototype.mousedown = function(e) {
         coords.ymax = plot.yAxis.pixelToY(bbox.ymax);
         var point = plot.tlayer.search(coords);
         if (point) {
-            //plot.xAxis.showCursor = true;
             plot.xAxis.setCursorPosition(point.x);
-            that.highlight.line = point;
-            that.highlight.plotKey = plotKey;
             that.grapher.scheduleUpdate();
         }
     });
@@ -223,61 +221,104 @@ cr.SeriesPlotContainer.prototype.mousewheel = function(e) {
 
 cr.SeriesPlotContainer.prototype.touchstart = function(e) {
     var that = e.data;
-    that.previousTouches = e.originalEvent.touches;
-    var touch = that.touchUtils.centroid(that.previousTouches);
-    var bbox = {
-        xmin : touch.x - e.currentTarget.offsetParent.offsetLeft - 15,
-        xmax : touch.x - e.currentTarget.offsetParent.offsetLeft + 15,
-        ymin : touch.y - e.currentTarget.offsetParent.offsetTop + 10,
-        ymax : touch.y - e.currentTarget.offsetParent.offsetTop - 10
-    };
-    Object.keys(that._plots).forEach(function(plotKey) {
-        var plot = that._plots[plotKey];
-        var coords = {};
-        coords.xmin = plot.xAxis.pixelToX(bbox.xmin);
-        coords.xmax = plot.xAxis.pixelToX(bbox.xmax);
-        coords.ymin = plot.yAxis.pixelToY(bbox.ymin);
-        coords.ymax = plot.yAxis.pixelToY(bbox.ymax);
-        var point = plot.tlayer.search(coords);
-        if (point) {
-            plot.xAxis.setCursorPosition(point.x);
-            that.highlight.line = point;
-            that.highlight.plotKey = plotKey;
-            that.grapher.scheduleUpdate();
-        }
-    });
+
+    // we only care about touches on *this* element, so filter out any others, but only keep the first two since we
+    // don't have any defined gestures for more than 2 touches
+    that._previousTouches = cr.TouchUtils.filterTouchesForElement(e.originalEvent.touches, that._canvas.id).slice(0, 2);
+
+    // Get the element's absolute position on the page.  We'll cache this if it's a pinch, but also use it if it's
+    // only a single touch so we can compute  the cursor position.  See below for both.
+    var elementPosition = cr.TouchUtils.getElementPagePosition(that.div);
+
+    // if there are at least 2 touches on this element, cache the element's page position for use later
+    // because it's probably a pinch event
+    if (that._previousTouches.length >= 2) {
+        that._touchTargetPagePosition = elementPosition;
+    }
+
+    // if there's only a single touch, then set the cursor
+    if (that._previousTouches.length == 1) {
+        // find the page position of the touch
+        var touchPagePosition = that.touchUtils.centroid(that._previousTouches);
+
+        // subtract away the element position to get a relative touch position within the element
+        var touch = {
+            x : touchPagePosition.x - elementPosition.x,
+            y : touchPagePosition.y - elementPosition.y
+        };
+        var bbox = {
+            xmin : touch.x - 15,
+            xmax : touch.x + 15,
+            ymin : touch.y + 15,
+            ymax : touch.y - 15
+        };
+        Object.keys(that._plots).forEach(function(plotKey) {
+            var plot = that._plots[plotKey];
+            var coords = {};
+            coords.xmin = plot.xAxis.pixelToX(bbox.xmin);
+            coords.xmax = plot.xAxis.pixelToX(bbox.xmax);
+            coords.ymin = plot.yAxis.pixelToY(bbox.ymin);
+            coords.ymax = plot.yAxis.pixelToY(bbox.ymax);
+            var point = plot.tlayer.search(coords);
+            if (point) {
+                plot.xAxis.setCursorPosition(point.x);
+                that.grapher.scheduleUpdate();
+            }
+        });
+    }
 
     return false;
 };
 
 cr.SeriesPlotContainer.prototype.touchmove = function(e) {
     var that = e.data;
-    var touches = e.originalEvent.touches;
-    if (that.previousTouches && touches.length == that.previousTouches.length) {
-        var dx = that.touchUtils.centroid(touches).x - that.touchUtils.centroid(that.previousTouches).x;
-        var dy = that.touchUtils.centroid(that.previousTouches).y - that.touchUtils.centroid(touches).y;
+
+    // we only care about touches on *this* element, so filter out any others, but only keep the first two since we
+    // don't have any defined gestures for more than 2 touches
+    var touches = cr.TouchUtils.filterTouchesForElement(e.originalEvent.touches, that._canvas.id).slice(0, 2);
+
+    if (that._previousTouches && touches.length == that._previousTouches.length) {
+        var touchesCentroid = that.touchUtils.centroid(touches);
+        var previousTouchesCentroid = that.touchUtils.centroid(that._previousTouches);
+
+        var dx = touchesCentroid.x - previousTouchesCentroid.x;
+        var dy = previousTouchesCentroid.y - touchesCentroid.y;
+
         var xAxis = that.getXAxis();
+
+        // handle x translation
         xAxis.translatePixels(dx);
-        if (that.touchUtils.isXPinch(touches) && that.touchUtils.isXPinch(that.previousTouches)) {
-            xAxis.zoomAboutX(that.touchUtils.centroid(touches).x, that.touchUtils.xSpan(touches) / that.touchUtils.xSpan(that.previousTouches));
+
+        // handle x zoom
+        if (that.touchUtils.isXPinch(touches) && that.touchUtils.isXPinch(that._previousTouches)) {
+            var x = touchesCentroid.x - that._touchTargetPagePosition.x;
+            var xZoomScale = that.touchUtils.xSpan(touches) / that.touchUtils.xSpan(that._previousTouches);
+            xAxis.zoomAboutX(x, xZoomScale);
         }
 
         Object.keys(that._plots).forEach(function(plotKey) {
             var plot = that._plots[plotKey];
+
+            // handle y translation
             plot.yAxis.translatePixels(dy);
-            if (that.touchUtils.isYPinch(touches) && that.touchUtils.isYPinch(that.previousTouches)) {
-                plot.yAxis.zoomAboutY(that.touchUtils.centroid(touches).y, that.touchUtils.ySpan(touches) / that.touchUtils.ySpan(that.previousTouches));
+
+            // handle y zoom
+            if (that.touchUtils.isYPinch(touches) && that.touchUtils.isYPinch(that._previousTouches)) {
+                var y = touchesCentroid.y - that._touchTargetPagePosition.y;
+                var yZoomScale = that.touchUtils.ySpan(touches) / that.touchUtils.ySpan(that._previousTouches);
+                plot.yAxis.zoomAboutY(y, yZoomScale);
             }
         });
     }
-    // Some platforms reuse the touch list
-    that.previousTouches = that.touchUtils.copyTouches(touches);
+
+    // remember the previous touches
+    that._previousTouches = that.touchUtils.copyTouches(touches);
     return false;
 };
 
 cr.SeriesPlotContainer.prototype.touchend = function(e) {
     var that = e.data;
-    that.previousTouches = null;
+    that._previousTouches = null;
     return false;
 };
 
@@ -486,7 +527,7 @@ cr.SeriesPlotContainer.prototype.drawMidnightLinesWebgl = function() {
 };
 
 cr.SeriesPlotContainer.prototype.drawMidnightLinesCanvas = function() {
-    // TODO
+    // TODO: implement midnight lines for canvas
 };
 
 cr.SeriesPlotContainer.prototype.setHighlightPoints = function() {
@@ -619,7 +660,7 @@ cr.SeriesPlotContainer.prototype.drawMouseoverHighlightPointWebgl = function() {
 };
 
 cr.SeriesPlotContainer.prototype.drawMouseoverHighlightPointCanvas = function() {
-    // TODO
+    // TODO: implement mousover highlight for canvas
 };
 
 cr.SeriesPlotContainer.prototype.drawMouseoverHighlightPoint = function() {
