@@ -66,28 +66,6 @@ cr.Plot.prototype.limitView = function() {
     }
 };
 
-cr.Plot.prototype.drawCursorAndHighlight = function(view) {
-    var transform = {};
-    transform.xOffset = -view.xmin;
-    transform.xScale = this.canvas2d.width / (view.xmax - view.xmin);
-    transform.yOffset = -view.ymax;
-    transform.yScale = this.canvas2d.height / (view.ymin - view.ymax);
-    if (this.showCursor) {
-        this.cursor.draw(transform);
-    }
-    this.highlight._ctx.clearRect(0, 0, plot.canvas2d.width, plot.canvas2d.height);
-
-    if (this.showHighlightLine) {
-        this.highlight.drawLine(transform, view);
-    }
-    if (this.showHighlightPoint) {
-        this.highlight.drawPoint(transform, view);
-    }
-    if (this.showHighlightMOPoint) {
-        this.highlight.drawMOPoint(transform, view);
-    }
-};
-
 cr.Plot.prototype.getId = function() {
     return this.id;
 };
