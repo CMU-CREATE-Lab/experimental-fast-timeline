@@ -145,6 +145,14 @@ cr.Grapher.prototype.update = function() {
 var __grapher__ = new cr.Grapher();
 
 /**
+ * A simple tuple holding minimum and maximum values.
+ *
+ * @typedef {Object} MinMaxValue
+ * @property {number} min - the minimum value
+ * @property {number} max - the maximum value
+ */
+
+/**
  * The min and max values for an axis's range.
  *
  * @typedef {Object} AxisRange
