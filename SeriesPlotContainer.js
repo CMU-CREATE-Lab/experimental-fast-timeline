@@ -420,6 +420,11 @@ cr.SeriesPlotContainer.prototype.update = function() {
         }
     }
 
+    // clear before drawing
+    if (this.glb) {
+        this.glb.clear();
+    }
+
     // update the plots and create a map of the yAxes so we can
     // iterate over them later without updating each more than once
     var yAxesById = {};
