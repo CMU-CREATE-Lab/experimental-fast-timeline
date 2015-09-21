@@ -109,23 +109,6 @@ cr.DataStoreTileLayer.prototype.search = function(bbox) {
     return null;
 };
 
-cr.DataStoreTileLayer.prototype.searchByX = function(bbox) {
-    var keys = Object.keys(this._tileView._tiles).sort();
-    var matches = [];
-    for (var i = 0; i < keys.length; i++) {
-        var offset = this._tileView._tiles[keys[i]].offset || 0;
-        var data = this._tileView._tiles[keys[i]]._data;
-        if (data) {
-            for (var j = 0; j < data.length; j += 4) {
-                if (data[j] + offset >= bbox.xmin && data[j] + offset <= bbox.xmax) {
-                    return { x : data[j] + offset, y : data[j + 1] };
-                }
-            }
-        }
-    }
-    return null;
-};
-
 cr.DataStoreTileLayer.prototype.getPointsNearTimeWithinTimeRange = function(targetTimeInSecs, numSecsBefore, numSecsAfter) {
     var bbox = { xmin : targetTimeInSecs - Math.abs(numSecsBefore), xmax : targetTimeInSecs + Math.abs(numSecsAfter) };
 
