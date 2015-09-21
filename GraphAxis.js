@@ -24,6 +24,7 @@ cr.GraphAxis = function(domElement, min, max, basis, isXAxis, grapher) {
     this._max = max;
     this._basis = basis;
     this.isXAxis = isXAxis;
+    this._previousAxisChangeEvent = null;
 
     this._initDiv(domElement);
     this._initCanvas();
@@ -609,6 +610,7 @@ cr.GraphAxis.prototype.removeAxisChangeListener = function(listener) {
 };
 
 cr.GraphAxis.prototype.publishAxisChangeEvent = function() {
+    // create the event
     var event = {
         min : this._min,
         max : this._max,
@@ -617,9 +619,18 @@ cr.GraphAxis.prototype.publishAxisChangeEvent = function() {
         eventId : -1 // deprecated
     };
 
-    for (var i = 0; i < this.axisChangeListeners.length; i++) {
-        this.axisChangeListeners[i](event);
+    // only publish the event if it has changed since last time
+    if (this._previousAxisChangeEvent == null ||
+        this._previousAxisChangeEvent.min != event.min ||
+        this._previousAxisChangeEvent.max != event.max ||
+        this._previousAxisChangeEvent.cursorPosition != event.cursorPosition) {
+        for (var i = 0; i < this.axisChangeListeners.length; i++) {
+            this.axisChangeListeners[i](event);
+        }
     }
+
+    // remember the event
+    this._previousAxisChangeEvent = event;
 };
 
 cr.GraphAxis.prototype.getMax = function() {
