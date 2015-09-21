@@ -137,12 +137,12 @@ cr.DataStoreTileLayer.prototype.getPointsNearTimeWithinTimeRange = function(targ
 };
 
 /**
- * Returns an <code>AxisRange</code> instance containing the min and max data values for all samples within the given
+ * Returns a <code>MinMaxValue</code> instance containing the min and max data values for all samples within the given
  * <code>timeRange</code>.  Returns <code>null</code> if there's no data within the range for the currently-loaded
  * tiles.
  *
  * @param {AxisRange} timeRange
- * @return {AxisRange}
+ * @return {MinMaxValue}
  */
 cr.DataStoreTileLayer.prototype.getMinMaxValue = function(timeRange) {
     var keys = Object.keys(this._tileView._tiles).sort();

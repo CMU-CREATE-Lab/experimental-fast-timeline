@@ -118,6 +118,33 @@ cr.Plot.prototype.getClosestDataPointToTimeWithinWindow = function(timeInSecs, n
     return dataPoint;
 };
 
+/**
+ * Returns the minimum and maximum values for points within the given time range.  Returns <code>null</code> if there's
+ * no data within the time range, no data loaded within the time range, or if the <code>minTimeSecs</code> is greater
+ * than the <code>maxTimeSecs</code>.  Since this method does not proactively load data, it limits the requested time
+ * range to be within the current date rage.
+ *
+ * @param {number} minTimeSecs - the minimum time (inclusive) of the time range within which to search
+ * @param {number} maxTimeSecs - the maximum time (inclusive) of the time range within which to search
+ * @return {MinMaxValue} the min and max values within the given time range or <code>null</code>
+ */
+cr.Plot.prototype.getMinMaxValuesWithinTimeRange = function(minTimeSecs, maxTimeSecs) {
+    if (minTimeSecs <= maxTimeSecs) {
+        // ensure the requested time range is within the current date range
+        var currentDateRange = this.xAxis.getRange();
+        minTimeSecs = Math.max(minTimeSecs, currentDateRange.min);
+        maxTimeSecs = Math.min(maxTimeSecs, currentDateRange.max);
+
+        // get the min/max value
+        return this.tlayer.getMinMaxValue({
+            min : minTimeSecs,
+            max : maxTimeSecs
+        });
+    }
+
+    return null;
+};
+
 // Publishes the given point, but only if it's different than the previously published point
 cr.Plot.prototype.publishDataPoint = function(point) {
     if (point) {
