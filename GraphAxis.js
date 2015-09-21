@@ -587,6 +587,7 @@ cr.GraphAxis.prototype.setMaxRange = function(min, max) {
     }
 
     this.update();
+    this.grapher.scheduleUpdate();
     this.publishAxisChangeEvent();
 };
 
