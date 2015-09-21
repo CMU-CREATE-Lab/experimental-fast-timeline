@@ -557,10 +557,9 @@ cr.SeriesPlotContainer.prototype.setHighlightPoints = function() {
     var xAxis = this.getXAxis();
     var offset = xAxis.pixelToX(2) - xAxis.pixelToX(0);
     for (var plotKey in this._plots) {
-        var point = this._plots[plotKey].tlayer.searchByX({
-            xmin : this.cursorX - offset,
-            xmax : this.cursorX + offset
-        });
+        var points = this._plots[plotKey].tlayer.getPointsNearTimeWithinTimeRange(this.cursorX, offset, offset);
+        var point = points && points.closestPoint ? points.closestPoint : null;
+
         if (point) {
             this.highlightedPoints.push({ point : point, plotKey : plotKey });
         }
