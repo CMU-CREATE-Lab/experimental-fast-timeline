@@ -193,10 +193,24 @@ cr.SeriesPlotContainer.prototype.mousemove = function(e) {
     }
 
     if (that.lastMouse) {
+        // keep track of the X and Y axes to which we've applied the traslation, so that we
+        // don't do it more than once per axis
+        var hasXAxisBeenTransformed = {};
+        var hasYAxisBeenTransformed = {};
         Object.keys(that._plots).forEach(function(plotKey) {
             var plot = that._plots[plotKey];
-            plot.xAxis.translatePixels(e.clientX - that.lastMouse.clientX);
-            plot.yAxis.translatePixels(that.lastMouse.clientY - e.clientY);
+
+            if (!(plot.xAxis.id in hasXAxisBeenTransformed)) {
+                plot.xAxis.translatePixels(e.clientX - that.lastMouse.clientX);
+
+                hasXAxisBeenTransformed[plot.xAxis.id] = true;
+            }
+
+            if (!(plot.yAxis.id in hasYAxisBeenTransformed)) {
+                plot.yAxis.translatePixels(that.lastMouse.clientY - e.clientY);
+
+                hasYAxisBeenTransformed[plot.yAxis.id] = true;
+            }
         });
         that.lastMouse = e;
     }
@@ -296,17 +310,25 @@ cr.SeriesPlotContainer.prototype.touchmove = function(e) {
             xAxis.zoomAboutX(x, xZoomScale);
         }
 
+        // keep track of the Y axes to which we've applied the traslation/zoom, so that we
+        // don't do it more than once per axis (for the case where multiple plots share a Y axis)
+        var hasYAxisBeenTransformed = {};
         Object.keys(that._plots).forEach(function(plotKey) {
             var plot = that._plots[plotKey];
 
-            // handle y translation
-            plot.yAxis.translatePixels(dy);
+            if (!(plot.yAxis.id in hasYAxisBeenTransformed)) {
+                // handle y translation
+                plot.yAxis.translatePixels(dy);
 
-            // handle y zoom
-            if (that.touchUtils.isYPinch(touches) && that.touchUtils.isYPinch(that._previousTouches)) {
-                var y = touchesCentroid.y - that._touchTargetPagePosition.y;
-                var yZoomScale = that.touchUtils.ySpan(touches) / that.touchUtils.ySpan(that._previousTouches);
-                plot.yAxis.zoomAboutY(y, yZoomScale);
+                // handle y zoom
+                if (that.touchUtils.isYPinch(touches) && that.touchUtils.isYPinch(that._previousTouches)) {
+                    var y = touchesCentroid.y - that._touchTargetPagePosition.y;
+                    var yZoomScale = that.touchUtils.ySpan(touches) / that.touchUtils.ySpan(that._previousTouches);
+                    plot.yAxis.zoomAboutY(y, yZoomScale);
+                }
+
+                // flag this Y axis as having been translated/zoomed
+                hasYAxisBeenTransformed[plot.yAxis.id] = true;
             }
         });
     }
