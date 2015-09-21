@@ -40,12 +40,11 @@ cr.Plot = function(datasource, xAxis, yAxis, options) {
         ymax : this.yAxis._max
     };
 
+    this.tlayer = null;
+
     this.dataPointListeners = [];
     this._publishedPoint = null;
     this._resolutionScale = window.devicePixelRatio || 1;
-
-    //this.tlayer = new DataStoreTileLayer(datasource, this.glb, this.ctx);
-    //this._resize();
 };
 
 cr.Plot.prototype.limitView = function() {
