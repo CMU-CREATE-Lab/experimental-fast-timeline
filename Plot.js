@@ -101,7 +101,8 @@ cr.Plot.prototype.removeDataPointListener = function(listener) {
 
 cr.Plot.prototype.getClosestDataPointToTimeWithinWindow = function(timeInSecs, numSecsBefore, numSecsAfter) {
     var dataPoint = null;
-    var point = this.tlayer.searchByX({ xmin : timeInSecs - numSecsBefore, xmax : timeInSecs + numSecsAfter });
+    var points = this.tlayer.getPointsNearTimeWithinTimeRange(timeInSecs, numSecsBefore, numSecsAfter);
+    var point = points && points.closestPoint ? points.closestPoint : null;
 
     // point.y can be -Infinity at (I think) tile boundaries, so filter
     // those out. I threw in the isNaN check just in case.

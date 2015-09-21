@@ -126,6 +126,37 @@ cr.DataStoreTileLayer.prototype.searchByX = function(bbox) {
     return null;
 };
 
+cr.DataStoreTileLayer.prototype.getPointsNearTimeWithinTimeRange = function(targetTimeInSecs, numSecsBefore, numSecsAfter) {
+    var bbox = { xmin : targetTimeInSecs - Math.abs(numSecsBefore), xmax : targetTimeInSecs + Math.abs(numSecsAfter) };
+
+    var keys = Object.keys(this._tileView._tiles).sort();
+
+    var distanceToClosestPoint = Number.MAX_VALUE;
+    var result = { closestPoint : null, points : [] };
+    for (var i = 0; i < keys.length; i++) {
+        var offset = this._tileView._tiles[keys[i]].offset || 0;
+        var data = this._tileView._tiles[keys[i]]._data;
+        if (data) {
+            for (var j = 0; j < data.length; j += 4) {
+                var timestamp = data[j] + offset;
+                if (timestamp >= bbox.xmin && timestamp <= bbox.xmax) {
+                    var point = { x : timestamp, y : data[j + 1] };
+                    var distanceFromTargetTime = Math.abs(timestamp - targetTimeInSecs);
+
+                    // keep track of the closest point
+                    if (result.closestPoint == null || distanceFromTargetTime < distanceToClosestPoint) {
+                        result.closestPoint = point;
+                        distanceToClosestPoint = distanceFromTargetTime;
+                    }
+                    result.points.push(point);
+                }
+            }
+        }
+    }
+
+    return result;
+};
+
 /**
  * Returns an <code>AxisRange</code> instance containing the min and max data values for all samples within the given
  * <code>timeRange</code>.  Returns <code>null</code> if there's no data within the range for the currently-loaded
