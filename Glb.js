@@ -11,7 +11,7 @@ var cr = cr || {};
  * @private
  * @param gl
  */
-cr.Glb = function (gl) {
+cr.Glb = function(gl) {
     this.gl = gl;
     this._shaderCache = {};
     this._programCache = {};
@@ -92,4 +92,8 @@ cr.Glb.prototype.
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer);
     this.gl.bufferData(this.gl.ARRAY_BUFFER, array, this.gl.STATIC_DRAW);
     return buffer;
+};
+
+cr.Glb.prototype.clear = function() {
+    this.gl.clear(this.gl.COLOR_BUFFER_BIT);
 };
