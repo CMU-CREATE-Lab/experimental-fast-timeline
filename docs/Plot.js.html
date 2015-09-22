@@ -68,12 +68,11 @@ cr.Plot = function(datasource, xAxis, yAxis, options) {
         ymax : this.yAxis._max
     };
 
+    this.tlayer = null;
+
     this.dataPointListeners = [];
     this._publishedPoint = null;
     this._resolutionScale = window.devicePixelRatio || 1;
-
-    //this.tlayer = new DataStoreTileLayer(datasource, this.glb, this.ctx);
-    //this._resize();
 };
 
 cr.Plot.prototype.limitView = function() {
@@ -91,39 +90,6 @@ cr.Plot.prototype.limitView = function() {
         // Tried to pan too far right
         this.view.xmin -= this.view.xmax - this.bounds.xmax;
         this.view.xmax = this.bounds.xmax;
-    }
-};
-
-cr.Plot.prototype._resize = function() {
-    var canvasWidth = this.div.clientWidth * this._resolutionScale;
-    var canvasHeight = this.div.clientWidthHeight * this._resolutionScale;
-    if (this.canvas2d.width != canvasWidth ||
-        this.canvas2d.height != canvasHeight) {
-        this.highlight._highlight.width = this.canvas2d.width = this.canvas3d.width = canvasWidth;
-        this.highlight._highlight.height = this.canvas2d.height = this.canvas3d.height = canvasHeight;
-        console.log('Resized canvas to ' + this.canvas2d.width + ' x ' + this.canvas2d.height);
-    }
-};
-
-cr.Plot.prototype.drawCursorAndHighlight = function(view) {
-    var transform = {};
-    transform.xOffset = -view.xmin;
-    transform.xScale = this.canvas2d.width / (view.xmax - view.xmin);
-    transform.yOffset = -view.ymax;
-    transform.yScale = this.canvas2d.height / (view.ymin - view.ymax);
-    if (this.showCursor) {
-        this.cursor.draw(transform);
-    }
-    this.highlight._ctx.clearRect(0, 0, plot.canvas2d.width, plot.canvas2d.height);
-
-    if (this.showHighlightLine) {
-        this.highlight.drawLine(transform, view);
-    }
-    if (this.showHighlightPoint) {
-        this.highlight.drawPoint(transform, view);
-    }
-    if (this.showHighlightMOPoint) {
-        this.highlight.drawMOPoint(transform, view);
     }
 };
 
@@ -162,7 +128,8 @@ cr.Plot.prototype.removeDataPointListener = function(listener) {
 
 cr.Plot.prototype.getClosestDataPointToTimeWithinWindow = function(timeInSecs, numSecsBefore, numSecsAfter) {
     var dataPoint = null;
-    var point = this.tlayer.searchByX({ xmin : timeInSecs - numSecsBefore, xmax : timeInSecs + numSecsAfter });
+    var points = this.tlayer.getPointsNearTimeWithinTimeRange(timeInSecs, numSecsBefore, numSecsAfter);
+    var point = points &amp;&amp; points.closestPoint ? points.closestPoint : null;
 
     // point.y can be -Infinity at (I think) tile boundaries, so filter
     // those out. I threw in the isNaN check just in case.
@@ -176,6 +143,33 @@ cr.Plot.prototype.getClosestDataPointToTimeWithinWindow = function(timeInSecs, n
         }
     }
     return dataPoint;
+};
+
+/**
+ * Returns the minimum and maximum values for points within the given time range.  Returns &lt;code>null&lt;/code> if there's
+ * no data within the time range, no data loaded within the time range, or if the &lt;code>minTimeSecs&lt;/code> is greater
+ * than the &lt;code>maxTimeSecs&lt;/code>.  Since this method does not proactively load data, it limits the requested time
+ * range to be within the current date rage.
+ *
+ * @param {number} minTimeSecs - the minimum time (inclusive) of the time range within which to search
+ * @param {number} maxTimeSecs - the maximum time (inclusive) of the time range within which to search
+ * @return {MinMaxValue} the min and max values within the given time range or &lt;code>null&lt;/code>
+ */
+cr.Plot.prototype.getMinMaxValuesWithinTimeRange = function(minTimeSecs, maxTimeSecs) {
+    if (minTimeSecs &lt;= maxTimeSecs) {
+        // ensure the requested time range is within the current date range
+        var currentDateRange = this.xAxis.getRange();
+        minTimeSecs = Math.max(minTimeSecs, currentDateRange.min);
+        maxTimeSecs = Math.min(maxTimeSecs, currentDateRange.max);
+
+        // get the min/max value
+        return this.tlayer.getMinMaxValue({
+            min : minTimeSecs,
+            max : maxTimeSecs
+        });
+    }
+
+    return null;
 };
 
 // Publishes the given point, but only if it's different than the previously published point
@@ -216,13 +210,13 @@ cr.Plot.prototype.publishDataPoint = function(point) {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="cr.Basis.html">Basis</a></li><li><a href="cr.GraphAxis.html">GraphAxis</a></li><li><a href="cr.Grapher.html">Grapher</a></li><li><a href="cr.Plot.html">Plot</a></li><li><a href="cr.SeriesPlotContainer.html">SeriesPlotContainer</a></li><li><a href="cr.TileIdx.html">TileIdx</a></li><li><a href="cr.TimeGraphAxis.html">TimeGraphAxis</a></li><li><a href="cr.Uuid.html">Uuid</a></li><li><a href="DataSeriesPlot.html">DataSeriesPlot</a></li><li><a href="DateAxis.html">DateAxis</a></li><li><a href="NumberAxis.html">NumberAxis</a></li><li><a href="PlotContainer.html">PlotContainer</a></li></ul><h3>Namespaces</h3><ul><li><a href="cr.html">cr</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="cr.Basis.html">Basis</a></li><li><a href="cr.GraphAxis.html">GraphAxis</a></li><li><a href="cr.Grapher.html">Grapher</a></li><li><a href="cr.Plot.html">Plot</a></li><li><a href="cr.SeriesPlotContainer.html">SeriesPlotContainer</a></li><li><a href="cr.TileIdx.html">TileIdx</a></li><li><a href="cr.TimeGraphAxis.html">TimeGraphAxis</a></li><li><a href="cr.TouchUtils.html">TouchUtils</a></li><li><a href="cr.Uuid.html">Uuid</a></li><li><a href="DataSeriesPlot.html">DataSeriesPlot</a></li><li><a href="DateAxis.html">DateAxis</a></li><li><a href="NumberAxis.html">NumberAxis</a></li><li><a href="PlotContainer.html">PlotContainer</a></li></ul><h3>Namespaces</h3><ul><li><a href="cr.html">cr</a></li></ul><h3><a href="global.html">Global</a></h3>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Wed Sep 09 2015 23:03:12 GMT-0400 (EDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Tue Sep 22 2015 10:56:14 GMT-0400 (EDT)
 </footer>
 
 <script> prettyPrint(); </script>

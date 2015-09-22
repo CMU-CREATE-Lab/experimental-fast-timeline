@@ -45,26 +45,29 @@ var cr = cr || {};
  */
 cr.GraphAxis = function(domElement, min, max, basis, isXAxis, grapher) {
     this.id = cr.Uuid.getUuid();
+    this._div = null;
+    this._canvas = null;
+    this._touchTargetPagePosition = null;
     this._min = min;
     this._max = max;
     this._basis = basis;
     this.isXAxis = isXAxis;
+    this._previousAxisChangeEvent = null;
 
     this._initDiv(domElement);
     this._initCanvas();
 
-    this.majorTickMinSpacingPixels = 30;
-    var dim = isXAxis ? this._canvas.height : this._canvas.width;
-    this.majorTickWidthPixels = Math.floor(dim / 5);//8;
+    this.majorTickMinSpacingPixels = cr.GraphAxis.Constants.DEFAULT_MAJOR_TICK_MIN_SPACING_PIXELS;
+    this.majorTickWidthPixels = cr.GraphAxis.Constants.DEFAULT_MAJOR_TICK_WIDTH_PIXELS;
 
-    this.minorTickMinSpacingPixels = 10;
-    this.minorTickWidthPixels = Math.floor(dim / 13.33);//3;
+    this.minorTickMinSpacingPixels = cr.GraphAxis.Constants.DEFAULT_MINOR_TICK_MIN_SPACING_PIXELS;
+    this.minorTickWidthPixels = cr.GraphAxis.Constants.DEFAULT_MINOR_TICK_WIDTH_PIXELS;
 
     this.hasMinRange = false;
-    this.minRange = -1e+100;
+    this.minRange = cr.GraphAxis.Constants.DEFAULT_MIN_RANGE;
 
     this.hasMaxRange = false;
-    this.maxRange = 1e+100;
+    this.maxRange = cr.GraphAxis.Constants.DEFAULT_MAX_RANGE;
 
     this._begin;
     this._length;
@@ -77,20 +80,21 @@ cr.GraphAxis = function(domElement, min, max, basis, isXAxis, grapher) {
 
     this.lastMouse = null;
 
-    $('#' + this._canvas.id).mousedown(this, this.mousedown);
-    $('#' + this._canvas.id).mousemove(this, this.mousemove);
-    $('#' + this._canvas.id).mouseup(this, this.mouseup);
-    //$('#'+this._canvas.id).mousewheel(this.mousewheel, this);
-    $('#' + this._canvas.id).on("mousewheel", this, this.mousewheel);
+    var canvasElement = $('#' + this._canvas.id);
+    canvasElement.mousedown(this, this.mousedown);
+    canvasElement.mousemove(this, this.mousemove);
+    canvasElement.mouseup(this, this.mouseup);
+    //canvasElement.mousewheel(this.mousewheel, this);
+    canvasElement.on("mousewheel", this, this.mousewheel);
 
-    this.lastTouch = null;
+    this._previousTouches = null;
 
     this.touchUtils = new cr.TouchUtils();
 
-    $('#' + this._canvas.id).bind('touchstart', this, this.touchstart);
-    $('#' + this._canvas.id).bind('touchmove', this, this.touchmove);
-    $('#' + this._canvas.id).bind('touchend', this, this.touchend);
-    $('#' + this._canvas.id).bind('touchcancel', this, this.touchend);
+    canvasElement.bind('touchstart', this, this.touchstart);
+    canvasElement.bind('touchmove', this, this.touchmove);
+    canvasElement.bind('touchend', this, this.touchend);
+    canvasElement.bind('touchcancel', this, this.touchend);
 
     if (grapher == null) {
         this.grapher = __grapher__;
@@ -98,6 +102,17 @@ cr.GraphAxis = function(domElement, min, max, basis, isXAxis, grapher) {
 
     this.axisChangeListeners = [];
 };
+
+cr.GraphAxis.Constants = {
+    DEFAULT_MAJOR_TICK_MIN_SPACING_PIXELS : 30,
+    DEFAULT_MAJOR_TICK_WIDTH_PIXELS : 8,
+    DEFAULT_MINOR_TICK_MIN_SPACING_PIXELS : 10,
+    DEFAULT_MINOR_TICK_WIDTH_PIXELS : 3,
+    DEFAULT_MIN_RANGE : -1e+100,
+    DEFAULT_MAX_RANGE : 1e+100
+};
+// make these fields constants
+Object.freeze(cr.GraphAxis.Constants);
 
 cr.GraphAxis.prototype.mousedown = function(e) {
     var that = e.data;
@@ -155,95 +170,125 @@ cr.GraphAxis.prototype.mouseup = function(e) {
 cr.GraphAxis.prototype.mousewheel = function(e) {
     var that = e.data;
     if (that.isXAxis) {
-        that.zoomAboutX(e.clientX, Math.pow(1.0005, -e.originalEvent.deltaY));
+        that.zoomAboutX(e.offsetX, Math.pow(1.0005, -e.originalEvent.deltaY));
     }
     else {
-        that.zoomAboutY(e.clientY, Math.pow(1.0005, -e.originalEvent.deltaY));
+        that.zoomAboutY(e.offsetY, Math.pow(1.0005, -e.originalEvent.deltaY));
     }
     return false;
 };
 
 cr.GraphAxis.prototype.touchstart = function(e) {
     var that = e.data;
-    that.lastTouch = e.originalEvent.touches;
+
+    // we only care about touches on *this* element, so filter out any others, but only keep the first two since we
+    // don't have any defined gestures for more than 2 touches
+    that._previousTouches = cr.TouchUtils.filterTouchesForElement(e.originalEvent.touches, that._canvas.id).slice(0, 2);
+
+    // if there are at least 2 touches on this element, compute and cache the element's page position for use later
+    // because it's probably a pinch event
+    if (that._previousTouches.length >= 2) {
+        that._touchTargetPagePosition = cr.TouchUtils.getElementPagePosition(that._canvas);
+    }
+
     return false;
 };
 
 cr.GraphAxis.prototype.touchmove = function(e) {
     var that = e.data;
-    var thisTouch = e.originalEvent.touches;
-    if (that.lastTouch &amp;&amp; thisTouch.length == that.lastTouch.length) {
-        var dx = that.touchUtils.centroid(thisTouch).clientX - that.touchUtils.centroid(that.lastTouch).clientX;
-        var dy = that.touchUtils.centroid(that.lastTouch).clientY - that.touchUtils.centroid(thisTouch).clientY;
+
+    // we only care about touches on *this* element, so filter out any others, but only keep the first two since we
+    // don't have any defined gestures for more than 2 touches
+    var touches = cr.TouchUtils.filterTouchesForElement(e.originalEvent.touches, that._canvas.id).slice(0, 2);
+
+    if (that._previousTouches &amp;&amp; touches.length == that._previousTouches.length) {
+
+        var touchesCentroid = that.touchUtils.centroid(touches);
+        var previousTouchesCentroid = that.touchUtils.centroid(that._previousTouches);
+
         if (that.isXAxis) {
+            // handle translation
+            var dx = touchesCentroid.x - previousTouchesCentroid.x;
             that.translatePixels(dx);
-        }
-        else {
-            that.translatePixels(dy);
-        }
-        if (that.isXAxis) {
-            if (that.touchUtils.isXPinch(thisTouch) &amp;&amp; that.touchUtils.isXPinch(that.lastTouch)) {
-                that.zoomAboutX(that.touchUtils.centroid(thisTouch).clientX, that.touchUtils.xSpan(thisTouch) / that.touchUtils.xSpan(that.lastTouch));
+
+            // handle zoom
+            if (that.touchUtils.isXPinch(touches) &amp;&amp; that.touchUtils.isXPinch(that._previousTouches)) {
+                var x = touchesCentroid.x - that._touchTargetPagePosition.x;
+                var xZoomScale = that.touchUtils.xSpan(touches) / that.touchUtils.xSpan(that._previousTouches);
+                that.zoomAboutX(x, xZoomScale);
             }
         }
         else {
-            if (that.touchUtils.isYPinch(thisTouch) &amp;&amp; that.touchUtils.isYPinch(that.lastTouch)) {
-                that.zoomAboutY(that.touchUtils.centroid(thisTouch).clientY, that.touchUtils.ySpan(thisTouch) / that.touchUtils.ySpan(that.lastTouch));
+            // handle translation
+            var dy = previousTouchesCentroid.y - touchesCentroid.y;
+            that.translatePixels(dy);
+
+            // handle zoom
+            if (that.touchUtils.isYPinch(touches) &amp;&amp; that.touchUtils.isYPinch(that._previousTouches)) {
+                var y = touchesCentroid.y - that._touchTargetPagePosition.y;
+                var yZoomScale = that.touchUtils.ySpan(touches) / that.touchUtils.ySpan(that._previousTouches);
+                that.zoomAboutY(y, yZoomScale);
             }
         }
     }
-    // Some platforms reuse the touch list
-    that.lastTouch = that.touchUtils.copyTouches(thisTouch);
+
+    // remember the previous touches
+    that._previousTouches = that.touchUtils.copyTouches(touches);
     return false;
 };
 
 cr.GraphAxis.prototype.touchend = function(e) {
     var that = e.data;
-    that.lastTouch = null;
+    that._previousTouches = null;
     return false;
 };
 
 cr.GraphAxis.prototype.translatePixels = function(delta) {
-    if (this.isXAxis) {
-        var xScale = this._canvas.width / this._resolutionScale / (this._max - this._min);
-        this._min -= delta / xScale;
-        this._max -= delta / xScale;
-    }
-    else {
-        var yScale = this._canvas.height / this._resolutionScale / (this._max - this._min);
-        this._min -= delta / yScale;
-        this._max -= delta / yScale;
-    }
+    if (delta != 0) {
+        if (this.isXAxis) {
+            var xScale = this._canvas.width / this._resolutionScale / (this._max - this._min);
+            this._min -= delta / xScale;
+            this._max -= delta / xScale;
+        }
+        else {
+            var yScale = this._canvas.height / this._resolutionScale / (this._max - this._min);
+            this._min -= delta / yScale;
+            this._max -= delta / yScale;
+        }
 
-    this.limitView();
+        this.limitView();
+    }
 };
 
 cr.GraphAxis.prototype._initDiv = function(div) {
     this._div = div;
-    /*    this._div.style["display"] = "block";
-     this._div.style["position"] = "absolute";
-     this._div.style["height"] = "auto";
-     this._div.style["width"] = "42px";
-     this._div.style["top"] = "0px";
-     this._div.style["bottom"] = "0px";
-     this._div.style["right"] = "0px";
-     this._div.style["marginTop"] = "42px";
-     this._div.style["marginLeft"] = "0px";
-     this._div.style["marginBottom"] = "0px";
-     this._div.style["marginRight"] = "0px";
-     this._div.style["borderTop"] = "1px solid black";
-     this._div.style["borderRight"] = "1px solid black";
-     this._div.style["borderBottom"] = "1px solid black";
-     */
+    this._div.style["position"] = "relative";
+    if (this.isXAxis) {
+        if (div.clientHeight &amp;&amp;
+            div.clientHeight > 0 &amp;&amp;
+            isNaN(parseInt(this._div.style["height"]))) {
+            this._div.style["height"] = div.clientHeight + "px";
+        }
+    }
+    else {
+        if (div.clientWidth &amp;&amp;
+            div.clientWidth > 0 &amp;&amp;
+            isNaN(parseInt(this._div.style["width"]))) {
+            this._div.style["width"] = div.clientWidth + "px";
+        }
+    }
 };
 
 cr.GraphAxis.prototype._initCanvas = function() {
     this._canvas = document.createElement("canvas");
     this._canvas.setAttribute("id", this.isXAxis ? this._div.id + "-x-axis-canvas" : this._div.id + "y-axis-canvas");
-    this._canvas.style["width"] = this._div.clientWidth + "px";
-    this._canvas.style["height"] = this._div.clientHeight + "px";
-    this._canvas.width = this._div.clientWidth;
-    this._canvas.height = this._div.clientHeight;
+
+    var desiredWidth = parseInt(this._div.style["width"]);
+    var desiredHeight = parseInt(this._div.style["height"]);
+    this._canvas.style["width"] = desiredWidth + "px";
+    this._canvas.style["height"] = desiredHeight + "px";
+    this._canvas.width = desiredWidth * this._resolutionScale;
+    this._canvas.height = desiredHeight * this._resolutionScale;
 
     this._canvas.style["position"] = "absolute";
     this._div.appendChild(this._canvas);
@@ -251,12 +296,12 @@ cr.GraphAxis.prototype._initCanvas = function() {
 };
 
 cr.GraphAxis.prototype.resize = function() {
-    this.height = this._div.clientHeight;
-    this.width = this._div.clientWidth;
-    this._canvas.style["width"] = this._div.clientWidth + "px";
-    this._canvas.style["height"] = this._div.clientHeight + "px";
-    this._canvas.height = this._div.clientHeight * this._resolutionScale;
-    this._canvas.width = this._div.clientWidth * this._resolutionScale;
+    this.width = parseInt(this._div.style["width"]);
+    this.height = parseInt(this._div.style["height"]);
+    this._canvas.style["width"] = this.width + "px";
+    this._canvas.style["height"] = this.height + "px";
+    this._canvas.width = this.width * this._resolutionScale;
+    this._canvas.height = this.height * this._resolutionScale;
     this._ctx.scale(1, 1);
     this._ctx.scale(this._resolutionScale, this._resolutionScale);
 
@@ -411,7 +456,6 @@ cr.GraphAxis.prototype.renderTickLabel = function(value, labelOffsetPixels) {
     valueStr = valueStr.replace(re, '') + suffix;
     var position = this.project2D(positionalValue).add(this._basis.x.scale(labelOffsetPixels));
     this._ctx.fillText(valueStr, position._x, position._y);
-
 };
 
 cr.GraphAxis.prototype.zoomAboutY = function(pixelY, scale) {
@@ -499,13 +543,15 @@ cr.GraphAxis.prototype.setRange = function(min, max) {
     if (min &lt; max) {
         this._min = min;
         this._max = max;
+        this.publishAxisChangeEvent();
+        this.grapher.scheduleUpdate();
     }
 };
 
 cr.GraphAxis.prototype.getRange = function() {
     return {
-       min : this._min,
-       max : this._max
+        min : this._min,
+        max : this._max
     };
 };
 
@@ -544,11 +590,33 @@ cr.GraphAxis.prototype.setSize = function(width, height) {
 };
 
 cr.GraphAxis.prototype.setMaxRange = function(min, max) {
-    this.minRange = min;
-    this.maxRange = max;
-    this.hasMinRange = this.hasMaxRange = true;
-    this.publishAxisChangeEvent();
+
+    // Got this from http://stackoverflow.com/a/9716488/703200
+    var isNumeric = function(n) {
+        return !isNaN(parseFloat(n)) &amp;&amp; isFinite(n);
+    };
+
+    if (isNumeric(min) &amp;&amp; min >= cr.GraphAxis.Constants.DEFAULT_MIN_RANGE) {
+        this.minRange = min;
+        this.hasMinRange = true;
+    }
+    else {
+        this.minRange = cr.GraphAxis.Constants.DEFAULT_MIN_RANGE;
+        this.hasMinRange = false;
+    }
+
+    if (isNumeric(max) &amp;&amp; max &lt;= cr.GraphAxis.Constants.DEFAULT_MAX_RANGE) {
+        this.maxRange = max;
+        this.hasMaxRange = true;
+    }
+    else {
+        this.maxRange = cr.GraphAxis.Constants.DEFAULT_MAX_RANGE;
+        this.hasMaxRange = false;
+    }
+
     this.update();
+    this.grapher.scheduleUpdate();
+    this.publishAxisChangeEvent();
 };
 
 cr.GraphAxis.prototype.getId = function() {
@@ -571,6 +639,7 @@ cr.GraphAxis.prototype.removeAxisChangeListener = function(listener) {
 };
 
 cr.GraphAxis.prototype.publishAxisChangeEvent = function() {
+    // create the event
     var event = {
         min : this._min,
         max : this._max,
@@ -579,9 +648,26 @@ cr.GraphAxis.prototype.publishAxisChangeEvent = function() {
         eventId : -1 // deprecated
     };
 
-    for (var i = 0; i &lt; this.axisChangeListeners.length; i++) {
-        this.axisChangeListeners[i](event);
+    // only publish the event if it has changed since last time
+    if (this._previousAxisChangeEvent == null ||
+        this._previousAxisChangeEvent.min != event.min ||
+        this._previousAxisChangeEvent.max != event.max ||
+        this._previousAxisChangeEvent.cursorPosition != event.cursorPosition) {
+        for (var i = 0; i &lt; this.axisChangeListeners.length; i++) {
+            this.axisChangeListeners[i](event);
+        }
     }
+
+    // remember the event
+    this._previousAxisChangeEvent = event;
+};
+
+cr.GraphAxis.prototype.getMax = function() {
+    return this._max;
+};
+
+cr.GraphAxis.prototype.getMin = function() {
+    return this._min;
 };
 </code></pre>
         </article>
@@ -593,13 +679,13 @@ cr.GraphAxis.prototype.publishAxisChangeEvent = function() {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="cr.Basis.html">Basis</a></li><li><a href="cr.GraphAxis.html">GraphAxis</a></li><li><a href="cr.Grapher.html">Grapher</a></li><li><a href="cr.Plot.html">Plot</a></li><li><a href="cr.SeriesPlotContainer.html">SeriesPlotContainer</a></li><li><a href="cr.TileIdx.html">TileIdx</a></li><li><a href="cr.TimeGraphAxis.html">TimeGraphAxis</a></li><li><a href="cr.Uuid.html">Uuid</a></li><li><a href="DataSeriesPlot.html">DataSeriesPlot</a></li><li><a href="DateAxis.html">DateAxis</a></li><li><a href="NumberAxis.html">NumberAxis</a></li><li><a href="PlotContainer.html">PlotContainer</a></li></ul><h3>Namespaces</h3><ul><li><a href="cr.html">cr</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="cr.Basis.html">Basis</a></li><li><a href="cr.GraphAxis.html">GraphAxis</a></li><li><a href="cr.Grapher.html">Grapher</a></li><li><a href="cr.Plot.html">Plot</a></li><li><a href="cr.SeriesPlotContainer.html">SeriesPlotContainer</a></li><li><a href="cr.TileIdx.html">TileIdx</a></li><li><a href="cr.TimeGraphAxis.html">TimeGraphAxis</a></li><li><a href="cr.TouchUtils.html">TouchUtils</a></li><li><a href="cr.Uuid.html">Uuid</a></li><li><a href="DataSeriesPlot.html">DataSeriesPlot</a></li><li><a href="DateAxis.html">DateAxis</a></li><li><a href="NumberAxis.html">NumberAxis</a></li><li><a href="PlotContainer.html">PlotContainer</a></li></ul><h3>Namespaces</h3><ul><li><a href="cr.html">cr</a></li></ul><h3><a href="global.html">Global</a></h3>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Wed Sep 09 2015 23:03:12 GMT-0400 (EDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Tue Sep 22 2015 10:56:14 GMT-0400 (EDT)
 </footer>
 
 <script> prettyPrint(); </script>

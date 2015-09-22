@@ -34,36 +34,67 @@ var cr = cr || {};
 /**
  * @class
  * @constructor
- * @private
+ * @protected
  */
 cr.TouchUtils = function() {
+};
+
+cr.TouchUtils.prototype._getX = function(touch) {
+    // if this is an actual touch event, return the X component of the page position
+    if (touch instanceof Touch) {
+        return touch.pageX;
+    }
+
+    // otherwise, we must be dealing with a copied touch (see cr.TouchUtils.prototype.copyTouches), so just return x
+    return touch.x;
+};
+
+cr.TouchUtils.prototype._getY = function(touch) {
+    // if this is an actual touch event, return the Y component of the page position
+    if (touch instanceof Touch) {
+        return touch.pageY;
+    }
+
+    // otherwise, we must be dealing with a copied touch (see cr.TouchUtils.prototype.copyTouches), so just return y
+    return touch.y;
 };
 
 cr.TouchUtils.prototype.copyTouches = function(touches) {
     var ret = [];
     for (var i = 0; i &lt; touches.length; i++) {
-        ret.push({ clientX : touches[i].clientX, clientY : touches[i].clientY });
+        ret.push({ x : this._getX(touches[i]), y : this._getY(touches[i]) });
     }
     return ret;
 };
 
+// For the given collection of touches, returns the page position centroid
 cr.TouchUtils.prototype.centroid = function(touches) {
-    var ret = { clientX : 0, clientY : 0 };
-    for (var i = 0; i &lt; touches.length; i++) {
-        ret.clientX += touches[i].clientX;
-        ret.clientY += touches[i].clientY;
+    if (touches.length == 1) {
+        return {
+            x : this._getX(touches[0]),
+            y : this._getY(touches[0])
+        };
     }
-    ret.clientX /= touches.length;
-    ret.clientY /= touches.length;
-    return ret;
+    else {
+        var centroid = { x : 0, y : 0 };
+
+        for (var i = 0; i &lt; touches.length; i++) {
+            centroid.x += this._getX(touches[i]);
+            centroid.y += this._getY(touches[i]);
+        }
+        centroid.x /= touches.length;
+        centroid.y /= touches.length;
+
+        return centroid;
+    }
 };
 
 cr.TouchUtils.prototype.xSpan = function(touches) {
-    return Math.abs(touches[0].clientX - touches[1].clientX);
+    return Math.abs(this._getX(touches[0]) - this._getX(touches[1]));
 };
 
 cr.TouchUtils.prototype.ySpan = function(touches) {
-    return Math.abs(touches[0].clientY - touches[1].clientY);
+    return Math.abs(this._getY(touches[0]) - this._getY(touches[1]));
 };
 
 cr.TouchUtils.prototype.isXPinch = function(touches) {
@@ -72,6 +103,36 @@ cr.TouchUtils.prototype.isXPinch = function(touches) {
 
 cr.TouchUtils.prototype.isYPinch = function(touches) {
     return touches.length == 2 &amp;&amp; this.ySpan(touches) > this.xSpan(touches);
+};
+
+// TODO: move this to a DomUtils class or somesuch?
+cr.TouchUtils.getElementPagePosition = function(element) {
+    var position = { x : 0, y : 0 };
+
+    if (element) {
+        do {
+            position.x += element.offsetLeft;
+            position.y += element.offsetTop;
+            element = element.offsetParent;
+        }
+        while (element != null);
+    }
+
+    return position;
+};
+
+// Given a collection of touches, returns an array of touches which only includes touches targeting the element with the given ID.
+cr.TouchUtils.filterTouchesForElement = function(touches, elementId) {
+    var filteredTouches = [];
+    if (touches &amp;&amp; touches.length > 0) {
+        for (var i = 0; i &lt; touches.length; i++) {
+            var touch = touches[i];
+            if (touch.target &amp;&amp; touch.target.id == elementId) {
+                filteredTouches.push(touch);
+            }
+        }
+    }
+    return filteredTouches;
 };
 </code></pre>
         </article>
@@ -83,13 +144,13 @@ cr.TouchUtils.prototype.isYPinch = function(touches) {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="cr.Basis.html">Basis</a></li><li><a href="cr.GraphAxis.html">GraphAxis</a></li><li><a href="cr.Grapher.html">Grapher</a></li><li><a href="cr.Plot.html">Plot</a></li><li><a href="cr.SeriesPlotContainer.html">SeriesPlotContainer</a></li><li><a href="cr.TileIdx.html">TileIdx</a></li><li><a href="cr.TimeGraphAxis.html">TimeGraphAxis</a></li><li><a href="cr.Uuid.html">Uuid</a></li><li><a href="DataSeriesPlot.html">DataSeriesPlot</a></li><li><a href="DateAxis.html">DateAxis</a></li><li><a href="NumberAxis.html">NumberAxis</a></li><li><a href="PlotContainer.html">PlotContainer</a></li></ul><h3>Namespaces</h3><ul><li><a href="cr.html">cr</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="cr.Basis.html">Basis</a></li><li><a href="cr.GraphAxis.html">GraphAxis</a></li><li><a href="cr.Grapher.html">Grapher</a></li><li><a href="cr.Plot.html">Plot</a></li><li><a href="cr.SeriesPlotContainer.html">SeriesPlotContainer</a></li><li><a href="cr.TileIdx.html">TileIdx</a></li><li><a href="cr.TimeGraphAxis.html">TimeGraphAxis</a></li><li><a href="cr.TouchUtils.html">TouchUtils</a></li><li><a href="cr.Uuid.html">Uuid</a></li><li><a href="DataSeriesPlot.html">DataSeriesPlot</a></li><li><a href="DateAxis.html">DateAxis</a></li><li><a href="NumberAxis.html">NumberAxis</a></li><li><a href="PlotContainer.html">PlotContainer</a></li></ul><h3>Namespaces</h3><ul><li><a href="cr.html">cr</a></li></ul><h3><a href="global.html">Global</a></h3>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Wed Sep 09 2015 23:03:12 GMT-0400 (EDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Tue Sep 22 2015 10:56:14 GMT-0400 (EDT)
 </footer>
 
 <script> prettyPrint(); </script>
