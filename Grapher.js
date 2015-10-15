@@ -237,11 +237,12 @@ var DataSeriesPlot = function(datasource, horizontalAxis, verticalAxis, options)
  * @param {string} elementId - the DOM element ID for the container div holding this plot container
  * @param {boolean} ignoreClickEvents - whether to ignore click events, currently ignored
  * @param {cr.Plot[]} plots - array of plots to be added to the plot container
+ * @param {cr.TimeGraphAxis} dateAxis - the date axis
  * @param {object} [options] - additional optional options
  * @return {cr.SeriesPlotContainer}
  */
-var PlotContainer = function(elementId, ignoreClickEvents, plots, options) {
-    return new cr.SeriesPlotContainer(elementId, plots, options)
+var PlotContainer = function(elementId, ignoreClickEvents, plots, dateAxis, options) {
+    return new cr.SeriesPlotContainer(elementId, plots, dateAxis, options)
 };
 
 var SequenceNumber = function() {
