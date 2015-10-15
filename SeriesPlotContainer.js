@@ -10,9 +10,10 @@ var cr = cr || {};
  * @constructor
  * @param {string} elementId - the DOM element ID for the container div holding this plot container
  * @param {cr.Plot[]} plots - array of plots to be added to the plot container
+ * @param {cr.TimeGraphAxis} dateAxis - the date axis
  * @param {object} [options] - additional optional options
  */
-cr.SeriesPlotContainer = function(elementId, plots, options) {
+cr.SeriesPlotContainer = function(elementId, plots, dateAxis, options) {
     options = options || {};
     this.div = document.getElementById(elementId);
     this.div.style["border"] = "1px solid black";
@@ -23,6 +24,7 @@ cr.SeriesPlotContainer = function(elementId, plots, options) {
     this._isAutoscaleEnabled = !!options.isAutoScaleEnabled;
     this._isAutoscalePaddingEnabled = !!options.isAutoscalePaddingEnabled;
     this._touchTargetPagePosition = null;
+    this._xAxis = dateAxis;
 
     this.midnightLine = new cr.MidnightLine();
 
@@ -71,16 +73,6 @@ cr.SeriesPlotContainer = function(elementId, plots, options) {
     canvasElement.bind('touchcancel', this, this.touchend);
 
     this.resize();
-};
-
-cr.SeriesPlotContainer.prototype.getXAxis = function() {
-    var plotKeys = Object.keys(this._plots);
-    if (plotKeys.length == 0) {
-        return null;
-    }
-    else {
-        return this._plots[plotKeys[0]].xAxis;
-    }
 };
 
 cr.SeriesPlotContainer.prototype.getId = function() {
@@ -298,7 +290,7 @@ cr.SeriesPlotContainer.prototype.touchmove = function(e) {
         var dx = touchesCentroid.x - previousTouchesCentroid.x;
         var dy = previousTouchesCentroid.y - touchesCentroid.y;
 
-        var xAxis = that.getXAxis();
+        var xAxis = that._xAxis;
 
         // handle x translation
         xAxis.translatePixels(dx);
@@ -384,7 +376,7 @@ cr.SeriesPlotContainer.prototype.update = function() {
     // for each Y axis, we need to compute the min/max values for all plots associated with the Y axis.
     if (this._isAutoscaleEnabled) {
         var yAxisRanges = {};
-        var timeRange = this.getXAxis().getRange();
+        var timeRange = this._xAxis.getRange();
 
         // For each plot, we'll compute its min/max values and also figure out which Y axis it's associated with. For
         // each Y axis, we keep track of the absolute min/max for all plots
@@ -454,7 +446,7 @@ cr.SeriesPlotContainer.prototype.update = function() {
 };
 
 cr.SeriesPlotContainer.prototype.drawHighlightWebgl = function() {
-    var xAxis = this.getXAxis();
+    var xAxis = this._xAxis;
     var pMatrix = new Float32Array([1, 0, 0, 0,
                                     0, 1, 0, 0,
                                     0, 0, 1, 0,
@@ -485,7 +477,7 @@ cr.SeriesPlotContainer.prototype.drawHighlightWebgl = function() {
 };
 
 cr.SeriesPlotContainer.prototype.drawHighlightCanvas = function() {
-    var xAxis = this.getXAxis();
+    var xAxis = this._xAxis;
     this.ctx.beginPath();
     this.ctx.lineWidth = 2 * this._resolutionScale;
     this.ctx.strokeStyle = "rgb(255,0,0)";
@@ -498,7 +490,7 @@ cr.SeriesPlotContainer.prototype.drawHighlightCanvas = function() {
 };
 
 cr.SeriesPlotContainer.prototype.drawHighlight = function() {
-    var xAxis = this.getXAxis();
+    var xAxis = this._xAxis;
     if (xAxis.cursorX) {
         if (this.cursorX != xAxis.cursorX) {
             this.cursorX = xAxis.cursorX;
@@ -514,7 +506,7 @@ cr.SeriesPlotContainer.prototype.drawHighlight = function() {
 };
 
 cr.SeriesPlotContainer.prototype.drawMidnightLines = function() {
-    var xAxis = this.getXAxis();
+    var xAxis = this._xAxis;
     if (this.midnightLine.shouldDrawMidnightLines(xAxis)) {
         if (this.usewebgl) {
             this.drawMidnightLinesWebgl();
@@ -526,7 +518,7 @@ cr.SeriesPlotContainer.prototype.drawMidnightLines = function() {
 };
 
 cr.SeriesPlotContainer.prototype.drawMidnightLinesWebgl = function() {
-    var xAxis = this.getXAxis();
+    var xAxis = this._xAxis;
     var points = this.midnightLine.getLines(xAxis);
     var gl = this.gl;
     var pMatrix = new Float32Array([2 * this._resolutionScale / gl.canvas.width, 0, 0, 0,
@@ -559,7 +551,7 @@ cr.SeriesPlotContainer.prototype.drawMidnightLinesCanvas = function() {
 
 cr.SeriesPlotContainer.prototype.setHighlightPoints = function() {
     this.highlightedPoints = [];
-    var xAxis = this.getXAxis();
+    var xAxis = this._xAxis;
     var offset = xAxis.pixelToX(2) - xAxis.pixelToX(0);
     for (var plotKey in this._plots) {
         var points = this._plots[plotKey].tlayer.getPointsNearTimeWithinTimeRange(this.cursorX, offset, offset);
@@ -572,7 +564,7 @@ cr.SeriesPlotContainer.prototype.setHighlightPoints = function() {
 };
 
 cr.SeriesPlotContainer.prototype.drawHighlightPointsWebgl = function() {
-    var xAxis = this.getXAxis();
+    var xAxis = this._xAxis;
     var points = [];
     var xscale = 2 / (xAxis._max - xAxis._min);
     var xtranslate = -xAxis._min * xscale - 1;
@@ -610,7 +602,7 @@ cr.SeriesPlotContainer.prototype.drawHighlightPointsWebgl = function() {
 };
 
 cr.SeriesPlotContainer.prototype.drawHighlightPointsCanvas = function() {
-    var xAxis = this.getXAxis();
+    var xAxis = this._xAxis;
     var points = [];
 
     var xOffset = -xAxis._min;
@@ -637,7 +629,7 @@ cr.SeriesPlotContainer.prototype.drawHighlightPointsCanvas = function() {
 };
 
 cr.SeriesPlotContainer.prototype.drawHighlightPoints = function() {
-    var xAxis = this.getXAxis();
+    var xAxis = this._xAxis;
     if (xAxis.cursorX) {
         if (this.usewebgl) {
             this.drawHighlightPointsWebgl();
@@ -649,7 +641,7 @@ cr.SeriesPlotContainer.prototype.drawHighlightPoints = function() {
 };
 
 cr.SeriesPlotContainer.prototype.drawMouseoverHighlightPointWebgl = function() {
-    var xAxis = this.getXAxis();
+    var xAxis = this._xAxis;
     if (this.mouseoverHighlightPoint) {
         var points = [];
         var point = this.mouseoverHighlightPoint;
