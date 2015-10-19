@@ -42,7 +42,7 @@ cr.TileLoader.prototype.load = function(tileIdx, callback) {
                          function(json) {
 
                              if (typeof json === 'undefined' || json == null) {
-                                 callback(new Error("Datasource loaded undefined or null JSON for tile [" + (this._tileidx.toString()) + "]"));
+                                 callback(new Error("Datasource loaded undefined or null JSON for tile [" + (tileIdx.toString()) + "]"));
                              }
                              else {
                                  // if it's a string, first parse it into JSON
@@ -51,7 +51,7 @@ cr.TileLoader.prototype.load = function(tileIdx, callback) {
                                          json = JSON.parse(json);
                                      }
                                      catch (e) {
-                                         return callback(new Error("Datasource loaded invalid JSON string for tile [" + (this._tileidx.toString()) + "]: " + e));
+                                         return callback(new Error("Datasource loaded invalid JSON string for tile [" + (tileIdx.toString()) + "]: " + e));
                                      }
                                  }
 
@@ -64,12 +64,12 @@ cr.TileLoader.prototype.load = function(tileIdx, callback) {
                                      callback(null, json);
                                  }
                                  else {
-                                     return callback(new Error("Datasource loaded invalid JSON object for tile [" + (this._tileidx.toString()) + "]: "));
+                                     return callback(new Error("Datasource loaded invalid JSON object for tile [" + (tileIdx.toString()) + "]: "));
                                  }
                              }
                          });
     }
     catch (e) {
-        return callback(new Error("Error while calling datasource function for tile [" + (this._tileidx.toString()) + "]: " + e));
+        return callback(new Error("Error while calling datasource function for tile [" + (tileIdx.toString()) + "]: " + e));
     }
 };
