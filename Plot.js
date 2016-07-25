@@ -13,6 +13,7 @@ var cr = cr || {};
  * @param {object} [options] - additional options, currently unused
  */
 cr.Plot = function(datasource, xAxis, yAxis, options) {
+    var that = this;
     //    this.highlight = new cr.Highlight(plotDiv);
 
     //    this.cursor = new cr.Cursor(plotDiv);
@@ -45,6 +46,28 @@ cr.Plot = function(datasource, xAxis, yAxis, options) {
     this.dataPointListeners = [];
     this._publishedPoint = null;
     this._resolutionScale = window.devicePixelRatio || 1;
+    // Default styles
+    this._styles = {
+        lineStyle : {
+          type: "line",
+          show : true,
+          lineWidth : 1,
+          color : {r: 0, g: 0, b: 0}
+        },
+        pointStyles : [
+          {
+            type : "circle",
+            show : true,
+            lineWidth : 1,
+            radius : 3,
+            color : {r: 0, g: 0, b: 0},
+            fill : true,
+            fillColor : {r: 0, g: 0, b: 0}
+          }
+        ]
+      };
+      // Overwrite with user defined style options
+      this.setStyle(options.style);
 };
 
 cr.Plot.prototype.limitView = function() {
@@ -75,11 +98,13 @@ cr.Plot.prototype.getView = function() {
         xmax : this.xAxis._max,
         ymin : this.yAxis._min,
         ymax : this.yAxis._max,
-    }
+    };
 };
 
 cr.Plot.prototype.update = function() {
-    this.tlayer.draw(this.getView());
+    var options = {};
+    options.styles = this._styles;
+    this.tlayer.draw(this.getView(), options);
     this._needsUpdate = this.tlayer._needsUpdate;
 };
 
@@ -112,7 +137,7 @@ cr.Plot.prototype.getClosestDataPointToTimeWithinWindow = function(timeInSecs, n
             dateString : cr.DateTimeFormatter.format(point.x * 1000),    // multiply by 1000 to get millis
             valueString : cr.ValueFormatter.format(point.y),
             comment : null
-        }
+        };
     }
     return dataPoint;
 };
@@ -172,4 +197,47 @@ cr.Plot.prototype.publishDataPoint = function(point) {
             }
         }
     }
+};
+
+// Set the plot style (line/point color, width, etc)
+cr.Plot.prototype.setStyle = function(styleOptions) {
+  var that = this;
+  if (styleOptions && styleOptions.styles) {
+    styleOptions.styles.forEach(function(style) {
+      console.log(style);
+      // Color given as hex string
+      if (style.color && style.color.indexOf("#") == 0) {
+        var rgbColor = cr.Util.hexToRgb(style.color);
+        if (rgbColor) style.color = rgbColor;
+      // Color given as rgb string
+      } else if (style.color && style.color.indexOf("rgb") == 0) {
+        var rgbStringArray = style.color.split("(")[1].split(")")[0].split(",");
+        if (rgbStringArray && rgbStringArray.length == 3) style.color = {r: rgbStringArray[0], g: rgbStringArray[1], b: rgbStringArray[2]};
+      // Color given as word
+      } else if (style.color && typeof(style.color) === "string") {
+        var rgbColor = cr.Util.colorMap[style.color].rgb;
+        if (rgbColor) style.color = rgbColor;
+      }
+      // If none of the above, then use default color specified above.
+
+      if (style.type == "line") {
+        that._styles.lineStyle = style;
+      } else if (style.type == "circle") {
+        that._styles.pointStyles[0] = style;
+        // If no fill color specified, use the same color as the outer color
+        if (!style.fillColor)
+          that._styles.pointStyles[0].fillColor = that._styles.pointStyles[0].color;
+        // Sanity check the circle border width
+        if (style.lineWidth > style.radius)
+          that.lineWidth = 1;
+      } else {
+        that._styles.pointStyles.push(style);
+      }
+    });
+  }
+};
+
+// Get the plot style
+cr.Plot.prototype.getStyle = function() {
+    return this._styles;
 };

@@ -379,7 +379,7 @@ cr.GraphAxis.prototype.renderTicks = function(offsetPixels, tickSize, tickWidthP
     while (tick !== false) {
         this.renderTick(tick, offsetPixels + tickWidthPixels);
         if (drawLabels) {
-            this.renderTickLabel(tick, labelOffsetPixels)
+            this.renderTickLabel(tick, labelOffsetPixels);
         }
         tick = it.next();
     }

@@ -66,7 +66,7 @@ cr.Grapher.prototype.setAnimate = function(animate) {
     this._isAnimated = !!animate;
 
     if (this._isAnimated) {
-        console.log('scheduling update');
+        //console.log('scheduling update');
         this.scheduleUpdate();
     }
 };
@@ -242,7 +242,7 @@ var DataSeriesPlot = function(datasource, horizontalAxis, verticalAxis, options)
  * @return {cr.SeriesPlotContainer}
  */
 var PlotContainer = function(elementId, ignoreClickEvents, plots, dateAxis, options) {
-    return new cr.SeriesPlotContainer(elementId, plots, dateAxis, options)
+    return new cr.SeriesPlotContainer(elementId, plots, dateAxis, options);
 };
 
 var SequenceNumber = function() {
