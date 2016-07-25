@@ -11,7 +11,7 @@ clean:
 	rm -f ${MINIFY_PATH} ${CONCAT_PATH}
 concat:
 	[ -d ${BUILD} ] || mkdir ${BUILD}
-	cat Polyfill.js Vector2.js Basis.js LabelFormatter.js TickGenerator.js \
+	cat Util.js Polyfill.js Vector2.js Basis.js LabelFormatter.js TickGenerator.js \
 	IterableTickGenerator.js GraphAxis.js TimeGraphAxis.js Glb.js TileIdx.js \
 	TileLoader.js TileView.js DataStoreTile.js CanvasTile.js \
 	DataStoreTileLayer.js Shaders.js TouchUtils.js Plot.js \

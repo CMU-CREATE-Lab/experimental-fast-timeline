@@ -13,9 +13,10 @@ var cr = cr || {};
  * @param {cr.Glb} glb
  * @param ctx - canvas 2D context
  */
-cr.DataStoreTileLayer = function(datasource, glb, ctx) {
+cr.DataStoreTileLayer = function(datasource, glb, ctx, usewebgl) {
     this.glb = glb;
     this.ctx = ctx;
+    this.usewebgl = usewebgl;
     var that = this;
 
     function createTile(ti, bounds) {
@@ -31,7 +32,7 @@ cr.DataStoreTileLayer = function(datasource, glb, ctx) {
         createTile : createTile,
         deleteTile : function(tile) {
         },
-        updateTile : (that.glb && that.useWebgl) ? cr.DataStoreTile.update : cr.CanvasTile.update
+        updateTile : (that.glb && that.usewebgl) ? cr.DataStoreTile.update : cr.CanvasTile.update
     });
 
     this.destroy = function() {
@@ -39,17 +40,17 @@ cr.DataStoreTileLayer = function(datasource, glb, ctx) {
     };
 };
 
-cr.DataStoreTileLayer.prototype.draw = function(view) {
+cr.DataStoreTileLayer.prototype.draw = function(view, options) {
     if (this.glb && this.usewebgl) {
-        this.drawWebgl(view);
+        this.drawWebgl(view, options);
     }
     else {
-        this.drawCanvas(view);
+        this.drawCanvas(view, options);
     }
     this._needsUpdate = this._tileView._needsUpdate;
 };
 
-cr.DataStoreTileLayer.prototype.drawWebgl = function(view) {
+cr.DataStoreTileLayer.prototype.drawWebgl = function(view, options) {
     var pMatrix = new Float32Array([1, 0, 0, 0,
                                     0, 1, 0, 0,
                                     0, 0, 1, 0,
@@ -63,13 +64,12 @@ cr.DataStoreTileLayer.prototype.drawWebgl = function(view) {
     pMatrix[12] = xtranslate;
     pMatrix[5] = yscale;
     pMatrix[13] = ytranslate;
-
     this._tileView.setView({ min : view.xmin, max : view.xmax });
     //    this._tileView.update(pMatrix);
-    this._tileView.update(view);
+    this._tileView.update(view, options);
 };
 
-cr.DataStoreTileLayer.prototype.drawCanvas = function(view) {
+cr.DataStoreTileLayer.prototype.drawCanvas = function(view, options) {
     //this.ctx.clearRect (0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
 
     var transform = {};
@@ -79,13 +79,12 @@ cr.DataStoreTileLayer.prototype.drawCanvas = function(view) {
     transform.yScale = this.ctx.canvas.height / (view.ymin - view.ymax);
 
     this._tileView.setView({ min : view.xmin, max : view.xmax });
-    this._tileView.update(transform);
+    this._tileView.update(transform, options);
 
 };
 
 cr.DataStoreTileLayer.prototype.search = function(bbox) {
     var keys = Object.keys(this._tileView._tiles).sort();
-    var matches = [];
     for (var i = 0; i < keys.length; i++) {
         var offset = this._tileView._tiles[keys[i]].offset || 0;
         var data = this._tileView._tiles[keys[i]]._data;

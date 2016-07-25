@@ -8,7 +8,7 @@ cr.MidnightLine = function() {
     this.STROKE_WIDTH = 0.5;
     this.STROKE_COLOR = "silver";
     this.MIN_SPACING = 20;
-}
+};
 
 cr.MidnightLine.prototype.getLines = function(xAxis) {
     var points = [];
@@ -28,16 +28,15 @@ cr.MidnightLine.prototype.getLines = function(xAxis) {
 
     }
     return points;
-}
+};
 
 cr.MidnightLine.prototype.shouldDrawMidnightLines = function(xAxis) {
 	var min = xAxis.getMin();
 	var oneDayLater = min + this.SECONDS_PER_DAY;
-	var dayWidth = xAxis.project2D(oneDayLater).getX()
-        - xAxis.project2D(min).getX();
+	var dayWidth = xAxis.project2D(oneDayLater).getX() - xAxis.project2D(min).getX();
 
 	return dayWidth >= this.MIN_SPACING;
-}
+};
 
 cr.MidnightLine.prototype.getNextDay = function(time) {
     var timeDate = new Date(time * 1000);
@@ -51,4 +50,4 @@ cr.MidnightLine.prototype.getNextDay = function(time) {
     timeDate.setSeconds(0);
 
     return timeDate.getTime() / 1000; // Convert milliseconds to seconds
-}
+};

@@ -14,6 +14,7 @@ var cr = cr || {};
  * @param {object} [options] - additional optional options
  */
 cr.SeriesPlotContainer = function(elementId, plots, dateAxis, options) {
+    var that = this;
     options = options || {};
     this.div = document.getElementById(elementId);
     this.div.style["border"] = "1px solid black";
@@ -36,7 +37,7 @@ cr.SeriesPlotContainer = function(elementId, plots, dateAxis, options) {
 
     this._initCanvases();
     try {
-        console.log("Using webgl...");
+        //console.log("Using webgl...");
         this.gl = this.canvas3d.getContext('experimental-webgl');
         this.glb = new cr.Glb(this.gl);
         this.pointProgram = this.glb.programFromSources(cr.Shaders.PointVertexShader, cr.Shaders.PointFragmentShader);
@@ -47,7 +48,7 @@ cr.SeriesPlotContainer = function(elementId, plots, dateAxis, options) {
         this.gl = null;
         this.glb = null;
         this.usewebgl = false;
-        console.log("experimental-webgl unsupported");
+        //console.log("experimental-webgl unsupported");
     }
 
     if (this.grapher == null) {
@@ -454,8 +455,6 @@ cr.SeriesPlotContainer.prototype.drawHighlightWebgl = function() {
 
     var xscale = 2 / (xAxis._max - xAxis._min);
     var xtranslate = -xAxis._min * xscale - 1;
-    var yscale = 2;
-    var ytranslate = 1;
     var gl = this.gl;
     gl.lineWidth(2 * this._resolutionScale);
     gl.useProgram(this.lineProgram);
@@ -712,7 +711,7 @@ cr.SeriesPlotContainer.prototype.resize = function() {
 cr.SeriesPlotContainer.prototype.addPlot = function(plot) {
     var plotKey = plot.getId();
     this._plots[plotKey] = plot;
-    this._plots[plotKey].tlayer = new cr.DataStoreTileLayer(plot.datasource, this.glb, this.ctx);
+    this._plots[plotKey].tlayer = new cr.DataStoreTileLayer(plot.datasource, this.glb, this.ctx, this.usewebgl);
     this._plots[plotKey].tlayer.usewebgl = this.usewebgl;
 };
 

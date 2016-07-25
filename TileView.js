@@ -41,7 +41,7 @@ cr.TileView = function(settings) {
     this._tilecache = {};
     this._readyList = [];
 
-    console.log(this.toString());
+    //console.log(this.toString());
 };
 
 cr.TileView.prototype.toString = function() {
@@ -69,7 +69,7 @@ cr.TileView.prototype._tileidxAt = function(level, offset) {
 cr.TileView.prototype._computeVisibleTileRange = function(level, view) {
     var tilemin = this._tileidxAt(level, this._computeOffset(view.min, level));
     var tilemax = this._tileidxAt(level, this._computeOffset(view.max, level));
-    return { min : tilemin, max : tilemax }
+    return { min : tilemin, max : tilemax };
 };
 
 cr.TileView.prototype._isTileVisible = function(tileidx, view) {
@@ -97,7 +97,6 @@ cr.TileView.prototype._destroy = function() {
     var keys = Object.keys(this._tiles);
     for (var i = 0; i < keys.length; i++) {
         var key = keys[i];
-        var tile = this._tiles[key];
         this._deleteTile(this._tiles[key]);
         delete this._tiles[key];
     }
@@ -231,7 +230,7 @@ cr.TileView.prototype.setView = function(view) {
     }
     status = status.join(' ');
     if (!this._lastStatus || status.replace(/[\-\+]/g, '') != this._lastStatus.replace(/[\-\+]/g, '')) {
-        console.log('setView: ' + status);
+        //console.log('setView: ' + status);
         this._lastStatus = status;
     }
     this._needsUpdate = false;
@@ -250,11 +249,11 @@ cr.TileView.prototype.setView = function(view) {
 
 // Return ordered list of tiles to draw, from low-res to high res.  Draw in that order
 // so that high-res can cover low-res, for opaque tiles.
-cr.TileView.prototype.update = function(transform) {
+cr.TileView.prototype.update = function(transform, options) {
     var keys = Object.keys(this._tiles).sort();
     var tiles = [];
     for (var i = 0; i < keys.length; i++) {
         tiles.push(this._tiles[keys[i]]);
     }
-    this._updateTileCallback(tiles, transform);
+    this._updateTileCallback(tiles, transform, options);
 };

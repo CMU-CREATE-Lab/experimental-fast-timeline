@@ -44,7 +44,7 @@ cr.DataStoreTile = function(glb, tileidx, datasource) {
             }
 
             self.offset = offset;
-            self._setData(new Float32Array(data))
+            self._setData(new Float32Array(data));
         }
     });
 };
@@ -66,7 +66,7 @@ cr.DataStoreTile.prototype._setData = function(arrayBuffer) {
 };
 
 /**
- * Returns wether the tile is ready.
+ * Returns whether the tile is ready.
  *
  * @return {boolean}
  */
@@ -76,13 +76,12 @@ cr.DataStoreTile.prototype.isReady = function() {
 
 cr.DataStoreTile.prototype.delete = function() {
     // TODO
-    console.log('delete: ' + this._tileidx.toString());
+    //console.log('delete: ' + this._tileidx.toString());
 };
 
-cr.DataStoreTile.prototype.draw = function(transform) {
+cr.DataStoreTile.prototype.draw = function(transform, options) {
     var gl = this.gl;
     if (this._ready) {
-        gl.lineWidth(1);
         gl.useProgram(this.program);
         var pMatrix = new Float32Array([1, 0, 0, 0,
                                         0, 1, 0, 0,
@@ -98,40 +97,60 @@ cr.DataStoreTile.prototype.draw = function(transform) {
         pMatrix[5] = yscale;
         pMatrix[13] = ytranslate;
 
-        var matrixLoc = gl.getUniformLocation(this.program, 'u_pMatrix');
-        //    gl.uniformMatrix4fv(matrixLoc, false, transform);
-        gl.uniformMatrix4fv(matrixLoc, false, pMatrix);
+        //// Draw lines ////
 
-        gl.bindBuffer(gl.ARRAY_BUFFER, this._arrayBuffer);
+        var lineStyle = options.styles.lineStyle;
 
-        var attributeLoc = gl.getAttribLocation(this.program, 'a_position');
-        gl.enableVertexAttribArray(attributeLoc);
-        gl.vertexAttribPointer(attributeLoc, 2, gl.FLOAT, false, 16, 0);
+        if (lineStyle.show) {
+          // Line thickness
+          // Cannot be larger than 1px on Windows because of limitations of ANGLE webgl implementation
+          // https://bugs.chromium.org/p/chromium/issues/detail?id=60124
+          gl.lineWidth(lineStyle.lineWidth);
 
-        var colorLoc = gl.getUniformLocation(this.program, 'u_color');
-        gl.uniform4f(colorLoc, 0, 0, 0, 1);
+          var matrixLoc = gl.getUniformLocation(this.program, 'u_pMatrix');
+          //    gl.uniformMatrix4fv(matrixLoc, false, transform);
 
-        gl.drawArrays(gl.LINE_STRIP, 0, this._pointCount);
+          gl.uniformMatrix4fv(matrixLoc, false, pMatrix);
+          gl.bindBuffer(gl.ARRAY_BUFFER, this._arrayBuffer);
 
-        gl.useProgram(this.pointProgram);
+          var attributeLoc = gl.getAttribLocation(this.program, 'a_position');
+          gl.enableVertexAttribArray(attributeLoc);
+          gl.vertexAttribPointer(attributeLoc, 2, gl.FLOAT, false, 16, 0);
 
-        var matrixLoc = gl.getUniformLocation(this.pointProgram, 'u_pMatrix');
-        //gl.uniformMatrix4fv(matrixLoc, false, transform);
-        gl.uniformMatrix4fv(matrixLoc, false, pMatrix);
+          var colorLoc = gl.getUniformLocation(this.program, 'u_color');
+          // Line color
+          gl.uniform4f(colorLoc, lineStyle.color.r / 255, lineStyle.color.g / 255, lineStyle.color.b / 255, 1);
 
-        gl.bindBuffer(gl.ARRAY_BUFFER, this._arrayBuffer);
+          gl.drawArrays(gl.LINE_STRIP, 0, this._pointCount);
+        }
 
-        var attributeLoc = gl.getAttribLocation(this.pointProgram, 'a_position');
-        gl.enableVertexAttribArray(attributeLoc);
-        gl.vertexAttribPointer(attributeLoc, 2, gl.FLOAT, false, 16, 0);
+        //// Draw points ////
 
-        var colorLoc = gl.getUniformLocation(this.pointProgram, 'u_color');
-        gl.uniform4f(colorLoc, 0, 0, 0, 1);
+        // TODO: Only circles currently supported, which is always the first point style
+        var pointStyle = options.styles.pointStyles[0];
 
-        var sizeLoc = gl.getUniformLocation(this.pointProgram, 'u_size');
-        gl.uniform1f(sizeLoc, 4 * this._resolutionScale);
+        if (pointStyle.show) {
+          gl.useProgram(this.pointProgram);
 
-        gl.drawArrays(gl.POINTS, 0, this._pointCount);
+          var matrixLoc = gl.getUniformLocation(this.pointProgram, 'u_pMatrix');
+          //    gl.uniformMatrix4fv(matrixLoc, false, transform);
+          gl.uniformMatrix4fv(matrixLoc, false, pMatrix);
+
+          gl.bindBuffer(gl.ARRAY_BUFFER, this._arrayBuffer);
+
+          var attributeLoc = gl.getAttribLocation(this.pointProgram, 'a_position');
+          gl.enableVertexAttribArray(attributeLoc);
+          gl.vertexAttribPointer(attributeLoc, 2, gl.FLOAT, false, 16, 0);
+
+          var colorLoc = gl.getUniformLocation(this.pointProgram, 'u_color');
+          gl.uniform4f(colorLoc, pointStyle.color.r / 255, pointStyle.color.g / 255, pointStyle.color.b / 255, 1);
+
+          // Point size
+          var sizeLoc = gl.getUniformLocation(this.pointProgram, 'u_size');
+          gl.uniform1f(sizeLoc, pointStyle.radius * 2 * this._resolutionScale);
+
+          gl.drawArrays(gl.POINTS, 0, this._pointCount);
+        }
     }
 };
 
@@ -141,8 +160,8 @@ cr.DataStoreTile.prototype.draw = function(transform) {
  * @param tiles
  * @param transform
  */
-cr.DataStoreTile.update = function(tiles, transform) {
+cr.DataStoreTile.update = function(tiles, transform, options) {
     for (var i = 0; i < tiles.length; i++) {
-        tiles[i].draw(transform);
+        tiles[i].draw(transform, options);
     }
 };

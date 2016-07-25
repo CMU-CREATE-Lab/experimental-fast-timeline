@@ -49,7 +49,7 @@ cr.Glb.prototype.
     }
     var program = cache[fragmentSource];
     if (!program) {
-        console.log('Creating shader program');
+        //console.log('Creating shader program');
         program = cache[fragmentSource] = this.gl.createProgram();
         this.gl.attachShader(program,
                              this._shaderFromSource(this.gl.VERTEX_SHADER, vertexSource));

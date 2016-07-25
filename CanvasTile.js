@@ -58,30 +58,44 @@ cr.CanvasTile.prototype.isReady = function() {
 
 cr.CanvasTile.prototype.delete = function() {
     // TODO
-    console.log('delete: ' + this._tileidx.toString());
+    //console.log('delete: ' + this._tileidx.toString());
 };
 
-cr.CanvasTile.prototype.draw = function(transform) {
+cr.CanvasTile.prototype.draw = function(transform, options) {
     if (this._ready) {
-
-        for (var i = 0; i <= this._pointCount * 4; i += 2) {
-            this.ctx.beginPath();
-            this.ctx.strokeStyle = 'black';
-            this.ctx.lineWidth = 1;
-            this.ctx.moveTo(transform.xScale * (this._data[i * 2 + 0] + transform.xOffset),
-                            transform.yScale * (this._data[i * 2 + 1] + transform.yOffset));
-            this.ctx.lineTo(transform.xScale * (this._data[i * 2 + 4] + transform.xOffset),
-                            transform.yScale * (this._data[i * 2 + 5] + transform.yOffset));
-            this.ctx.stroke();
+        //// Line //
+        var lineStyle = options.styles.lineStyle;
+        if (lineStyle.show) {
+          this.ctx.strokeStyle = 'rgb(' + lineStyle.color.r + ',' + lineStyle.color.g + ',' + lineStyle.color.b + ')';
+          this.ctx.lineWidth = lineStyle.lineWidth;
+          for (var i = 0; i <= this._pointCount * 4; i += 2) {
+              this.ctx.beginPath();
+              this.ctx.moveTo(transform.xScale * (this._data[i * 2 + 0] + transform.xOffset),
+                              transform.yScale * (this._data[i * 2 + 1] + transform.yOffset));
+              this.ctx.lineTo(transform.xScale * (this._data[i * 2 + 4] + transform.xOffset),
+                              transform.yScale * (this._data[i * 2 + 5] + transform.yOffset));
+              this.ctx.stroke();
+          }
         }
 
-        for (var i = 0; i <= this._pointCount * 4; i += 4) {
-            this.ctx.beginPath();
-            this.ctx.fillStyle = "black";
-            this.ctx.arc(transform.xScale * (this._data[i + 0] + transform.xOffset),
-                         transform.yScale * (this._data[i + 1] + transform.yOffset),
-                         2 * this._resolutionScale, 0, Math.PI * 2, true); // Outer circle
-            this.ctx.fill();
+        //// Point //
+        // TODO: Only circles currently supported, which is always the first point style
+        var pointStyle = options.styles.pointStyles[0];
+        if (pointStyle.show) {
+          this.ctx.lineWidth = pointStyle.lineWidth;
+          var radius = pointStyle.radius - (pointStyle.lineWidth / 2);
+          this.ctx.strokeStyle = 'rgb(' + pointStyle.color.r + ',' + pointStyle.color.g + ',' + pointStyle.color.b + ')';
+          this.ctx.fillStyle = 'rgb(' + pointStyle.fillColor.r + ',' + pointStyle.fillColor.g + ',' + pointStyle.fillColor.b + ')';
+          for (var i = 0; i <= this._pointCount * 4; i += 4) {
+              this.ctx.beginPath();
+              this.ctx.arc(transform.xScale * (this._data[i + 0] + transform.xOffset),
+                           transform.yScale * (this._data[i + 1] + transform.yOffset),
+                           radius * this._resolutionScale, 0, Math.PI * 2, true); // Outer circle
+              if (pointStyle.fill) {
+                this.ctx.fill();
+              }
+              this.ctx.stroke();
+          }
         }
     }
 };
@@ -92,8 +106,8 @@ cr.CanvasTile.prototype.draw = function(transform) {
  * @param tiles
  * @param transform
  */
-cr.CanvasTile.update = function(tiles, transform) {
+cr.CanvasTile.update = function(tiles, transform, options) {
     for (var i = 0; i < tiles.length; i++) {
-        tiles[i].draw(transform);
+        tiles[i].draw(transform, options);
     }
 };
