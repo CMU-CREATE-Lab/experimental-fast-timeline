@@ -204,7 +204,6 @@ cr.Plot.prototype.setStyle = function(styleOptions) {
   var that = this;
   if (styleOptions && styleOptions.styles) {
     styleOptions.styles.forEach(function(style) {
-      console.log(style);
       // Color given as hex string
       if (style.color && style.color.indexOf("#") == 0) {
         var rgbColor = cr.Util.hexToRgb(style.color);
