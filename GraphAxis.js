@@ -141,11 +141,13 @@ cr.GraphAxis.prototype.mouseup = function(e) {
 
 cr.GraphAxis.prototype.mousewheel = function(e) {
     var that = e.data;
+
+    var deltaY = cr.Util.normalizeScrollDelta(e) * 100;
     if (that.isXAxis) {
-        that.zoomAboutX(e.offsetX, Math.pow(1.0005, -e.originalEvent.deltaY));
+        that.zoomAboutX(e.offsetX, Math.pow(1.0005, deltaY));
     }
     else {
-        that.zoomAboutY(e.offsetY, Math.pow(1.0005, -e.originalEvent.deltaY));
+        that.zoomAboutY(e.offsetY, Math.pow(1.0005, deltaY));
     }
     return false;
 };

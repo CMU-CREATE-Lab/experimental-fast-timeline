@@ -218,10 +218,11 @@ cr.SeriesPlotContainer.prototype.mouseup = function(e) {
 cr.SeriesPlotContainer.prototype.mousewheel = function(e) {
     var that = e.data;
 
+    var deltaY = cr.Util.normalizeScrollDelta(e) * 100;
     Object.keys(that._plots).forEach(function(plotKey) {
         var plot = that._plots[plotKey];
-        plot.xAxis.zoomAboutX(e.offsetX, Math.pow(1.0005, -e.originalEvent.deltaY));
-        plot.yAxis.zoomAboutY(e.offsetY, Math.pow(1.0005, -e.originalEvent.deltaY));
+        plot.xAxis.zoomAboutX(e.offsetX, Math.pow(1.0005, deltaY));
+        plot.yAxis.zoomAboutY(e.offsetY, Math.pow(1.0005, deltaY));
     });
     return false;
 };
