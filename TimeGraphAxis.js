@@ -495,6 +495,7 @@ cr.TimeGraphAxis.prototype.setCursorPosition = function(x) {
         this.cursorX = x;
     }
     this.publishAxisChangeEvent();
+    this.grapher.scheduleUpdate();
 };
 
 cr.TimeGraphAxis.prototype.getCursorPosition = function() {
