@@ -50,7 +50,11 @@ cr.TimeLabelFormatter.prototype.format = function(time) {
     var whole = Math.floor(time + (.5 / 1000000.));
     var microseconds = Math.round(1000000 * (time - whole));
     var d = new Date((whole * 1000.));
-    var ret = String('00' + d.getHours()).slice(-2) +
+    var fullHour = d.getHours();
+    var suffix = fullHour < 12 ? "AM" : "PM";
+    var hours = fullHour < 12 ? fullHour : fullHour - 12;
+    if (hours == 0) hours = 12;
+    var ret = String('00' + hours).slice(-2) +
               ':' + String('00' + d.getMinutes()).slice(-2);
     var seconds = d.getSeconds();
     if (seconds != 0 || microseconds != 0) {
@@ -59,6 +63,7 @@ cr.TimeLabelFormatter.prototype.format = function(time) {
             ret += '.' + microseconds;
         }
     }
+    ret += suffix;
     return ret;
 };
 
