@@ -45,6 +45,8 @@ cr.TimeGraphAxis = function(domElement, min, max, basis, isXAxis) {
 
     this.showCursor = false;
     this.cursorX = null;
+
+    this.isTwelveHour = false;
 };
 
 cr.TimeGraphAxis.prototype = Object.create(cr.GraphAxis.prototype);
@@ -110,7 +112,7 @@ cr.TimeGraphAxis.prototype.paint = function() {
 
             this.renderLabels(0, timeMajorTickSize,
                               this.createDateTickGenerator(timeMajorTickSize),
-                              0, new cr.TimeLabelFormatter());
+                              0, new cr.TimeLabelFormatter(this.isTwelveHour));
 
             var timeMinorTickSize = this.computeTimeMinorTickSize(timeMinorPixels, timeMajorTickSize);
 
