@@ -43,7 +43,8 @@ cr.LabelFormatter.VERBOSE_MONTHS = [
     'September', 'October', 'November', 'December'
 ];
 
-cr.TimeLabelFormatter = function() {
+cr.TimeLabelFormatter = function(isTwelveHour) {
+    this.isTwelveHour = isTwelveHour;
 };
 
 cr.TimeLabelFormatter.prototype.format = function(time) {
@@ -51,9 +52,16 @@ cr.TimeLabelFormatter.prototype.format = function(time) {
     var microseconds = Math.round(1000000 * (time - whole));
     var d = new Date((whole * 1000.));
     var fullHour = d.getHours();
-    var suffix = fullHour < 12 ? "AM" : "PM";
-    var hours = fullHour < 12 ? fullHour : fullHour - 12;
-    if (hours == 0) hours = 12;
+    var suffix, hours;
+    if(this.isTwelveHour) {
+      suffix = fullHour < 12 ? "AM" : "PM";
+      hours = fullHour < 12 ? fullHour : fullHour - 12;
+      if (hours == 0) hours = 12;
+    }
+    else {
+      suffix = "";
+      hours = fullHour;
+    }
     var ret = String('00' + hours).slice(-2) +
               ':' + String('00' + d.getMinutes()).slice(-2);
     var seconds = d.getSeconds();
