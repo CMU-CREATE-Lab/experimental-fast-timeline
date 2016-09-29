@@ -1,5 +1,5 @@
 CONCAT_PATH=build/grapher.concat.js
-MINIFY_PATH=../bay-area-monitoring/assets/grapher.min.js
+MINIFY_PATH=build/grapher.min.js
 TEMP_PATH=build/tmp.js
 CLOSURE=closure-compiler/compiler.jar
 BUILD=build
