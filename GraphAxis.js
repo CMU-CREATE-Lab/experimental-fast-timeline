@@ -602,12 +602,7 @@ cr.GraphAxis.prototype.setSize = function(width, height) {
 
 cr.GraphAxis.prototype.setMaxRange = function(min, max) {
 
-    // Got this from http://stackoverflow.com/a/9716488/703200
-    var isNumeric = function(n) {
-        return !isNaN(parseFloat(n)) && isFinite(n);
-    };
-
-    if (isNumeric(min) && min >= cr.GraphAxis.Constants.DEFAULT_MIN_RANGE && (!this.hasMinConstraint || min <= this.minConstraint)) {
+    if (cr.Util.isNumeric(min) && min >= cr.GraphAxis.Constants.DEFAULT_MIN_RANGE && (!this.hasMinConstraint || min <= this.minConstraint)) {
         this.minRange = min;
         this.hasMinRange = true;
     }
@@ -616,7 +611,7 @@ cr.GraphAxis.prototype.setMaxRange = function(min, max) {
         this.hasMinRange = false;
     }
 
-    if (isNumeric(max) && max <= cr.GraphAxis.Constants.DEFAULT_MAX_RANGE && (!this.hasMaxConstraint || max >= this.maxConstraint)) {
+    if (cr.Util.isNumeric(max) && max <= cr.GraphAxis.Constants.DEFAULT_MAX_RANGE && (!this.hasMaxConstraint || max >= this.maxConstraint)) {
         this.maxRange = max;
         this.hasMaxRange = true;
     }
@@ -632,12 +627,7 @@ cr.GraphAxis.prototype.setMaxRange = function(min, max) {
 
 cr.GraphAxis.prototype.setMinRangeConstraints = function(min, max) {
 
-    // Got this from http://stackoverflow.com/a/9716488/703200
-    var isNumeric = function(n) {
-        return !isNaN(parseFloat(n)) && isFinite(n);
-    };
-
-    if (isNumeric(min) && min >= this.minRange) {
+    if (cr.Util.isNumeric(min) && min >= this.minRange) {
         this.minConstraint = min;
         this.hasMinConstraint = true;
     }
@@ -646,7 +636,7 @@ cr.GraphAxis.prototype.setMinRangeConstraints = function(min, max) {
         this.hasMinConstraint = false;
     }
 
-    if (isNumeric(max) && max <= this.maxRange) {
+    if (cr.Util.isNumeric(max) && max <= this.maxRange) {
         this.maxConstraint = max;
         this.hasMaxConstraint = true;
     }
