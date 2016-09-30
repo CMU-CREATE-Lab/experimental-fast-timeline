@@ -41,6 +41,12 @@ cr.GraphAxis = function(domElement, min, max, basis, isXAxis, grapher) {
     this.hasMaxRange = false;
     this.maxRange = cr.GraphAxis.Constants.DEFAULT_MAX_RANGE;
 
+    this.hasMaxConstraint = false;
+    this.maxConstraint;
+
+    this.hasMinConstraint = false;
+    this.minConstraint;
+
     this._begin;
     this._length;
     this._scale;
@@ -465,18 +471,50 @@ cr.GraphAxis.prototype.limitView = function() {
         this._min = this.minRange;
     }
     else if (this._min < this.minRange) {
-        // Tried to pan too far left
+        // Tried to pan too far left/down
         this._max += this.minRange - this._min;
         this._min = this.minRange;
     }
     else if (this._max > this.maxRange) {
-        // Tried to pan too far right
+        // Tried to pan too far right/up
         this._min -= this._max - this.maxRange;
         this._max = this.maxRange;
+    }
+    else if(this._min > this.minConstraint && this._max < this.maxConstraint) {
+      // Tried to zoom in beyond minimum range constraints
+      this._max = this.maxConstraint;
+      this._min = this.minConstraint;
+    }
+    else if (this._min > this.minConstraint) {
+      // Tried to pan too far right/up
+      this._max -= this._min - this.minConstraint;
+      this._min = this.minConstraint;
+    }
+    else if (this._max < this.maxConstraint) {
+      // Tried to pan too far left/down
+      this._min += this.maxConstraint - this._max;
+      this._max = this.maxConstraint;
     }
     this.publishAxisChangeEvent();
     this.grapher.scheduleUpdate();
 };
+
+cr.GraphAxis.prototype.limitForcedView = function() {
+  if (this._min < this.minRange) {
+      this._min = this.minRange;
+  }
+  else if (this._min > this.minConstraint) {
+    this._min = this.minConstraint;
+  }
+  if (this._max > this.maxRange) {
+      this._max = this.maxRange;
+  }
+  else if (this._max < this.maxConstraint) {
+    this._max = this.maxConstraint;
+  }
+  this.publishAxisChangeEvent();
+  this.grapher.scheduleUpdate();
+}
 
 cr.GraphAxis.prototype.pixelToX = function(px) {
     var xOffset = -this._min;
@@ -517,8 +555,7 @@ cr.GraphAxis.prototype.setRange = function(min, max) {
     if (min < max) {
         this._min = min;
         this._max = max;
-        this.publishAxisChangeEvent();
-        this.grapher.scheduleUpdate();
+        this.limitForcedView();
     }
 };
 
@@ -570,7 +607,7 @@ cr.GraphAxis.prototype.setMaxRange = function(min, max) {
         return !isNaN(parseFloat(n)) && isFinite(n);
     };
 
-    if (isNumeric(min) && min >= cr.GraphAxis.Constants.DEFAULT_MIN_RANGE) {
+    if (isNumeric(min) && min >= cr.GraphAxis.Constants.DEFAULT_MIN_RANGE && (!this.hasMinConstraint || min <= this.minConstraint)) {
         this.minRange = min;
         this.hasMinRange = true;
     }
@@ -579,13 +616,43 @@ cr.GraphAxis.prototype.setMaxRange = function(min, max) {
         this.hasMinRange = false;
     }
 
-    if (isNumeric(max) && max <= cr.GraphAxis.Constants.DEFAULT_MAX_RANGE) {
+    if (isNumeric(max) && max <= cr.GraphAxis.Constants.DEFAULT_MAX_RANGE && (!this.hasMaxConstraint || max >= this.maxConstraint)) {
         this.maxRange = max;
         this.hasMaxRange = true;
     }
     else {
         this.maxRange = cr.GraphAxis.Constants.DEFAULT_MAX_RANGE;
         this.hasMaxRange = false;
+    }
+
+    this.update();
+    this.grapher.scheduleUpdate();
+    this.publishAxisChangeEvent();
+};
+
+cr.GraphAxis.prototype.setMinRangeConstraints = function(min, max) {
+
+    // Got this from http://stackoverflow.com/a/9716488/703200
+    var isNumeric = function(n) {
+        return !isNaN(parseFloat(n)) && isFinite(n);
+    };
+
+    if (isNumeric(min) && min >= this.minRange) {
+        this.minConstraint = min;
+        this.hasMinConstraint = true;
+    }
+    else {
+        this.minConstraint = null;
+        this.hasMinConstraint = false;
+    }
+
+    if (isNumeric(max) && max <= this.maxRange) {
+        this.maxConstraint = max;
+        this.hasMaxConstraint = true;
+    }
+    else {
+        this.maxConstraint = null;
+        this.hasMaxConstraint = false;
     }
 
     this.update();
@@ -634,12 +701,4 @@ cr.GraphAxis.prototype.publishAxisChangeEvent = function() {
 
     // remember the event
     this._previousAxisChangeEvent = event;
-};
-
-cr.GraphAxis.prototype.getMax = function() {
-    return this._max;
-};
-
-cr.GraphAxis.prototype.getMin = function() {
-    return this._min;
 };
