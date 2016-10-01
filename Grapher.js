@@ -222,11 +222,14 @@ var NumberAxis = function(elementId, orientation, range) {
  * @param {datasourceFunction} datasource - function with signature <code>function(level, offset, successCallback)</code> resposible for returning tile JSON for the given <code>level</code> and <code>offset</code>
  * @param {cr.TimeGraphAxis} horizontalAxis - the date axis
  * @param {cr.GraphAxis} verticalAxis - the y axis
- * @param {object} [options] - additional options, currently unused
+ * @param {object} [options] - additional options, such as styling. Note that a deep clone is performed on the given
+ * options object in order to not mutate the original.  Cloning is done as described <a
+ * href="http://stackoverflow.com/a/5344074/703200">here</a>, so will fail if the options object contains functions,
+ * Date objects, etc.
  * @return {cr.Plot}
  */
 var DataSeriesPlot = function(datasource, horizontalAxis, verticalAxis, options) {
-    return new cr.Plot(datasource, horizontalAxis, verticalAxis, options);
+    return new cr.Plot(datasource, horizontalAxis, verticalAxis, JSON.parse(JSON.stringify(options)));
 };
 
 /**
