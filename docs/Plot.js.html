@@ -38,9 +38,10 @@ var cr = cr || {};
  * @param {datasourceFunction} datasource - function with signature &lt;code>function(level, offset, successCallback)&lt;/code> resposible for returning tile JSON for the given &lt;code>level&lt;/code> and &lt;code>offset&lt;/code>
  * @param {cr.TimeGraphAxis} xAxis - the date axis
  * @param {cr.GraphAxis} yAxis - the y axis
- * @param {object} [options] - additional options, currently unused
+ * @param {object} [options] - additional options, such as styling
  */
 cr.Plot = function(datasource, xAxis, yAxis, options) {
+    var that = this;
     //    this.highlight = new cr.Highlight(plotDiv);
 
     //    this.cursor = new cr.Cursor(plotDiv);
@@ -73,6 +74,28 @@ cr.Plot = function(datasource, xAxis, yAxis, options) {
     this.dataPointListeners = [];
     this._publishedPoint = null;
     this._resolutionScale = window.devicePixelRatio || 1;
+    // Default styles
+    this._styles = {
+        lineStyle : {
+            type : "line",
+            show : true,
+            lineWidth : 1,
+            color : { r : 0, g : 0, b : 0 }
+        },
+        pointStyles : [
+            {
+                type : "circle",
+                show : true,
+                lineWidth : 1,
+                radius : 3,
+                color : { r : 0, g : 0, b : 0 },
+                fill : true,
+                fillColor : { r : 0, g : 0, b : 0 }
+            }
+        ]
+    };
+    // Overwrite with user defined style options
+    this.setStyle(options.style);
 };
 
 cr.Plot.prototype.limitView = function() {
@@ -103,11 +126,13 @@ cr.Plot.prototype.getView = function() {
         xmax : this.xAxis._max,
         ymin : this.yAxis._min,
         ymax : this.yAxis._max,
-    }
+    };
 };
 
 cr.Plot.prototype.update = function() {
-    this.tlayer.draw(this.getView());
+    var options = {};
+    options.styles = this._styles;
+    this.tlayer.draw(this.getView(), options);
     this._needsUpdate = this.tlayer._needsUpdate;
 };
 
@@ -140,7 +165,7 @@ cr.Plot.prototype.getClosestDataPointToTimeWithinWindow = function(timeInSecs, n
             dateString : cr.DateTimeFormatter.format(point.x * 1000),    // multiply by 1000 to get millis
             valueString : cr.ValueFormatter.format(point.y),
             comment : null
-        }
+        };
     }
     return dataPoint;
 };
@@ -164,9 +189,9 @@ cr.Plot.prototype.getMinMaxValuesWithinTimeRange = function(minTimeSecs, maxTime
 
         // get the min/max value
         return this.tlayer.getMinMaxValue({
-            min : minTimeSecs,
-            max : maxTimeSecs
-        });
+                                              min : minTimeSecs,
+                                              max : maxTimeSecs
+                                          });
     }
 
     return null;
@@ -200,7 +225,68 @@ cr.Plot.prototype.publishDataPoint = function(point) {
             }
         }
     }
-};</code></pre>
+};
+
+// Set the plot style (line/point color, width, etc)
+cr.Plot.prototype.setStyle = function(styleOptions) {
+    var that = this;
+    if (styleOptions &amp;&amp; styleOptions.styles) {
+        styleOptions.styles.forEach(function(style) {
+            // TODO: need to handle case of RGB object
+
+            // Color given as hex string
+            if (style.color &amp;&amp; style.color.indexOf("#") == 0) {
+                var rgbColor = cr.Util.hexToRgb(style.color);
+                if (rgbColor) {
+                    style.color = rgbColor;
+                }
+            }
+            // Color given as rgb string
+            else if (style.color &amp;&amp; style.color.indexOf("rgb") == 0) {
+                var rgbStringArray = style.color.split("(")[1].split(")")[0].split(",");
+                if (rgbStringArray &amp;&amp; rgbStringArray.length == 3) {
+                    style.color = {
+                        r : rgbStringArray[0],
+                        g : rgbStringArray[1],
+                        b : rgbStringArray[2]
+                    };
+                }
+            }
+            // Color given as word
+            else if (style.color &amp;&amp; typeof(style.color) === "string") {
+                var rgbColor = cr.Util.colorMap[style.color].rgb;
+                if (rgbColor) {
+                    style.color = rgbColor;
+                }
+            }
+
+            // If none of the above, then use default color specified above.
+            if (style.type == "line") {
+                that._styles.lineStyle = style;
+            }
+            else if (style.type == "circle") {
+                that._styles.pointStyles[0] = style;
+                // If no fill color specified, use the same color as the outer color
+                if (!style.fillColor) {
+                    that._styles.pointStyles[0].fillColor = that._styles.pointStyles[0].color;
+                }
+                // Sanity check the circle border width
+                if (style.lineWidth > style.radius) {
+                    that.lineWidth = 1;
+                }
+            }
+            else {
+                that._styles.pointStyles.push(style);
+            }
+        });
+    }
+};
+
+// Get the plot style
+cr.Plot.prototype.getStyle = function() {
+    return this._styles;
+};
+</code></pre>
         </article>
     </section>
 
@@ -210,13 +296,13 @@ cr.Plot.prototype.publishDataPoint = function(point) {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="cr.Basis.html">Basis</a></li><li><a href="cr.GraphAxis.html">GraphAxis</a></li><li><a href="cr.Grapher.html">Grapher</a></li><li><a href="cr.Plot.html">Plot</a></li><li><a href="cr.SeriesPlotContainer.html">SeriesPlotContainer</a></li><li><a href="cr.TileIdx.html">TileIdx</a></li><li><a href="cr.TimeGraphAxis.html">TimeGraphAxis</a></li><li><a href="cr.TouchUtils.html">TouchUtils</a></li><li><a href="cr.Uuid.html">Uuid</a></li><li><a href="DataSeriesPlot.html">DataSeriesPlot</a></li><li><a href="DateAxis.html">DateAxis</a></li><li><a href="NumberAxis.html">NumberAxis</a></li><li><a href="PlotContainer.html">PlotContainer</a></li></ul><h3>Namespaces</h3><ul><li><a href="cr.html">cr</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="cr.Basis.html">Basis</a></li><li><a href="cr.GraphAxis.html">GraphAxis</a></li><li><a href="cr.Grapher.html">Grapher</a></li><li><a href="cr.Plot.html">Plot</a></li><li><a href="cr.SeriesPlotContainer.html">SeriesPlotContainer</a></li><li><a href="cr.TileIdx.html">TileIdx</a></li><li><a href="cr.TimeGraphAxis.html">TimeGraphAxis</a></li><li><a href="cr.TouchUtils.html">TouchUtils</a></li><li><a href="cr.Util.html">Util</a></li><li><a href="cr.Uuid.html">Uuid</a></li><li><a href="DataSeriesPlot.html">DataSeriesPlot</a></li><li><a href="DateAxis.html">DateAxis</a></li><li><a href="NumberAxis.html">NumberAxis</a></li><li><a href="PlotContainer.html">PlotContainer</a></li></ul><h3>Namespaces</h3><ul><li><a href="cr.html">cr</a></li></ul><h3><a href="global.html">Global</a></h3>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Thu Oct 15 2015 10:18:38 GMT-0400 (EDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.3</a> on Sat Oct 01 2016 17:23:41 GMT-0400 (EDT)
 </footer>
 
 <script> prettyPrint(); </script>

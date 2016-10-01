@@ -69,6 +69,12 @@ cr.GraphAxis = function(domElement, min, max, basis, isXAxis, grapher) {
     this.hasMaxRange = false;
     this.maxRange = cr.GraphAxis.Constants.DEFAULT_MAX_RANGE;
 
+    this.hasMaxConstraint = false;
+    this.maxConstraint;
+
+    this.hasMinConstraint = false;
+    this.minConstraint;
+
     this._begin;
     this._length;
     this._scale;
@@ -169,11 +175,13 @@ cr.GraphAxis.prototype.mouseup = function(e) {
 
 cr.GraphAxis.prototype.mousewheel = function(e) {
     var that = e.data;
+
+    var deltaY = cr.Util.normalizeScrollDelta(e) * 100;
     if (that.isXAxis) {
-        that.zoomAboutX(e.offsetX, Math.pow(1.0005, -e.originalEvent.deltaY));
+        that.zoomAboutX(e.offsetX, Math.pow(1.0005, deltaY));
     }
     else {
-        that.zoomAboutY(e.offsetY, Math.pow(1.0005, -e.originalEvent.deltaY));
+        that.zoomAboutY(e.offsetY, Math.pow(1.0005, deltaY));
     }
     return false;
 };
@@ -407,7 +415,7 @@ cr.GraphAxis.prototype.renderTicks = function(offsetPixels, tickSize, tickWidthP
     while (tick !== false) {
         this.renderTick(tick, offsetPixels + tickWidthPixels);
         if (drawLabels) {
-            this.renderTickLabel(tick, labelOffsetPixels)
+            this.renderTickLabel(tick, labelOffsetPixels);
         }
         tick = it.next();
     }
@@ -491,18 +499,50 @@ cr.GraphAxis.prototype.limitView = function() {
         this._min = this.minRange;
     }
     else if (this._min &lt; this.minRange) {
-        // Tried to pan too far left
+        // Tried to pan too far left/down
         this._max += this.minRange - this._min;
         this._min = this.minRange;
     }
     else if (this._max > this.maxRange) {
-        // Tried to pan too far right
+        // Tried to pan too far right/up
         this._min -= this._max - this.maxRange;
         this._max = this.maxRange;
+    }
+    else if(this._min > this.minConstraint &amp;&amp; this._max &lt; this.maxConstraint) {
+      // Tried to zoom in beyond minimum range constraints
+      this._max = this.maxConstraint;
+      this._min = this.minConstraint;
+    }
+    else if (this._min > this.minConstraint) {
+      // Tried to pan too far right/up
+      this._max -= this._min - this.minConstraint;
+      this._min = this.minConstraint;
+    }
+    else if (this._max &lt; this.maxConstraint) {
+      // Tried to pan too far left/down
+      this._min += this.maxConstraint - this._max;
+      this._max = this.maxConstraint;
     }
     this.publishAxisChangeEvent();
     this.grapher.scheduleUpdate();
 };
+
+cr.GraphAxis.prototype.limitForcedView = function() {
+  if (this._min &lt; this.minRange) {
+      this._min = this.minRange;
+  }
+  else if (this._min > this.minConstraint) {
+    this._min = this.minConstraint;
+  }
+  if (this._max > this.maxRange) {
+      this._max = this.maxRange;
+  }
+  else if (this._max &lt; this.maxConstraint) {
+    this._max = this.maxConstraint;
+  }
+  this.publishAxisChangeEvent();
+  this.grapher.scheduleUpdate();
+}
 
 cr.GraphAxis.prototype.pixelToX = function(px) {
     var xOffset = -this._min;
@@ -543,8 +583,7 @@ cr.GraphAxis.prototype.setRange = function(min, max) {
     if (min &lt; max) {
         this._min = min;
         this._max = max;
-        this.publishAxisChangeEvent();
-        this.grapher.scheduleUpdate();
+        this.limitForcedView();
     }
 };
 
@@ -591,12 +630,7 @@ cr.GraphAxis.prototype.setSize = function(width, height) {
 
 cr.GraphAxis.prototype.setMaxRange = function(min, max) {
 
-    // Got this from http://stackoverflow.com/a/9716488/703200
-    var isNumeric = function(n) {
-        return !isNaN(parseFloat(n)) &amp;&amp; isFinite(n);
-    };
-
-    if (isNumeric(min) &amp;&amp; min >= cr.GraphAxis.Constants.DEFAULT_MIN_RANGE) {
+    if (cr.Util.isNumeric(min) &amp;&amp; min >= cr.GraphAxis.Constants.DEFAULT_MIN_RANGE &amp;&amp; (!this.hasMinConstraint || min &lt;= this.minConstraint)) {
         this.minRange = min;
         this.hasMinRange = true;
     }
@@ -605,13 +639,38 @@ cr.GraphAxis.prototype.setMaxRange = function(min, max) {
         this.hasMinRange = false;
     }
 
-    if (isNumeric(max) &amp;&amp; max &lt;= cr.GraphAxis.Constants.DEFAULT_MAX_RANGE) {
+    if (cr.Util.isNumeric(max) &amp;&amp; max &lt;= cr.GraphAxis.Constants.DEFAULT_MAX_RANGE &amp;&amp; (!this.hasMaxConstraint || max >= this.maxConstraint)) {
         this.maxRange = max;
         this.hasMaxRange = true;
     }
     else {
         this.maxRange = cr.GraphAxis.Constants.DEFAULT_MAX_RANGE;
         this.hasMaxRange = false;
+    }
+
+    this.update();
+    this.grapher.scheduleUpdate();
+    this.publishAxisChangeEvent();
+};
+
+cr.GraphAxis.prototype.setMinRangeConstraints = function(min, max) {
+
+    if (cr.Util.isNumeric(min) &amp;&amp; min >= this.minRange) {
+        this.minConstraint = min;
+        this.hasMinConstraint = true;
+    }
+    else {
+        this.minConstraint = null;
+        this.hasMinConstraint = false;
+    }
+
+    if (cr.Util.isNumeric(max) &amp;&amp; max &lt;= this.maxRange) {
+        this.maxConstraint = max;
+        this.hasMaxConstraint = true;
+    }
+    else {
+        this.maxConstraint = null;
+        this.hasMaxConstraint = false;
     }
 
     this.update();
@@ -661,14 +720,6 @@ cr.GraphAxis.prototype.publishAxisChangeEvent = function() {
     // remember the event
     this._previousAxisChangeEvent = event;
 };
-
-cr.GraphAxis.prototype.getMax = function() {
-    return this._max;
-};
-
-cr.GraphAxis.prototype.getMin = function() {
-    return this._min;
-};
 </code></pre>
         </article>
     </section>
@@ -679,13 +730,13 @@ cr.GraphAxis.prototype.getMin = function() {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="cr.Basis.html">Basis</a></li><li><a href="cr.GraphAxis.html">GraphAxis</a></li><li><a href="cr.Grapher.html">Grapher</a></li><li><a href="cr.Plot.html">Plot</a></li><li><a href="cr.SeriesPlotContainer.html">SeriesPlotContainer</a></li><li><a href="cr.TileIdx.html">TileIdx</a></li><li><a href="cr.TimeGraphAxis.html">TimeGraphAxis</a></li><li><a href="cr.TouchUtils.html">TouchUtils</a></li><li><a href="cr.Uuid.html">Uuid</a></li><li><a href="DataSeriesPlot.html">DataSeriesPlot</a></li><li><a href="DateAxis.html">DateAxis</a></li><li><a href="NumberAxis.html">NumberAxis</a></li><li><a href="PlotContainer.html">PlotContainer</a></li></ul><h3>Namespaces</h3><ul><li><a href="cr.html">cr</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="cr.Basis.html">Basis</a></li><li><a href="cr.GraphAxis.html">GraphAxis</a></li><li><a href="cr.Grapher.html">Grapher</a></li><li><a href="cr.Plot.html">Plot</a></li><li><a href="cr.SeriesPlotContainer.html">SeriesPlotContainer</a></li><li><a href="cr.TileIdx.html">TileIdx</a></li><li><a href="cr.TimeGraphAxis.html">TimeGraphAxis</a></li><li><a href="cr.TouchUtils.html">TouchUtils</a></li><li><a href="cr.Util.html">Util</a></li><li><a href="cr.Uuid.html">Uuid</a></li><li><a href="DataSeriesPlot.html">DataSeriesPlot</a></li><li><a href="DateAxis.html">DateAxis</a></li><li><a href="NumberAxis.html">NumberAxis</a></li><li><a href="PlotContainer.html">PlotContainer</a></li></ul><h3>Namespaces</h3><ul><li><a href="cr.html">cr</a></li></ul><h3><a href="global.html">Global</a></h3>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.2</a> on Thu Oct 15 2015 10:18:38 GMT-0400 (EDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.3</a> on Sat Oct 01 2016 17:23:41 GMT-0400 (EDT)
 </footer>
 
 <script> prettyPrint(); </script>
