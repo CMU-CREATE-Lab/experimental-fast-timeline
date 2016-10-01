@@ -20,18 +20,18 @@ cr.Util = function() {
 
 // http://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
 cr.Util.hexToRgb = function(hex) {
-  // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
-  var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
-  hex = hex.replace(shorthandRegex, function(m, r, g, b) {
-      return r + r + g + g + b + b;
-  });
+    // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
+    var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
+    hex = hex.replace(shorthandRegex, function(m, r, g, b) {
+        return r + r + g + g + b + b;
+    });
 
-  var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return result ? {
-      r: parseInt(result[1], 16),
-      g: parseInt(result[2], 16),
-      b: parseInt(result[3], 16)
-  } : null;
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+        r : parseInt(result[1], 16),
+        g : parseInt(result[2], 16),
+        b : parseInt(result[3], 16)
+    } : null;
 };
 
 /**
@@ -45,8 +45,9 @@ cr.Util.normalizeScrollDelta = function(e) {
     var orgEvent = e.originalEvent;
     var deltaY = orgEvent.deltaY * -1;
     // Get a whole, normalized value for the deltas
-    if (deltaY != 0)
-      deltaY = Math[ deltaY >= 1 ? 'floor' : 'ceil' ](deltaY / Math.abs(deltaY));
+    if (deltaY != 0) {
+        deltaY = Math[deltaY >= 1 ? 'floor' : 'ceil'](deltaY / Math.abs(deltaY));
+    }
     return deltaY;
 };
 
