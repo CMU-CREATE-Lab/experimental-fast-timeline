@@ -10,7 +10,7 @@ var cr = cr || {};
  * @param {datasourceFunction} datasource - function with signature <code>function(level, offset, successCallback)</code> resposible for returning tile JSON for the given <code>level</code> and <code>offset</code>
  * @param {cr.TimeGraphAxis} xAxis - the date axis
  * @param {cr.GraphAxis} yAxis - the y axis
- * @param {object} [options] - additional options, currently unused
+ * @param {object} [options] - additional options, such as styling
  */
 cr.Plot = function(datasource, xAxis, yAxis, options) {
     var that = this;
@@ -204,14 +204,16 @@ cr.Plot.prototype.setStyle = function(styleOptions) {
     var that = this;
     if (styleOptions && styleOptions.styles) {
         styleOptions.styles.forEach(function(style) {
+            // TODO: need to handle case of RGB object
+
             // Color given as hex string
             if (style.color && style.color.indexOf("#") == 0) {
                 var rgbColor = cr.Util.hexToRgb(style.color);
                 if (rgbColor) {
                     style.color = rgbColor;
                 }
-                // Color given as rgb string
             }
+            // Color given as rgb string
             else if (style.color && style.color.indexOf("rgb") == 0) {
                 var rgbStringArray = style.color.split("(")[1].split(")")[0].split(",");
                 if (rgbStringArray && rgbStringArray.length == 3) {
@@ -221,16 +223,16 @@ cr.Plot.prototype.setStyle = function(styleOptions) {
                         b : rgbStringArray[2]
                     };
                 }
-                // Color given as word
             }
+            // Color given as word
             else if (style.color && typeof(style.color) === "string") {
                 var rgbColor = cr.Util.colorMap[style.color].rgb;
                 if (rgbColor) {
                     style.color = rgbColor;
                 }
             }
-            // If none of the above, then use default color specified above.
 
+            // If none of the above, then use default color specified above.
             if (style.type == "line") {
                 that._styles.lineStyle = style;
             }
