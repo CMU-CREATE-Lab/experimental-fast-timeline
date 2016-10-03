@@ -101,7 +101,7 @@ cr.DataStoreTile.prototype.draw = function(transform, options) {
 
         var lineStyle = options.styles.lineStyle;
 
-        if (lineStyle.show) {
+        if (lineStyle.show && this._pointCount > 0) {
           // Line thickness
           // Cannot be larger than 1px on Windows because of limitations of ANGLE webgl implementation
           // https://bugs.chromium.org/p/chromium/issues/detail?id=60124
@@ -129,7 +129,7 @@ cr.DataStoreTile.prototype.draw = function(transform, options) {
         // TODO: Only circles currently supported, which is always the first point style
         var pointStyle = options.styles.pointStyles[0];
 
-        if (pointStyle.show) {
+        if (pointStyle.show && this._pointCount > 0) {
           gl.useProgram(this.pointProgram);
 
           var matrixLoc = gl.getUniformLocation(this.pointProgram, 'u_pMatrix');

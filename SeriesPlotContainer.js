@@ -542,7 +542,9 @@ cr.SeriesPlotContainer.prototype.drawMidnightLinesWebgl = function() {
     var colorLoc = gl.getUniformLocation(this.lineProgram, 'u_color');
     gl.uniform4f(colorLoc, .5, .5, .5, .7);
 
-    gl.drawArrays(gl.LINES, 0, points.length / 2);
+    if (points.length > 0) {
+        gl.drawArrays(gl.LINES, 0, points.length / 2);
+    }
 };
 
 cr.SeriesPlotContainer.prototype.drawMidnightLinesCanvas = function() {
@@ -598,7 +600,9 @@ cr.SeriesPlotContainer.prototype.drawHighlightPointsWebgl = function() {
     var colorLoc = gl.getUniformLocation(this.pointProgram, 'u_color');
     gl.uniform4f(colorLoc, 1.0, 0, 0, 1);
 
-    gl.drawArrays(gl.POINTS, 0, points.length / 2);
+    if (points.length > 0) {
+        gl.drawArrays(gl.POINTS, 0, points.length / 2);
+    }
 };
 
 cr.SeriesPlotContainer.prototype.drawHighlightPointsCanvas = function() {
@@ -673,7 +677,9 @@ cr.SeriesPlotContainer.prototype.drawMouseoverHighlightPointWebgl = function() {
         var colorLoc = gl.getUniformLocation(this.pointProgram, 'u_color');
         gl.uniform4f(colorLoc, 1.0, 0, 0, 1);
 
-        gl.drawArrays(gl.POINTS, 0, points.length / 2);
+        if (points.length > 0) {
+            gl.drawArrays(gl.POINTS, 0, points.length / 2);
+        }
     }
 };
 
