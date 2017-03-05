@@ -169,23 +169,25 @@ cr.Plot.prototype.getMinMaxValuesWithinTimeRange = function(minTimeSecs, maxTime
     return null;
 };
 
-// Publishes the given point, but only if it's different than the previously published point
-cr.Plot.prototype.publishDataPoint = function(point) {
+// Publishes the given point, but only if it's different than the previously published point and corresponding event type
+cr.Plot.prototype.publishDataPoint = function(point, event) {
     if (point) {
         if (this._publishedPoint == null ||
             point.x != this._publishedPoint.x ||
-            point.y != this._publishedPoint.y) {
+            point.y != this._publishedPoint.y ||
+            event.type != this._publishedPoint.eventType) {
 
             this._publishedPoint = {
                 x : point.x,
                 y : point.y,
                 dateString : cr.DateTimeFormatter.format(point.x * 1000),    // multiply by 1000 to get millis
                 valueString : cr.ValueFormatter.format(point.y),
-                comment : null
+                comment : null,
+                eventType: event.type
             };
 
             for (var j = 0; j < this.dataPointListeners.length; j++) {
-                this.dataPointListeners[j](this._publishedPoint);
+                this.dataPointListeners[j](this._publishedPoint, event);
             }
         }
     }

@@ -135,6 +135,7 @@ cr.SeriesPlotContainer.prototype.mousedown = function(e) {
         var point = plot.tlayer.search(coords);
         if (point) {
             plot.xAxis.setCursorPosition(point.x);
+            plot.publishDataPoint(point, e);
             that.grapher.scheduleUpdate();
         }
     });
@@ -155,7 +156,7 @@ cr.SeriesPlotContainer.prototype.mousemove = function(e) {
             ymax : e.offsetY - 5
         };
 
-        Object.keys(that._plots).forEach(function(plotKey) {
+        Object.keys(that._plots).every(function(plotKey) {
             var plot = that._plots[plotKey];
             var coords = {};
             coords.xmin = plot.xAxis.pixelToX(bbox.xmin);
@@ -168,7 +169,8 @@ cr.SeriesPlotContainer.prototype.mousemove = function(e) {
                 that.grapher.scheduleUpdate();
 
                 // publish the point
-                plot.publishDataPoint(point);
+                plot.publishDataPoint(point, e);
+                return false;
             }
             else {
                 // publish the point
@@ -178,6 +180,7 @@ cr.SeriesPlotContainer.prototype.mousemove = function(e) {
                     that.mouseoverHighlightPoint = null;
                     that.grapher.scheduleUpdate();
                 }
+                return true;
             }
         });
 
