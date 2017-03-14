@@ -499,21 +499,20 @@ cr.GraphAxis.prototype.limitView = function() {
     this.grapher.scheduleUpdate();
 };
 
-cr.GraphAxis.prototype.limitForcedView = function() {
-  if (this._min < this.minRange) {
-      this._min = this.minRange;
+cr.GraphAxis.prototype.limitForcedView = function(min,max) {
+  if (min < this.minRange) {
+      min = this.minRange;
   }
-  else if (this._min > this.minConstraint) {
-    this._min = this.minConstraint;
+  else if (min > this.minConstraint) {
+    min = this.minConstraint;
   }
-  if (this._max > this.maxRange) {
-      this._max = this.maxRange;
+  if (max > this.maxRange) {
+      max = this.maxRange;
   }
-  else if (this._max < this.maxConstraint) {
-    this._max = this.maxConstraint;
+  else if (max < this.maxConstraint) {
+    max = this.maxConstraint;
   }
-  this.publishAxisChangeEvent();
-  this.grapher.scheduleUpdate();
+  return { "min" : min, "max": max }
 }
 
 cr.GraphAxis.prototype.pixelToX = function(px) {
@@ -553,9 +552,13 @@ cr.GraphAxis.prototype.setupText = function() {
 
 cr.GraphAxis.prototype.setRange = function(min, max) {
     if (min < max) {
-        this._min = min;
-        this._max = max;
-        this.limitForcedView();
+        var view = this.limitForcedView(min,max);
+        if (this._min != view.min || this._max != view.max) {
+          this._min = view.min;
+          this._max = view.max;
+          this.publishAxisChangeEvent();
+          this.grapher.scheduleUpdate();
+        }
     }
 };
 
