@@ -58,6 +58,9 @@ cr.GraphAxis = function(domElement, min, max, basis, isXAxis, grapher) {
 
     this.lastMouse = null;
 
+    this.isXAxisDragging = null;
+    this.isCursorDragging = null;
+
     var canvasElement = $('#' + this._canvas.id);
     canvasElement.mousedown(this, this.mousedown);
     canvasElement.mousemove(this, this.mousemove);
@@ -94,38 +97,38 @@ Object.freeze(cr.GraphAxis.Constants);
 
 cr.GraphAxis.prototype.mousedown = function(e) {
     var that = e.data;
+    that.lastCursorX = that.project1D(that.cursorX);
     that.lastMouse = e;
+    var bbox = {
+        xmin : that.project1D(that.cursorX) - 10,
+        xmax : that.project1D(that.cursorX) + 10,
+        ymin : Math.floor(that._div.clientHeight / 2),
+        ymax : that._div.clientHeight
+    };
+    if (bbox.xmin <= e.offsetX && bbox.xmax >= e.offsetX && bbox.ymin <= e.offsetY && bbox.ymax >= e.offsetY) {
+        that.cursorSelected = true;
+    }
+
     return false;
 };
 
 cr.GraphAxis.prototype.mousemove = function(e) {
-    // If mouse button is up, we probably missed the up event when the mouse was outside
-    // the window
-
     var that = e.data;
-    if (!e.which) {
+
+    // If mouse button is up, we probably missed the up event when the mouse was outside the window.
+    // Note: Browser compatibility alert. MouseEvent.which sounded liked great way to find which mouse button was down.
+    // But of course, we can't have nice things in life, so each browser treats this differently.
+    // For FireFox on mousemove events, the which property is incorrectly always set to 1.
+    // FireFox does however, have a MouseEvents.buttons property (Chrome does not). So we can use this on FireFox
+    // to determine if a mouse button is up/down.
+    if ((typeof(e.buttons) != "undefined" && e.buttons == 0) || (typeof(e.which) != "undefined" && e.which == 0)) {
         that.mouseup(e);
         return;
     }
-
     if (that.lastMouse) {
         if (that.isXAxis) {
-            if (that.cursorX) {
-                var bbox = {
-                    xmin : that.project1D(that.cursorX) - 10,
-                    xmax : that.project1D(that.cursorX) + 10,
-                    ymin : Math.floor(that._div.clientHeight / 2),
-                    ymax : that._div.clientHeight
-                };
-                if (bbox.xmin <= e.offsetX && bbox.xmax >= e.offsetX && bbox.ymin <= e.offsetY && bbox.ymax >= e.offsetY) {
-                    var xScale = that._canvas.width / that._resolutionScale / (that._max - that._min);
-                    var x = that.cursorX + (e.clientX - that.lastMouse.clientX) / xScale;
-                    that.setCursorPosition(x);
-                    that.grapher.scheduleUpdate();
-                }
-                else {
-                    that.translatePixels(e.clientX - that.lastMouse.clientX);
-                }
+            if (that.cursorX && that.cursorSelected) {
+                that.handleCursorDragging(e)
             }
             else {
                 that.translatePixels(e.clientX - that.lastMouse.clientX);
@@ -134,14 +137,36 @@ cr.GraphAxis.prototype.mousemove = function(e) {
         else {
             that.translatePixels(that.lastMouse.clientY - e.clientY);
         }
-        that.lastMouse = e;
     }
+    that.lastMouse = e;
+
     return false;
 };
 
+cr.GraphAxis.prototype.handleCursorDragging = function(e) {
+  var that = e.data;
+  that.isCursorDragging = true;
+  var xScale = this._canvas.width / this._resolutionScale / (this._max - this._min);
+  var x = this.cursorX + (e.offsetX - this.lastCursorX) / xScale;
+  this.lastCursorX = this.project1D(x);
+  this.setCursorPosition(x);
+  this.grapher.scheduleUpdate();
+}
+
 cr.GraphAxis.prototype.mouseup = function(e) {
     var that = e.data;
+    if (that.lastMouse && !that.isXAxisDragging && that.lastCursorX) {
+      var xScale = that._canvas.width / that._resolutionScale / (that._max - that._min);
+      var x = that.cursorX + (e.offsetX - that.lastCursorX) / xScale;
+      that.setCursorPosition(x);
+      that.grapher.scheduleUpdate();
+    }
+
     that.lastMouse = null;
+    that.isXAxisDragging = false;
+    that.cursorSelected = null;
+    that.isCursorDragging = false;
+
     that.publishAxisChangeEvent();
 };
 
@@ -219,13 +244,26 @@ cr.GraphAxis.prototype.touchmove = function(e) {
 
 cr.GraphAxis.prototype.touchend = function(e) {
     var that = e.data;
+
+    if (!that.isXAxisDragging) {
+      var touches = that._previousTouches;
+      var touchesCentroid = that.touchUtils.centroid(touches);
+      that.lastCursorX = that.project1D(that.cursorX);
+      var xScale = that._canvas.width / that._resolutionScale / (that._max - that._min);
+      var x = that.cursorX + (touchesCentroid.x- that.lastCursorX) / xScale;
+      that.setCursorPosition(x);
+      that.grapher.scheduleUpdate();
+    }
+
     that._previousTouches = null;
+    that.isXAxisDragging = false;
     return false;
 };
 
 cr.GraphAxis.prototype.translatePixels = function(delta) {
     if (delta != 0) {
         if (this.isXAxis) {
+            this.isXAxisDragging = true;
             var xScale = this._canvas.width / this._resolutionScale / (this._max - this._min);
             this._min -= delta / xScale;
             this._max -= delta / xScale;
@@ -694,4 +732,26 @@ cr.GraphAxis.prototype.publishAxisChangeEvent = function() {
 
     // remember the event
     this._previousAxisChangeEvent = event;
+};
+
+cr.GraphAxis.prototype.getIsXAxisDragging = function() {
+    return this.isXAxisDragging;
+};
+
+cr.GraphAxis.prototype.getIsCursorDragging = function() {
+    return this.isCursorDragging;
+};
+
+cr.GraphAxis.prototype.setIsXAxisDragging = function(status) {
+  this.isXAxisDragging = status;
+  if (!status) {
+    this.lastMouse = null;
+  }
+};
+
+cr.GraphAxis.prototype.setIsCursorDragging = function(status) {
+  this.isCursorDragging = status;
+  if (!status) {
+    this.lastMouse = null;
+  }
 };

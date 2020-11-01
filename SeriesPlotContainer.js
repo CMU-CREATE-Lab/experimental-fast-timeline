@@ -144,11 +144,21 @@ cr.SeriesPlotContainer.prototype.mousedown = function(e) {
 };
 
 cr.SeriesPlotContainer.prototype.mousemove = function(e) {
-    // If mouse button is up, we probably missed the up event when the mouse was outside
-    // the window
-
     var that = e.data;
-    if (!e.which) {
+
+    if (that._xAxis.getIsCursorDragging()) {
+        that._xAxis.handleCursorDragging(e);
+        that.lastMouse = e;
+        return false;
+    }
+
+    // If mouse button is up, we probably missed the up event when the mouse was outside the window.
+    // Note: Browser compatibility alert. MouseEvent.which sounded liked great way to find which mouse button was down.
+    // But of course, we can't have nice things in life, so each browser treats this differently.
+    // For FireFox on mousemove events, the which property is incorrectly always set to 1.
+    // FireFox does however, have a MouseEvents.buttons property (Chrome does not). So we can use this on FireFox
+    // to determine if a mouse button is up/down.
+    if ((typeof(e.buttons) != "undefined" && e.buttons == 0) || (typeof(e.which) != "undefined" && e.which == 0)) {
         var bbox = {
             xmin : e.offsetX - 5,
             xmax : e.offsetX + 5,
@@ -208,14 +218,17 @@ cr.SeriesPlotContainer.prototype.mousemove = function(e) {
                 hasYAxisBeenTransformed[plot.yAxis.id] = true;
             }
         });
-        that.lastMouse = e;
     }
+    that.lastMouse = e;
+
     return false;
 };
 
 cr.SeriesPlotContainer.prototype.mouseup = function(e) {
     var that = e.data;
     that.lastMouse = null;
+    that._xAxis.setIsXAxisDragging(false);
+    that._xAxis.setIsCursorDragging(false);
 };
 
 cr.SeriesPlotContainer.prototype.mousewheel = function(e) {
