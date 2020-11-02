@@ -16,7 +16,7 @@ concat:
 	TileLoader.js TileView.js DataStoreTile.js CanvasTile.js \
 	DataStoreTileLayer.js Shaders.js TouchUtils.js Plot.js \
 	SeriesPlotContainer.js Grapher.js TileConstants.js TimeConstants.js \
-	Uuid.js MidnightLine.js > ${CONCAT_PATH}
+	Uuid.js MidnightLine.js MouseState.js > ${CONCAT_PATH}
 minify-simple: clean concat
 	java -jar ${CLOSURE} --compilation_level SIMPLE_OPTIMIZATIONS --js ${CONCAT_PATH} --js_output_file ${MINIFY_PATH} --language_in=ECMASCRIPT5 --warning_level=QUIET
 	cat ${MINIFY_PATH} > ${TEMP_PATH} && mv ${TEMP_PATH} ${MINIFY_PATH}

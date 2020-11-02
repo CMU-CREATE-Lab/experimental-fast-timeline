@@ -110,13 +110,12 @@ cr.SeriesPlotContainer.prototype._initCanvases = function() {
     canvas3dElement.mousemove(this, this.mousemove);
     canvas3dElement.mouseup(this, this.mouseup);
     canvas3dElement.on("mousewheel", this, this.mousewheel);
-
-    this.lastMouse = null;
 };
 
 cr.SeriesPlotContainer.prototype.mousedown = function(e) {
     var that = e.data;
-    that.lastMouse = e;
+    cr.MouseState.setLastMouse(e);
+    cr.MouseState.setIsMouseDown(true);
 
     var bbox = {
         xmin : e.offsetX - 5,
@@ -148,9 +147,11 @@ cr.SeriesPlotContainer.prototype.mousemove = function(e) {
 
     if (that._xAxis.getIsCursorDragging()) {
         that._xAxis.handleCursorDragging(e);
-        that.lastMouse = e;
+        cr.MouseState.setLastMouse(e)
         return false;
     }
+
+    that.mouseDown = cr.MouseState.isMouseDown();
 
     // If mouse button is up, we probably missed the up event when the mouse was outside the window.
     // Note: Browser compatibility alert. MouseEvent.which sounded liked great way to find which mouse button was down.
@@ -158,7 +159,34 @@ cr.SeriesPlotContainer.prototype.mousemove = function(e) {
     // For FireFox on mousemove events, the which property is incorrectly always set to 1.
     // FireFox does however, have a MouseEvents.buttons property (Chrome does not). So we can use this on FireFox
     // to determine if a mouse button is up/down.
-    if ((typeof(e.buttons) != "undefined" && e.buttons == 0) || (typeof(e.which) != "undefined" && e.which == 0)) {
+    if (that.mouseDown && ((typeof(e.buttons) != "undefined" && e.buttons == 0) || (typeof(e.which) != "undefined" && e.which == 0))) {
+        that.mouseup(e);
+        return;
+    }
+
+    that.lastMouse = cr.MouseState.getLastMouse();
+
+    if (that.mouseDown && that.lastMouse) {
+        // keep track of the X and Y axes to which we've applied the traslation, so that we
+        // don't do it more than once per axis
+        var hasXAxisBeenTransformed = {};
+        var hasYAxisBeenTransformed = {};
+        Object.keys(that._plots).forEach(function(plotKey) {
+            var plot = that._plots[plotKey];
+
+            if (!(plot.xAxis.id in hasXAxisBeenTransformed)) {
+                plot.xAxis.translatePixels(e.clientX - that.lastMouse.clientX);
+
+                hasXAxisBeenTransformed[plot.xAxis.id] = true;
+            }
+
+            if (!(plot.yAxis.id in hasYAxisBeenTransformed)) {
+                plot.yAxis.translatePixels(that.lastMouse.clientY - e.clientY);
+
+                hasYAxisBeenTransformed[plot.yAxis.id] = true;
+            }
+        });
+    } else {
         var bbox = {
             xmin : e.offsetX - 5,
             xmax : e.offsetX + 5,
@@ -193,40 +221,18 @@ cr.SeriesPlotContainer.prototype.mousemove = function(e) {
                 return true;
             }
         });
-
-        that.mouseup(e);
         return;
     }
 
-    if (that.lastMouse) {
-        // keep track of the X and Y axes to which we've applied the traslation, so that we
-        // don't do it more than once per axis
-        var hasXAxisBeenTransformed = {};
-        var hasYAxisBeenTransformed = {};
-        Object.keys(that._plots).forEach(function(plotKey) {
-            var plot = that._plots[plotKey];
-
-            if (!(plot.xAxis.id in hasXAxisBeenTransformed)) {
-                plot.xAxis.translatePixels(e.clientX - that.lastMouse.clientX);
-
-                hasXAxisBeenTransformed[plot.xAxis.id] = true;
-            }
-
-            if (!(plot.yAxis.id in hasYAxisBeenTransformed)) {
-                plot.yAxis.translatePixels(that.lastMouse.clientY - e.clientY);
-
-                hasYAxisBeenTransformed[plot.yAxis.id] = true;
-            }
-        });
-    }
-    that.lastMouse = e;
+    cr.MouseState.setLastMouse(e);
 
     return false;
 };
 
 cr.SeriesPlotContainer.prototype.mouseup = function(e) {
     var that = e.data;
-    that.lastMouse = null;
+    cr.MouseState.setLastMouse(null);
+    cr.MouseState.setIsMouseDown(false);
     that._xAxis.setIsXAxisDragging(false);
     that._xAxis.setIsCursorDragging(false);
 };
