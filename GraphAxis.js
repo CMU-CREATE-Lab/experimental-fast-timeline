@@ -116,6 +116,7 @@ cr.GraphAxis.prototype.mousemove = function(e) {
     var that = e.data;
 
     that.mouseDown = cr.MouseState.isMouseDown();
+
     // If mouse button is up, we probably missed the up event when the mouse was outside the window.
     // Note: Browser compatibility alert. MouseEvent.which sounded liked great way to find which mouse button was down.
     // But of course, we can't have nice things in life, so each browser treats this differently.
@@ -126,6 +127,7 @@ cr.GraphAxis.prototype.mousemove = function(e) {
         that.mouseup(e);
         return;
     }
+
     that.lastMouse = cr.MouseState.getLastMouse();
 
     if (that.mouseDown && that.lastMouse) {

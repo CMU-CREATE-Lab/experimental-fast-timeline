@@ -145,12 +145,6 @@ cr.SeriesPlotContainer.prototype.mousedown = function(e) {
 cr.SeriesPlotContainer.prototype.mousemove = function(e) {
     var that = e.data;
 
-    if (that._xAxis.getIsCursorDragging()) {
-        that._xAxis.handleCursorDragging(e);
-        cr.MouseState.setLastMouse(e)
-        return false;
-    }
-
     that.mouseDown = cr.MouseState.isMouseDown();
 
     // If mouse button is up, we probably missed the up event when the mouse was outside the window.
@@ -162,6 +156,12 @@ cr.SeriesPlotContainer.prototype.mousemove = function(e) {
     if (that.mouseDown && ((typeof(e.buttons) != "undefined" && e.buttons == 0) || (typeof(e.which) != "undefined" && e.which == 0))) {
         that.mouseup(e);
         return;
+    }
+
+    if (that._xAxis.getIsCursorDragging()) {
+        that._xAxis.handleCursorDragging(e);
+        cr.MouseState.setLastMouse(e)
+        return false;
     }
 
     that.lastMouse = cr.MouseState.getLastMouse();
