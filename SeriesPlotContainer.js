@@ -395,7 +395,7 @@ cr.SeriesPlotContainer.prototype.update = function() {
         this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
     }
 
-    this.drawHighlight();
+    //this.drawHighlight();
 
     // for each Y axis, we need to compute the min/max values for all plots associated with the Y axis.
     if (this._isAutoscaleEnabled) {
