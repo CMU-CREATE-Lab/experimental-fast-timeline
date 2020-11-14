@@ -391,8 +391,20 @@ cr.SeriesPlotContainer.prototype._padRange = function(range) {
 };
 
 cr.SeriesPlotContainer.prototype.update = function() {
+    // clear before drawing
     if (!this.usewebgl) {
         this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+    } else if (this.glb) {
+        this.glb.clear();
+    }
+
+    // update the plots and create a map of the yAxes so we can
+    // iterate over them later without updating each more than once
+    var yAxesById = {};
+    for (var plotKey in this._plots) {
+        var plot = this._plots[plotKey];
+        plot.update();
+        yAxesById[plot.yAxis.id] = plot.yAxis;
     }
 
     // for each Y axis, we need to compute the min/max values for all plots associated with the Y axis.
@@ -424,20 +436,6 @@ cr.SeriesPlotContainer.prototype.update = function() {
             }
 
         }
-    }
-
-    // clear before drawing
-    if (this.glb) {
-        this.glb.clear();
-    }
-
-    // update the plots and create a map of the yAxes so we can
-    // iterate over them later without updating each more than once
-    var yAxesById = {};
-    for (var plotKey in this._plots) {
-        var plot = this._plots[plotKey];
-        plot.update();
-        yAxesById[plot.yAxis.id] = plot.yAxis;
     }
 
     // update the Y axes
