@@ -395,8 +395,6 @@ cr.SeriesPlotContainer.prototype.update = function() {
         this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
     }
 
-    //this.drawHighlight();
-
     // for each Y axis, we need to compute the min/max values for all plots associated with the Y axis.
     if (this._isAutoscaleEnabled) {
         var yAxisRanges = {};
@@ -425,14 +423,6 @@ cr.SeriesPlotContainer.prototype.update = function() {
                 }
             }
 
-            // set the Y axis range
-            if (typeof yAxisRange !== 'undefined' && yAxisRange != null) {
-                // pad the range, if desired
-                if (this._isAutoscalePaddingEnabled) {
-                    yAxisRange = this._padRange(yAxisRange);
-                }
-                yAxis.setRange(yAxisRange.min, yAxisRange.max);
-            }
         }
     }
 
@@ -452,7 +442,18 @@ cr.SeriesPlotContainer.prototype.update = function() {
 
     // update the Y axes
     for (var yAxisId in yAxesById) {
-        yAxesById[yAxisId].update();
+        var yAxis = yAxesById[yAxisId];
+        if (this._isAutoscaleEnabled) {
+            var yAxisRange = yAxisRanges[yAxisId];
+            if (typeof yAxisRange !== 'undefined' && yAxisRange != null) {
+                // pad the range, if desired
+                if (this._isAutoscalePaddingEnabled) {
+                    yAxisRange = this._padRange(yAxisRange);
+                }
+                yAxis.setRange(yAxisRange.min, yAxisRange.max);
+            }
+        }
+        yAxis.update();
     }
 
     this._needsUpdate = false;
@@ -742,6 +743,7 @@ cr.SeriesPlotContainer.prototype.addPlot = function(plot) {
     this._plots[plotKey] = plot;
     this._plots[plotKey].tlayer = new cr.DataStoreTileLayer(plot.datasource, this.glb, this.ctx, this.usewebgl);
     this._plots[plotKey].tlayer.usewebgl = this.usewebgl;
+    this.grapher.scheduleUpdate();
 };
 
 cr.SeriesPlotContainer.prototype.removePlot = function(plot) {
@@ -759,6 +761,7 @@ cr.SeriesPlotContainer.prototype.removePlot = function(plot) {
 
     // remove the plot
     delete(this._plots[plotKey]);
+    this.grapher.scheduleUpdate();
 };
 
 cr.SeriesPlotContainer.prototype.setSize = function(width, height) {
