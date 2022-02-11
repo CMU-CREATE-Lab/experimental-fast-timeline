@@ -67,8 +67,10 @@ cr.TileView.prototype._tileidxAt = function(level, offset) {
 };
 
 cr.TileView.prototype._computeVisibleTileRange = function(level, view) {
-    var tilemin = this._tileidxAt(level, this._computeOffset(view.min, level));
-    var tilemax = this._tileidxAt(level, this._computeOffset(view.max, level));
+    // Expand view x-y by one full tile so that if we're drawing a line between tiles,
+    // we can draw that line even if the dest tile is off-screen
+    var tilemin = this._tileidxAt(level, this._computeOffset(view.min, level) - 1);
+    var tilemax = this._tileidxAt(level, this._computeOffset(view.max, level) + 1);
     return { min : tilemin, max : tilemax };
 };
 
@@ -255,5 +257,6 @@ cr.TileView.prototype.update = function(transform, options) {
     for (var i = 0; i < keys.length; i++) {
         tiles.push(this._tiles[keys[i]]);
     }
+    // This calls <tileclass>.update, e.g. DataStoreTile.update
     this._updateTileCallback(tiles, transform, options);
 };

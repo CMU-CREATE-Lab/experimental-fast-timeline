@@ -22,29 +22,20 @@ cr.DataStoreTile = function(glb, tileidx, datasource) {
     this.pointProgram = glb.programFromSources(cr.Shaders.PointVertexShader, cr.Shaders.PointFragmentShader);
     this.offset = 0;
     this._resolutionScale = window.devicePixelRatio || 1;
+    this.jsonUpdated = false;
+    this.prevSample = [];
 
     var self = this;
     var tileLoader = new cr.TileLoader(datasource);
+
     tileLoader.load(tileidx, function(err, json) {
         if (err) {
             console.log(err);
         }
         else {
-            var data = [];
-            var offset = 0;
-
-            if (json.data.length > 0) {
-                offset = json.data[0][0];
-                for (var i = 0; i < json.data.length; i++) {
-                    data.push(json.data[i][0] - offset);
-                    data.push(json.data[i][1]);
-                    data.push(json.data[i][2]);
-                    data.push(json.data[i][3]);
-                }
-            }
-
-            self.offset = offset;
-            self._setData(new Float32Array(data));
+            self.json = json;
+            self._ready = true;
+            self.jsonUpdated = true;
         }
     });
 };
@@ -61,8 +52,6 @@ cr.DataStoreTile.prototype._setData = function(arrayBuffer) {
     var attributeLoc = gl.getAttribLocation(this.program, 'a_position');
     gl.enableVertexAttribArray(attributeLoc);
     gl.vertexAttribPointer(attributeLoc, 2, gl.FLOAT, false, 16, 0);
-
-    this._ready = true;
 };
 
 /**
@@ -79,9 +68,49 @@ cr.DataStoreTile.prototype.delete = function() {
     //console.log('delete: ' + this._tileidx.toString());
 };
 
-cr.DataStoreTile.prototype.draw = function(transform, options) {
+function arrayEquals(a,b) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; a++) {
+        if (a[i] != b[i]) return false;
+    }
+    return true;
+}
+
+cr.DataStoreTile.prototype.updateDataIfNeeded = function(prevSample) {
+    if (this.jsonUpdated || !arrayEquals(this.prevSample, prevSample)) {
+        var data = [];
+        var offset = 0;
+
+        if (this.json.data.length > 0) {
+            // firstSample is the previous sample, if that exists
+            var firstSample = prevSample.length ? prevSample : this.json.data[0];
+            offset = firstSample[0]; // x from first sample
+            if (prevSample) {
+                data.push(prevSample[0] - offset); // x
+                data.push(prevSample[1]); // y
+                data.push(prevSample[2]); // std dev.  not drawn
+                data.push(prevSample[3]); // weight.  not drawn
+            }
+            for (var i = 0; i < this.json.data.length; i++) {
+                data.push(this.json.data[i][0] - offset); // x
+                data.push(this.json.data[i][1]); // y
+                data.push(this.json.data[i][2]); // std dev.  not drawn
+                data.push(this.json.data[i][3]); // weight.  not drawn
+            }
+        }
+
+        this.offset = offset;
+        this._setData(new Float32Array(data));
+        this.jsonUpdated = false;
+        this.prevSample = prevSample;
+    }
+}
+
+cr.DataStoreTile.prototype.draw = function(transform, options, prevSample) {
     var gl = this.gl;
     if (this._ready) {
+        this.updateDataIfNeeded(prevSample);
+
         gl.useProgram(this.program);
         var pMatrix = new Float32Array([1, 0, 0, 0,
                                         0, 1, 0, 0,
@@ -115,6 +144,8 @@ cr.DataStoreTile.prototype.draw = function(transform, options) {
 
           var attributeLoc = gl.getAttribLocation(this.program, 'a_position');
           gl.enableVertexAttribArray(attributeLoc);
+
+          // Every vertex uses elements 0 and 1, but the spacing is 4 floats or 16 bytes (thus we're ignoring elements 2 and 3)
           gl.vertexAttribPointer(attributeLoc, 2, gl.FLOAT, false, 16, 0);
 
           var colorLoc = gl.getUniformLocation(this.program, 'u_color');
@@ -161,7 +192,20 @@ cr.DataStoreTile.prototype.draw = function(transform, options) {
  * @param transform
  */
 cr.DataStoreTile.update = function(tiles, transform, options) {
+    var prevSample = [];
     for (var i = 0; i < tiles.length; i++) {
-        tiles[i].draw(transform, options);
+        var tile = tiles[i];
+        if (tile.json && tile.json.data && tile.json.data.length) {
+            var firstSample = tile.json.data[0];
+            // Sometimes we move backwards in X, when we are drawing high-res tiles atop low-res
+            // when a low-res tile is not yet fully replaced by two high-res tiles.  In this case,
+            // throw out prevSample
+            if (firstSample[0] < prevSample[0]) {
+                prevSample = [];
+            }
+            tile.draw(transform, options, prevSample);
+            // TODO: only set prevSample if this tile abuts the previous tile
+            prevSample = tile.json.data[tile.json.data.length - 1];
+        }
     }
 };
