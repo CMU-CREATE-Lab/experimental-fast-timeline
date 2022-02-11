@@ -60,21 +60,20 @@ cr.GraphAxis = function(domElement, min, max, basis, isXAxis, grapher) {
     this.isCursorDragging = false;
     this.cursorSelected = false;
 
-    var canvasElement = $('#' + this._canvas.id);
-    canvasElement.mousedown(this, this.mousedown);
-    canvasElement.mousemove(this, this.mousemove);
-    canvasElement.mouseup(this, this.mouseup);
-    //canvasElement.mousewheel(this.mousewheel, this);
-    canvasElement.on("mousewheel", this, this.mousewheel);
+    var $canvasElement = $('#' + this._canvas.id);
+    $canvasElement.on("mousedown", this, this.mousedown);
+    $canvasElement.on("mousemove", this, this.mousemove);
+    $canvasElement.on("mouseup", this, this.mouseup);
+    $canvasElement.on("wheel", this, this.mousewheel);
 
     this._previousTouches = null;
 
     this.touchUtils = new cr.TouchUtils();
 
-    canvasElement.bind('touchstart', this, this.touchstart);
-    canvasElement.bind('touchmove', this, this.touchmove);
-    canvasElement.bind('touchend', this, this.touchend);
-    canvasElement.bind('touchcancel', this, this.touchend);
+    $canvasElement.on('touchstart', this, this.touchstart);
+    $canvasElement.on('touchmove', this, this.touchmove);
+    $canvasElement.on('touchend', this, this.touchend);
+    $canvasElement.on('touchcancel', this, this.touchend);
 
     if (grapher == null) {
         this.grapher = __grapher__;

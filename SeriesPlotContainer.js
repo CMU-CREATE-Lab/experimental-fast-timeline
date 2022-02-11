@@ -67,11 +67,11 @@ cr.SeriesPlotContainer = function(elementId, plots, dateAxis, options) {
     else {
         this._canvas = this.canvas3d;
     }
-    var canvasElement = $('#' + this._canvas.id);
-    canvasElement.bind('touchstart', this, this.touchstart);
-    canvasElement.bind('touchmove', this, this.touchmove);
-    canvasElement.bind('touchend', this, this.touchend);
-    canvasElement.bind('touchcancel', this, this.touchend);
+    var $canvasElement = $('#' + this._canvas.id);
+    $canvasElement.on('touchstart', this, this.touchstart);
+    $canvasElement.on('touchmove', this, this.touchmove);
+    $canvasElement.on('touchend', this, this.touchend);
+    $canvasElement.on('touchcancel', this, this.touchend);
 
     this.resize();
 };
@@ -99,17 +99,17 @@ cr.SeriesPlotContainer.prototype._initCanvases = function() {
 
     this.ctx = this.canvas2d.getContext('2d');
 
-    var canvas2dElement = $('#' + this.canvas2d.id);
-    canvas2dElement.mousedown(this, this.mousedown);
-    canvas2dElement.mousemove(this, this.mousemove);
-    canvas2dElement.mouseup(this, this.mouseup);
-    canvas2dElement.on("mousewheel", this, this.mousewheel);
+    var $canvas2dElement = $('#' + this.canvas2d.id);
+    $canvas2dElement.on("mousedown", this, this.mousedown);
+    $canvas2dElement.on("mousemove", this, this.mousemove);
+    $canvas2dElement.on("mouseup", this, this.mouseup);
+    $canvas2dElement.on("wheel", this, this.mousewheel);
 
-    var canvas3dElement = $('#' + this.canvas3d.id);
-    canvas3dElement.mousedown(this, this.mousedown);
-    canvas3dElement.mousemove(this, this.mousemove);
-    canvas3dElement.mouseup(this, this.mouseup);
-    canvas3dElement.on("mousewheel", this, this.mousewheel);
+    var $canvas3dElement = $('#' + this.canvas3d.id);
+    $canvas3dElement.on("mousedown", this, this.mousedown);
+    $canvas3dElement.on("mousemove", this, this.mousemove);
+    $canvas3dElement.on("mouseup", this, this.mouseup);
+    $canvas3dElement.on("wheel", this, this.mousewheel);
 };
 
 cr.SeriesPlotContainer.prototype.mousedown = function(e) {
