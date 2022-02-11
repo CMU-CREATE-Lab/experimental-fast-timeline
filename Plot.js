@@ -13,10 +13,6 @@ var cr = cr || {};
  * @param {object} [options] - additional options, such as styling
  */
 cr.Plot = function(datasource, xAxis, yAxis, options) {
-    var that = this;
-    //    this.highlight = new cr.Highlight(plotDiv);
-
-    //    this.cursor = new cr.Cursor(plotDiv);
     this.point = null;
 
     // Create a unique ID for this plot. Using a UUID instead of Date.now() because Safari (and
@@ -63,6 +59,17 @@ cr.Plot = function(datasource, xAxis, yAxis, options) {
                 color : { r : 0, g : 0, b : 0 },
                 fill : true,
                 fillColor : { r : 0, g : 0, b : 0 }
+            }
+        ],
+        pointHighlightStyle : [
+            {
+                type : "circle",
+                show : true,
+                lineWidth : 1,
+                radius : 3,
+                color : { r : 255, g : 0, b : 0 },
+                fill : true,
+                fillColor : { r : 255, g : 0, b : 0 }
             }
         ]
     };
@@ -204,57 +211,92 @@ cr.Plot.prototype.publishDataPoint = function(point, event) {
 // Set the plot style (line/point color, width, etc)
 cr.Plot.prototype.setStyle = function(styleOptions) {
     var that = this;
-    if (styleOptions && styleOptions.styles) {
-        styleOptions.styles.forEach(function(style) {
-            // TODO: need to handle case of RGB object
 
-            // Color given as hex string
-            if (style.color && style.color.indexOf("#") == 0) {
-                var rgbColor = cr.Util.hexToRgb(style.color);
-                if (rgbColor) {
-                    style.color = rgbColor;
-                }
-            }
-            // Color given as rgb string
-            else if (style.color && style.color.indexOf("rgb") == 0) {
-                var rgbStringArray = style.color.split("(")[1].split(")")[0].split(",");
-                if (rgbStringArray && rgbStringArray.length == 3) {
-                    style.color = {
-                        r : rgbStringArray[0],
-                        g : rgbStringArray[1],
-                        b : rgbStringArray[2]
-                    };
-                }
-            }
-            // Color given as word
-            else if (style.color && typeof(style.color) === "string") {
-                var rgbColor = cr.Util.colorMap[style.color].rgb;
-                if (rgbColor) {
-                    style.color = rgbColor;
-                }
-            }
+    if (!styleOptions) return;
 
-            // If none of the above, then use default color specified above.
-            if (style.type == "line") {
-                that._styles.lineStyle = style;
+    var normalizeColorToRGB = function(color) {
+        // Color given as hex string
+        if (typeof(color) === "string" && color.indexOf("#") == 0) {
+            var rgbColor = cr.Util.hexToRgb(color);
+            if (rgbColor) {
+                color = rgbColor;
             }
-            else if (style.type == "circle") {
-                that._styles.pointStyles[0] = style;
-                // If no fill color specified, use the same color as the outer color
-                if (!style.fillColor) {
-                    that._styles.pointStyles[0].fillColor = that._styles.pointStyles[0].color;
+        }
+        // Color given as rgb string
+        else if (typeof(color) === "string" && color.indexOf("rgb") == 0) {
+            var rgbStringArray = color.split("(")[1].split(")")[0].split(",");
+            if (rgbStringArray && rgbStringArray.length == 3) {
+                color = {
+                    r : rgbStringArray[0],
+                    g : rgbStringArray[1],
+                    b : rgbStringArray[2]
+                };
+            }
+        }
+        // Color given as word
+        else if (typeof(color) === "string") {
+            var rgbColor = cr.Util.colorMap[color].rgb;
+            if (rgbColor) {
+                color = rgbColor;
+            }
+        }
+
+        return color;
+    };
+
+    // Note the structure of a style definition passed in follows the form used in the BodyTrack Grapher.
+    // While modifications to it would be desired, we need format parity for backwards compatibility.
+    for (var styleOption in styleOptions) {
+        if (styleOption == "styles") {
+            styleOptions.styles.forEach(function(style) {
+                // If not provided, use default color specified in constructor.
+                if (style.color) {
+                    style.color = normalizeColorToRGB(style.color);
                 }
-                // Sanity check the circle border width
-                if (style.lineWidth > style.radius) {
-                    that.lineWidth = 1;
+
+                if (style.type == "line") {
+                    that._styles.lineStyle = style;
+                } else if (style.type == "circle") {
+                    that._styles.pointStyles[0] = style;
+                    // If no fill color specified, use the same color as the outer color
+                    if (!style.fillColor) {
+                        that._styles.pointStyles[0].fillColor = that._styles.pointStyles[0].color;
+                    }
+                    // Sanity check the circle border width
+                    if (style.lineWidth > style.radius) {
+                        that.lineWidth = 1;
+                    }
                 }
-            }
-            else {
-                that._styles.pointStyles.push(style);
-            }
-        });
+                else {
+                    that._styles.pointStyles.push(style);
+                }
+            })
+        } else if (styleOption == "highlight") {
+            styleOptions[styleOption].styles.forEach(function(style) {
+                // If not provided, use default color specified in constructor.
+                if (style.color) {
+                    style.color = normalizeColorToRGB(style.color);
+                }
+
+                if (style.type == "circle") {
+                    that._styles.pointHighlightStyle[0] = style;
+                    // If no fill color specified, use the same color as the outer color
+                    if (!style.fillColor) {
+                        that._styles.pointHighlightStyle[0].fillColor = that._styles.pointHighlightStyle[0].color;
+                    }
+                    // Sanity check the circle border width
+                    if (style.lineWidth > style.radius) {
+                        that.lineWidth = 1;
+                    }
+                }
+                else {
+                    that._styles.pointHighlightStyle.push(style);
+                }
+            })
+        }
     }
-};
+}
+
 
 // Get the plot style
 cr.Plot.prototype.getStyle = function() {

@@ -653,6 +653,7 @@ cr.SeriesPlotContainer.prototype.drawHighlightPointsCanvas = function() {
     }
 };
 
+// TODO: What exactly is drawHighlightPoints as opposed to drawMouseoverHighlightPoint
 cr.SeriesPlotContainer.prototype.drawHighlightPoints = function() {
     var xAxis = this._xAxis;
     if (xAxis.cursorX) {
@@ -667,9 +668,11 @@ cr.SeriesPlotContainer.prototype.drawHighlightPoints = function() {
 
 cr.SeriesPlotContainer.prototype.drawMouseoverHighlightPointWebgl = function() {
     var xAxis = this._xAxis;
-    if (this.mouseoverHighlightPoint) {
+    var point = this.mouseoverHighlightPoint;
+    if (point) {
         var points = [];
-        var point = this.mouseoverHighlightPoint;
+        // TODO: Only circles currently supported, which is always the first point style of highlight
+        var highlightStyle = this._plots[point.plotKey]._styles.pointHighlightStyle[0];
         var view = this._plots[point.plotKey].getView();
         var xscale = 2 / (xAxis._max - xAxis._min);
         var xtranslate = -xAxis._min * xscale - 1;
@@ -696,7 +699,11 @@ cr.SeriesPlotContainer.prototype.drawMouseoverHighlightPointWebgl = function() {
         gl.vertexAttribPointer(attributeLoc, 2, gl.FLOAT, false, 0, 0);
 
         var colorLoc = gl.getUniformLocation(this.pointProgram, 'u_color');
-        gl.uniform4f(colorLoc, 1.0, 0, 0, 1);
+        gl.uniform4f(colorLoc, highlightStyle.color.r / 255, highlightStyle.color.g / 255, highlightStyle.color.b / 255, 1);
+
+        // Point size
+        var sizeLoc = gl.getUniformLocation(this.pointProgram, 'u_size');
+        gl.uniform1f(sizeLoc, highlightStyle.radius * 2 * this._resolutionScale);
 
         if (points.length > 0) {
             gl.drawArrays(gl.POINTS, 0, points.length / 2);
@@ -705,7 +712,32 @@ cr.SeriesPlotContainer.prototype.drawMouseoverHighlightPointWebgl = function() {
 };
 
 cr.SeriesPlotContainer.prototype.drawMouseoverHighlightPointCanvas = function() {
-    // TODO: implement mousover highlight for canvas
+    var point = this.mouseoverHighlightPoint;
+    if (point) {
+        var view = this._plots[point.plotKey].getView();
+        var transform = {};
+        transform.xOffset = -view.xmin;
+        transform.xScale = point.point.tile.ctx.canvas.width / (view.xmax - view.xmin);
+        transform.yOffset = -view.ymax;
+        transform.yScale = point.point.tile.ctx.canvas.height / (view.ymin - view.ymax);
+
+        var highlightStyle = this._plots[point.plotKey]._styles.pointHighlightStyle[0];
+        point.point.tile.ctx.lineWidth = highlightStyle.lineWidth;
+        point.point.tile.ctx.strokeStyle = 'rgb(' + highlightStyle.color.r + ',' + highlightStyle.color.g + ',' + highlightStyle.color.b + ')';
+        point.point.tile.ctx.fillStyle = 'rgb(' + highlightStyle.color.r + ',' + highlightStyle.color.g + ',' + highlightStyle.color.b + ')';
+
+        point.point.tile.ctx.beginPath();
+
+        point.point.tile.ctx.arc(transform.xScale * (point.point.x + transform.xOffset),
+                                 transform.yScale * (point.point.y + transform.yOffset),
+                                 highlightStyle.radius * this._resolutionScale, 0, Math.PI * 2, true); // Outer circle
+
+        if (highlightStyle.fill) {
+            point.point.tile.ctx.fill();
+        }
+
+        point.point.tile.ctx.stroke();
+    }
 };
 
 cr.SeriesPlotContainer.prototype.drawMouseoverHighlightPoint = function() {
